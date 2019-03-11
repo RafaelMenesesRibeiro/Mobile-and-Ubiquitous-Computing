@@ -20,7 +20,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Button
-        android:id="@+id/LogInButton"
+        android:id="@+id/LoginButton"
         android:layout_width="330dp"
         android:layout_height="110dp"
         android:layout_marginStart="40dp"
@@ -33,6 +33,7 @@
         android:textAllCaps="false"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="50sp"
+
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoText" />
@@ -51,8 +52,7 @@
         android:textAllCaps="false"
         android:textColor="@color/colorPrimaryDark"
         android:textSize="50sp"
-        android:onClick="LogInButtonClicked"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/LogInButton" />
+        app:layout_constraintTop_toBottomOf="@+id/LoginButton" />
 </android.support.constraint.ConstraintLayout>

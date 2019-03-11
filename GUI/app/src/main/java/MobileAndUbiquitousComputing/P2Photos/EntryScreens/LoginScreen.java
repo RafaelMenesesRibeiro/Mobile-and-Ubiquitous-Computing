@@ -5,7 +5,7 @@ import android.os.Bundle;
 
 import MobileAndUbiquitousComputing.P2Photos.R;
 
-public class LogInScreen extends AppCompatActivity {
+public class LoginScreen extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
