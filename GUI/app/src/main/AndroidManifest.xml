@@ -9,18 +9,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".EntryScreens.SignUpScreen">
-            android:parentActivityName="SignupLoginEntryScreen">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".EntryScreens.SignupLoginEntryScreen"/>
-        </activity>
-        <activity android:name=".EntryScreens.LoginScreen">
-            android:parentActivityName="SignupLoginEntryScreen">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".EntryScreens.SignupLoginEntryScreen"/>
-        </activity>
+        <activity android:name=".EntryScreens.SignUpScreen"/>
+        <activity android:name=".EntryScreens.LoginScreen"/>
         <activity android:name=".EntryScreens.SignupLoginEntryScreen" />
         <activity android:name=".MainActivity">
             <intent-filter>
