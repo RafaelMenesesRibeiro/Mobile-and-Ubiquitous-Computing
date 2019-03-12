@@ -25,6 +25,26 @@
         <item name="android:textAllCaps">false</item>
         <item name="android:textSize">50sp</item>
     </style>
+
+    <style name="InactiveButton" parent="ActiveButton">
+        // State
+        <item name="android:clickable">false</item>
+        // Colors
+        <item name="android:background">@android:color/darker_gray</item>
+        <item name="android:textColor">@android:color/black</item>
+    </style>
+
+    <style name="MainLabel" parent="AppTheme">
+        // Size
+        <item name="android:layout_width">415dp</item>
+        <item name="android:layout_height">140dp</item>
+        // Margins
+        <item name="android:layout_marginTop">10dp</item>
+        // Text
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textSize">100sp</item>
+    </style>
+
     <style name="MainTextInput" parent="AppTheme">
         // Size
         <item name="android:layout_width">365dp</item>

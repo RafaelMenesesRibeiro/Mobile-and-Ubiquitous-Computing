@@ -6,4 +6,43 @@
     android:layout_height="match_parent"
     tools:context=".EntryScreens.SignUpScreen">
 
+    <TextView
+        android:id="@+id/logoText"
+        style="@style/MainLabel"
+        android:text="Sign Up"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/usernameText"
+        style="@style/MainTextInput"
+        android:hint="Enter username"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logoText" />
+
+    <EditText
+        android:id="@+id/passwordText"
+        style="@style/MainTextInput"
+        android:inputType="textPassword"
+        android:hint="Enter password"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/usernameText" />
+
+    <Button
+        android:id="@+id/LoginButton"
+        style="@style/InactiveButton"
+        android:text="Sign Up"
+        android:clickable="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.493"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/passwordText" />
+
 </android.support.constraint.ConstraintLayout>
