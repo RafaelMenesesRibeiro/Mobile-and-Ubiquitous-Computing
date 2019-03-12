@@ -8,12 +8,9 @@
 
     <TextView
         android:id="@+id/logoText"
-        android:layout_width="415dp"
-        android:layout_height="138dp"
-        android:layout_marginTop="84dp"
+        style="@style/MainLabel"
+        android:layout_marginTop="90dp"
         android:text="P2Photo"
-        android:textAllCaps="false"
-        android:textSize="100sp"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -22,37 +19,17 @@
 
     <Button
         android:id="@+id/LoginButton"
-        android:layout_width="330dp"
-        android:layout_height="110dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginLeft="40dp"
-        android:layout_marginTop="88dp"
-        android:layout_marginEnd="41dp"
-        android:layout_marginRight="41dp"
-        android:background="@android:color/black"
+        style="@style/ActiveButton"
         android:text="Login"
-        android:textAllCaps="false"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="50sp"
-
+        android:layout_marginTop="90sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoText" />
 
     <Button
         android:id="@+id/SignUpButton"
-        android:layout_width="330dp"
-        android:layout_height="110dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginLeft="40dp"
-        android:layout_marginTop="38dp"
-        android:layout_marginEnd="41dp"
-        android:layout_marginRight="41dp"
-        android:background="@android:color/black"
+        style="@style/ActiveButton"
         android:text="Sign Up"
-        android:textAllCaps="false"
-        android:textColor="@color/colorPrimaryDark"
-        android:textSize="50sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/LoginButton" />
