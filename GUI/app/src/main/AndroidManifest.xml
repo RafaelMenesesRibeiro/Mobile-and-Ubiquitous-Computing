@@ -13,11 +13,9 @@
         <activity android:name=".SearchUserActivity"></activity>
         <activity android:name=".NewAlbumActivity" />
         <activity android:name=".SignUpActivity" />
-        <activity android:name=".EntryScreens.LoginScreen" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".EntryScreens.LoginScreen">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
