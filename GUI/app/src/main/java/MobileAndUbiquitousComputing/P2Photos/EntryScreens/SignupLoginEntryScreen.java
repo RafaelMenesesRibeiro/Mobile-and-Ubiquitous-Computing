@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 
 import MobileAndUbiquitousComputing.P2Photos.R;
+import MobileAndUbiquitousComputing.P2Photos.SignUpActivity;
 
 public class SignupLoginEntryScreen extends AppCompatActivity {
 
@@ -39,6 +40,6 @@ public class SignupLoginEntryScreen extends AppCompatActivity {
     }
 
     private void SignUpButtonClicked(View view) {
-        startActivity(new Intent(this, SignUpScreen.class));
+        startActivity(new Intent(this, SignUpActivity.class));
     }
 }

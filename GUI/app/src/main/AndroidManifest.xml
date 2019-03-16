@@ -11,7 +11,7 @@
         android:theme="@style/AppTheme">
         <activity android:name=".SearchUserActivity"></activity>
         <activity android:name=".NewAlbumActivity" />
-        <activity android:name=".EntryScreens.SignUpScreen" />
+        <activity android:name=".SignUpActivity" />
         <activity android:name=".EntryScreens.LoginScreen" />
         <activity android:name=".EntryScreens.SignupLoginEntryScreen" />
         <activity android:name=".MainActivity">
