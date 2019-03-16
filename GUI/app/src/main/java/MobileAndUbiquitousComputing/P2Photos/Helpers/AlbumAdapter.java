@@ -7,17 +7,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 import java.util.ArrayList;
 import MobileAndUbiquitousComputing.P2Photos.R;
 
 public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> {
-    private ArrayList<Photo> albumContent;
     private Context context;
+    private ArrayList<Photo> albumContent;
 
     public AlbumAdapter(Context appContext, ArrayList<Photo> photoList) {
-        albumContent = photoList;
         context = appContext;
+        albumContent = photoList;
     }
 
     @Override
