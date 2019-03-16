@@ -9,6 +9,7 @@
     <TextView
         android:id="@+id/logoText"
         style="@style/MainLabel"
+        android:layout_height="48dp"
         android:text="Login"
         android:textAlignment="center"
         app:layout_constraintEnd_toEndOf="parent"
@@ -18,7 +19,7 @@
 
     <EditText
         android:id="@+id/usernameText"
-        style="@style/MainTextInput"
+        style="@style/InputLabels"
         android:hint="Enter username"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -27,7 +28,7 @@
 
     <EditText
         android:id="@+id/passwordText"
-        style="@style/MainTextInput"
+        style="@style/InputLabels"
         android:inputType="textPassword"
         android:hint="Enter password"
         app:layout_constraintEnd_toEndOf="parent"
