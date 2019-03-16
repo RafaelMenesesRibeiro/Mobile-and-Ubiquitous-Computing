@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -28,18 +28,20 @@
         // State
         <item name="android:clickable">true</item>
         // Size
-        <item name="android:layout_width">330dp</item>
-        <item name="android:layout_height">90dp</item>
+        <item name="android:layout_width">250sp</item>
+        <item name="android:layout_height">55dp</item>
+        // Padding
+        <item name="android:paddingLeft">20dp</item>
+        <item name="android:paddingRight">20dp</item>
         // Margins
-        <item name="android:layout_marginLeft">40dp</item>
-        <item name="android:layout_marginTop">30dp</item>
-        <item name="android:layout_marginRight">40dp</item>
-        // Colors
-        <item name="android:background">@android:color/black</item>
-        <item name="android:textColor">@android:color/white</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_marginLeft">8dp</item>
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:layout_marginRight">8dp</item>
         // Text
         <item name="android:textAllCaps">false</item>
-        <item name="android:textSize">50sp</item>
+        <item name="android:textSize">20sp</item>
     </style>
 
     <style name="InactiveButton" parent="ActiveButton">
