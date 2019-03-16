@@ -10,7 +10,9 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".MainMenu"></activity>
+        <activity android:name=".SearchUserActivity"></activity>
         <activity android:name=".NewAlbumActivity" />
+        <activity android:name=".SignUpActivity" />
         <activity android:name=".EntryScreens.LoginScreen" />
         <activity android:name=".MainActivity">
             <intent-filter>
