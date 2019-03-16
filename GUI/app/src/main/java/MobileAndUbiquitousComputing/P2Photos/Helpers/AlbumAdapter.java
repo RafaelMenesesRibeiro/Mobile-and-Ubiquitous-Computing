@@ -39,11 +39,9 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView title;
         private ImageView image;
         ViewHolder(View view) {
             super(view);
-            title = view.findViewById(R.id.title);
             image = view.findViewById(R.id.image);
         }
     }
