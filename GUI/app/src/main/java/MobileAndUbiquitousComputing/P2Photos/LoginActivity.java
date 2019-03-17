@@ -82,6 +82,11 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     public void SignUpClicked(View view) {
-        // TODO - Implement this. //
+        String username = ((EditText) findViewById(R.id.usernameInputBox)).getText().toString();
+        String password = ((EditText) findViewById(R.id.passwordInputBox)).getText().toString();
+        Intent intent = new Intent(this, SignUpActivity.class);
+        intent.putExtra("username", username);
+        intent.putExtra("password", password);
+        startActivity(intent);
     }
 }
