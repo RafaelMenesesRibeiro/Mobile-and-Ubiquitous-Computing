@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">P2Photos</string>
+    <string name="introduce_a_title_for_your_album">Introduce a title for your album</string>
+    <string name="done">Done</string>
+    <string name="create_album">Create Album</string>
+    <string name="view_album">View Album</string>
+    <string name="placeholder_for_album_name">placeholder-for-album-name</string>
+    <string name="add_user">Add User</string>
+    <string name="add_photo">Add Photo</string>
 </resources>

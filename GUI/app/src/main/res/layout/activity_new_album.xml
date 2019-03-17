@@ -16,7 +16,7 @@
         android:layout_marginTop="60dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="Create Album"
+        android:text="@string/create_album"
         android:textColor="@color/colorPrimary"
         android:textSize="30sp"
         app:fontFamily="sans-serif"
@@ -38,15 +38,15 @@
         android:textColorHint="@android:color/darker_gray"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/createAlbumLabel">
+        app:layout_constraintTop_toBottomOf="@+id/createAlbumLabel"
+        tools:ignore="ExtraText">
         style="@style/MainLabel"
-
         <android.support.design.widget.TextInputEditText
             android:id="@+id/titleInputBoxPlaceholder"
             style="@style/InputLabels"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Introduce a title for your album"
+            android:hint="@string/introduce_a_title_for_your_album"
             android:text=""
             android:textAppearance="@style/TextAppearance.AppCompat"
             android:textColor="@color/colorAccent"
@@ -62,7 +62,7 @@
         android:layout_marginEnd="30dp"
         android:layout_marginRight="30dp"
         android:layout_marginBottom="30dp"
-        android:text="Done"
+        android:text="@string/done"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
