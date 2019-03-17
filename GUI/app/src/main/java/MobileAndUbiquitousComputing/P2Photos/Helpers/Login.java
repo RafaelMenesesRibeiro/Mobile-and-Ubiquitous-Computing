@@ -1,7 +1,5 @@
 package MobileAndUbiquitousComputing.P2Photos.Helpers;
 
-import android.support.annotation.NonNull;
-
 public class Login {
     private static String SessionID;
     private static String username;
