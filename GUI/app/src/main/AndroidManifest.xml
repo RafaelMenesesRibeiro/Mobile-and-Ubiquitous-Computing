@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name=".ListAlbums"></activity>
-        <activity android:name=".MainMenu" />
+        <activity android:name=".MainMenuActivity">
         <activity android:name=".SearchUserActivity" />
         <activity android:name=".NewAlbumActivity" />
         <activity android:name=".SignUpActivity" />
@@ -18,10 +18,14 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".AlbumViewActivity"/>
+        <activity android:name=".SearchUserActivity" />
+        <activity android:name=".NewAlbumActivity" />
+        <activity android:name=".SignUpActivity" />
+        <activity android:name=".LoginActivity"/>
     </application>
 
 </manifest>
