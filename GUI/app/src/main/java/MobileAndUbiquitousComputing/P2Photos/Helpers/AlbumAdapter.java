@@ -41,7 +41,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.ViewHolder> 
         private ImageView image;
         ViewHolder(View view) {
             super(view);
-            image = view.findViewById(R.id.image);
+            image = view.findViewById(R.id.img);
         }
     }
 }
