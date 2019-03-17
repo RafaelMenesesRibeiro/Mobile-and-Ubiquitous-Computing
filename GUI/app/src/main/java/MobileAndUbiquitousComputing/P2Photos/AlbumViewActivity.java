@@ -5,9 +5,11 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 public class AlbumViewActivity extends AppCompatActivity {
 
@@ -30,6 +32,13 @@ public class AlbumViewActivity extends AppCompatActivity {
 
         GridView grid = findViewById(R.id.albumGrid);
         grid.setAdapter(new ImageGridAdapter(this));
+        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // TODO - Implement this. //
+                Toast.makeText(AlbumViewActivity.this, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     /*
