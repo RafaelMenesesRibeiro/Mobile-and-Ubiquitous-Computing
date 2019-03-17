@@ -5,6 +5,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
+import static MobileAndUbiquitousComputing.P2Photos.Helpers.Logout.LogoutUser;
+
 public class MainMenuActivity extends AppCompatActivity {
 
     @Override
@@ -42,6 +44,8 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void LogoutClicked(View view) {
-        // TODO - Design GUI for this. //
+        LogoutUser();
+        Intent intent = new Intent(this, LoginActivity.class);
+        startActivity(intent);
     }
 }
