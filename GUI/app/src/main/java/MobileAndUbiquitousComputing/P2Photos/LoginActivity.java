@@ -47,6 +47,12 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        // Do nothing.
+        // Prevents going back after logging out.
+    }
+
     private void ActivateButtons(EditText usernameInput, EditText passwordInput, Button loginButton, Button signupButton) {
         if (!usernameInput.getText().toString().isEmpty() && !passwordInput.getText().toString().isEmpty()) {
             loginButton.setClickable(true);

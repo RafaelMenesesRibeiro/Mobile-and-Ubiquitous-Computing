@@ -15,6 +15,13 @@ public class MainMenuActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main_menu);
     }
 
+    @Override
+    public void onBackPressed() {
+        // Do nothing.
+        // Prevents going back to the login screen, or the previously completed
+        // activity.
+    }
+
     public void viewAlbumClicked(View view) {
         Intent intent = new Intent(this, AlbumViewActivity.class);
         startActivity(intent);
