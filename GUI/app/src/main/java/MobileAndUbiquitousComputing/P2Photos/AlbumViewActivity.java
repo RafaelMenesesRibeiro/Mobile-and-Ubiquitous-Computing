@@ -40,10 +40,10 @@ public class AlbumViewActivity extends AppCompatActivity {
     */
 
     public class ImageGridAdapter extends BaseAdapter {
-        private Context mContext;
+        private Context context;
 
-        ImageGridAdapter(Context c) {
-            mContext = c;
+        ImageGridAdapter(Context context) {
+            this.context = context;
         }
 
         @Override
@@ -66,13 +66,13 @@ public class AlbumViewActivity extends AppCompatActivity {
             ImageView imageView;
 
             if (convertView == null) {
-                imageView = new ImageView(mContext);
+                imageView = new ImageView(context);
             }
             else {
                 imageView = (ImageView) convertView;
             }
             imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-            imageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT / 2));
+            imageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             imageView.setAdjustViewBounds(true);
             imageView.setPadding(16, 16, 16, 16);
             imageView.setImageResource(imageIdsArray[position]);
