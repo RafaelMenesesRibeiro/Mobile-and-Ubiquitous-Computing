@@ -21,7 +21,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/CreateAlbumButton"
@@ -30,7 +31,8 @@
         android:layout_marginTop="30dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/MainMenuText" />
+        app:layout_constraintTop_toBottomOf="@+id/MainMenuText"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/FindUserButton"
@@ -39,7 +41,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/CreateAlbumButton" />
+        app:layout_constraintTop_toBottomOf="@+id/CreateAlbumButton"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/AddPhotosButton"
@@ -48,7 +51,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/FindUserButton" />
+        app:layout_constraintTop_toBottomOf="@+id/FindUserButton"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/AddUserButon"
@@ -57,7 +61,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/AddPhotosButton" />
+        app:layout_constraintTop_toBottomOf="@+id/AddPhotosButton"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/ListUserAlbums"
@@ -66,16 +71,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/AddUserButon" />
+        app:layout_constraintTop_toBottomOf="@+id/AddUserButon"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/ViewAlbumButton"
         style="@style/ActiveButton"
         android:text="View album"
+        android:onClick="viewAlbumClicked"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ListUserAlbums" />
+        app:layout_constraintTop_toBottomOf="@+id/ListUserAlbums"
+        tools:ignore="HardcodedText" />
 
     <Button
         android:id="@+id/LogoutButton"
@@ -84,6 +92,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/ViewAlbumButton" />
+        app:layout_constraintTop_toBottomOf="@+id/ViewAlbumButton"
+        tools:ignore="HardcodedText" />
 
 </android.support.constraint.ConstraintLayout>
