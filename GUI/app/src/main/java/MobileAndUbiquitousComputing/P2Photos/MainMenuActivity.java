@@ -17,4 +17,31 @@ public class MainMenuActivity extends AppCompatActivity {
         Intent intent = new Intent(this, AlbumViewActivity.class);
         startActivity(intent);
     }
+
+    public void createAlbumClicked(View view) {
+        Intent intent = new Intent(this, NewAlbumActivity.class);
+        startActivity(intent);
+    }
+
+    public void FindUserClicked(View view) {
+        Intent intent = new Intent(this, SearchUserActivity.class);
+        startActivity(intent);
+    }
+
+    public void AddPhotosClicked(View view) {
+        // TODO - Design GUI for this. //
+    }
+
+    public void AddUsersClicked(View view) {
+        // TODO - Design GUI for this. //
+    }
+
+    public void ListAlbumsClicked(View view) {
+        Intent intent = new Intent(this, ListAlbums.class);
+        startActivity(intent);
+    }
+
+    public void LogoutClicked(View view) {
+        // TODO - Design GUI for this. //
+    }
 }
