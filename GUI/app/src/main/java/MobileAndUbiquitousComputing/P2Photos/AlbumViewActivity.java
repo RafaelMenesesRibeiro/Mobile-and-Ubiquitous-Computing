@@ -1,14 +1,15 @@
 package MobileAndUbiquitousComputing.P2Photos;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
-
-import java.util.ArrayList;
-
-import MobileAndUbiquitousComputing.P2Photos.Helpers.AlbumAdapter;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.Photo;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 public class AlbumViewActivity extends AppCompatActivity {
 
@@ -29,25 +30,62 @@ public class AlbumViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_album_view);
 
-        RecyclerView recyclerView = findViewById(R.id.gallery);
-        recyclerView.setHasFixedSize(true);
-
-        RecyclerView.LayoutManager layoutManager = new GridLayoutManager(getApplicationContext(),3);
-        recyclerView.setLayoutManager(layoutManager);
-
-        ArrayList<Photo> photoList = prepareAlbumData();
-        AlbumAdapter albumAdapter = new AlbumAdapter(getApplicationContext(), photoList);
-
-        recyclerView.setAdapter(albumAdapter);
+        GridView grid = findViewById(R.id.albumGrid);
+        grid.setAdapter(new ImageGridAdapter(this));
+        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // TODO - Implement this. //
+                Toast.makeText(AlbumViewActivity.this, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    private ArrayList<Photo> prepareAlbumData(){
-        ArrayList<Photo> imageList = new ArrayList<>();
-        for (Integer anImageIdsArray : imageIdsArray) {
-            Photo photo = new Photo();
-            photo.setId(anImageIdsArray);
-            imageList.add(photo);
+    /*
+    *
+    * ImageGridAdapter class responsible for showing the images in a grid.
+    *
+    *
+    */
+
+    public class ImageGridAdapter extends BaseAdapter {
+        private Context context;
+
+        ImageGridAdapter(Context context) {
+            this.context = context;
         }
-        return imageList;
+
+        @Override
+        public int getCount() {
+            return imageIdsArray.length;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ImageView imageView;
+
+            if (convertView == null) {
+                imageView = new ImageView(context);
+            }
+            else {
+                imageView = (ImageView) convertView;
+            }
+            imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            imageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+            imageView.setAdjustViewBounds(true);
+            imageView.setPadding(16, 16, 16, 16);
+            imageView.setImageResource(imageIdsArray[position]);
+            return imageView;
+        }
     }
 }
