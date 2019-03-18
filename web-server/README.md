@@ -1,4 +1,4 @@
-##### The present document provides documentation regarding the available P2P-webserver APIs
+##### Documentation regarding the available P2P-webserver APIs
 ##### Summarized below:
 
 * Sign Up
