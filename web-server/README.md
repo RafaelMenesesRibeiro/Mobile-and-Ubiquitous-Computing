@@ -1,19 +1,18 @@
 ##### The present document provides documentation regarding the available P2P-webserver APIs
 ##### Summarized below:
 
-* Sign up
-* Log in
-* Log out
+* Sign Up
+* Log In
+* Log Out
 * Create Album
-* Find users
-* Add Photo to Album
-* Add User to Album
-* List Users belonging to Albums
+* Find Users
+* Add Users to Album
+* List Album Members
 * View Album
 
 --------------------------------
 
-**Sign up**
+**Sign Up**
 ----
 
 * **URL**
@@ -31,9 +30,9 @@
 * **Data Params**
     ```
     {
-        "operation" : "signup"
+        "operation" : "signup",
         "username" : "a_username",
-        "password" : "a_password",
+        "password" : "a_password"
     }
      ```
 * **Success Response:**
@@ -42,9 +41,9 @@
    **Content:**
     ```
     {
-        "operation" : "signup"
-        "code" : 200
-        "message" : "OK"
+        "operation" : "signup",
+        "code" : 200,
+        "message" : "OK",
     }
     ```
  
@@ -54,68 +53,66 @@
     **Content:**
     ```
     {
-        "operation" : "signup"
-        "code" : 422
-        "message" : "unprocessable entity. request SHOULD NOT be repeated without modification.
+        "operation" : "signup",
+        "code" : 422,
+        "message" : "unprocessable entity. request SHOULD NOT be repeated without modification",
         "reason" : "username already exists"
     }
     ```
-    
-    
-   --------------------------------
+        
+--------------------------------
+
+**Log In**
+----
+
+* **URL**
+
+   /login
+
+* **Method:**
+
+ `POST`
+ 
+*  **URL Params**
+
+   Not available;
    
-   **Log in**
-   ----
-   
-   * **URL**
-   
-       /login
-   
-   * **Method:**
-   
-     `POST`
-     
-   *  **URL Params**
-   
-       Not available;
-       
-   * **Data Params**
-       ```
-       {
-           "operation" : "login"
-           "username" : "a_username",
-           "password" : "a_ciphered_password",
-       }
-        ```
-   * **Success Response:**
-     
-      **Code:** 200 <br />
-      **Content:**
-       ```
-       {
-            "operation" : "login" 
-            "code" : 200
-            "message" : "OK"
-       }
-       ```
-    
-   * **Error Response:**
-   
-       **Code:** 401 <br />
-       **Content:**
-       ```
-       {
-            "operation" : "login"
-            "code" : 401
-            "message" : "unauthorized - invalid authentication request"
-            "reason" : "username or password is incorrect"
-       }
-       ```
-   
+* **Data Params**
+   ```
+   {
+       "operation" : "login",
+       "username" : "a_username",
+       "password" : "a_ciphered_password"
+   }
+    ```
+* **Success Response:**
+ 
+  **Code:** 200 <br />
+  **Content:**
+   ```
+   {
+        "operation" : "login",
+        "code" : 200,
+        "message" : "OK"
+   }
+   ```
+
+* **Error Response:**
+
+   **Code:** 401 <br />
+   **Content:**
+   ```
+   {
+        "operation" : "login",
+        "code" : 401,
+        "message" : "request has not been applied because it lacks valid authentication credentials",
+        "reason" : "username or password is incorrect"
+   }
+   ```
        
   --------------------------------
   
-  **Log out**
+  **Log Out**
   ----
   
   * **URL**
@@ -133,8 +130,8 @@
   * **Data Params**
       ```
       {
-          "operation" : "logout"
-          "username" : "a_username",
+          "operation" : "logout",
+          "username" : "a_username"
       }
        ```
   * **Success Response:**
@@ -143,8 +140,8 @@
      **Content:**
       ```
       {
-           "operation" : "logout" 
-           "code" : 200
+           "operation" : "logout",
+           "code" : 200,
            "message" : "OK"
       }
       ```
@@ -169,7 +166,7 @@
    * **Data Params**
        ```
        {
-           "operation" : "newalbum"
+           "operation" : "newalbum",
            "username" : "a_username",
            "album_name" : "a_name",
            "slice_url" : "http://www.acloudprovider.com/a_album_slice"
@@ -181,22 +178,238 @@
       **Content:**
        ```
        {
-            "operation" : "login" 
-            "code" : 200
+            "operation" : "newalbum", 
+            "album_name" : "name_in_post_request",
+            "album_id" : 9991310417811031,
+            "code" : 200,
             "message" : "OK"
        }
        ```
     
    * **Error Response:**
    
-       **Code:** 401 <br />
+       **Code:** 403 <br />
        **Content:**
        ```
        {
-            "operation" : "login"
-            "code" : 401
-            "message" : "unauthorized - invalid authentication request"
-            "reason" : "username or password is incorrect"
+            "operation" : "newalbum",
+            "code" : 403,
+            "message" : "server understood the request but refuses to authorize it",
+            "reason" : "invalid album name"
        }
        ```
 
+   --------------------------------
+   
+   **Find Users**
+   ----
+   
+   * **URL**
+   
+       /findusers
+   
+   * **Method:**
+   
+     `GET`
+     
+   *  **URL Params**
+   
+        ***Required:***
+        
+            username_pattern=[integer]
+
+   * **Data Params**
+   
+        Not Available;
+            
+   * **Success Response:**
+     
+      **Code:** 200 <br />
+      **Content:**
+       ```
+       {
+            "operation" : "findusers", 
+            "found_users" : [
+                {
+                    "a_user" : [ "an_album_id", "another_album_id"],
+                    "another_user" : [ ]          
+                }
+            ]
+            "code" : 200,
+            "message" : "OK"
+       }
+       ```
+    
+   * **Error Response:**
+   
+       **Code:** 404 <br />
+       **Content:**
+       ```
+       {
+            "operation" : "findusers",
+            "code" : 404,
+            "message" : "resource not found",
+            "reason" : "no users match the existing search parameter"
+       }
+       ```
+       
+  --------------------------------
+  
+  **Add Users to Album**
+  ----
+      
+  * **URL**
+  
+      /adduserstoalbum
+  
+  * **Method:**
+  
+    `POST`
+    
+  *  **URL Params**
+  
+      Not available;
+      
+  * **Data Params**
+      ```
+      {
+          "operation" : "adduserstoalbum",
+          "album_id" :  13125618841614,
+          "usernames" : [ "a_username", "another_username" ]
+      }
+       ```
+  * **Success Response:**
+    
+     **Code:** 200 <br />
+     **Content:**
+      ```
+      {
+           "operation" : "adduserstoalbum", 
+           "album_id" : 13125618841614,
+           "added_users" : [ "a_username", "another_username" ],
+           "code" : 200,
+           "message" : "OK"
+      }
+      ```
+   
+  * **Error Response:**
+  
+      **Code:** 404 <br />
+       ```
+       {
+            "operation" : "adduserstoalbum",
+            "code" : 404,
+            "message" : "resource not found",
+            "reason" : "album does not exists"
+       }
+       ```
+       
+       OR
+       
+     **Code:** 400 <br />
+      ```
+      {
+           "operation" : "adduserstoalbum",
+           "code" : 400,
+           "message" : "bad request",
+           "reason" : "one or more users do not exists or could not be added"
+      }
+      ```
+      
+--------------------------------
+
+**List Album Members**
+----
+   
+* **URL**
+
+   /albummembers
+
+* **Method:**
+
+ `GET`
+ 
+*  **URL Params**
+
+    ***Required:***
+    
+        album_id=[integer]
+
+* **Data Params**
+
+    Not Available;
+ 
+* **Success Response:**
+ 
+  **Code:** 200 <br />
+  **Content:**
+   ```
+   {
+        "operation" : "albummembers", 
+        "album_id" : 13125618841614,
+        "album_members" : [ "a_username", "another_username" ],
+        "code" : 200,
+        "message" : "OK"
+   }
+   ```
+
+* **Error Response:**
+
+   **Code:** 404 <br />
+    ```
+    {
+         "operation" : "albummembers",
+         "code" : 404,
+         "message" : "resource not found",
+         "reason" : "album does not exists"
+    }
+    ```
+ --------------------------------
+ 
+ **View Album**
+ ----
+    
+ * **URL**
+ 
+    /viewalbum
+ 
+ * **Method:**
+ 
+  `GET`
+  
+ *  **URL Params**
+ 
+     ***Required:***
+     
+         album_id=[integer]
+ 
+ * **Data Params**
+ 
+     Not Available;
+  
+ * **Success Response:**
+  
+   **Code:** 200 <br />
+   **Content:**
+    ```
+    {
+         "operation" : "viewalbum", 
+         "album_id" : 114618841614,
+         "slice_urls" : [ "https://drive.google.com/a_album_slice", "https://dropbox.com/a_album_slice" ],
+         "code" : 200,
+         "message" : "OK"
+    }
+    ```
+ 
+ * **Error Response:**
+ 
+    **Code:** 404 <br />
+     ```
+     {
+          "operation" : "albummembers",
+          "code" : 404,
+          "message" : "resource not found",
+          "reason" : "album does not exists"
+     }
+     ```
+    
