@@ -55,18 +55,18 @@ public class LoginActivity extends AppCompatActivity {
 
     private void ActivateButtons(EditText usernameInput, EditText passwordInput, Button loginButton, Button signupButton) {
         if (!usernameInput.getText().toString().isEmpty() && !passwordInput.getText().toString().isEmpty()) {
-            loginButton.setClickable(true);
+            loginButton.setEnabled(true);
             loginButton.setBackgroundColor(getResources().getColor(R.color.colorButtonActive));
             loginButton.setTextColor(getResources().getColor(R.color.white));
-            signupButton.setClickable(true);
+            signupButton.setEnabled(true);
             signupButton.setBackgroundColor(getResources().getColor(R.color.colorButtonActive));
             signupButton.setTextColor(getResources().getColor(R.color.white));
         }
         else {
-            loginButton.setClickable(false);
+            loginButton.setEnabled(false);
             loginButton.setBackgroundColor(getResources().getColor(R.color.colorButtonInactive));
             loginButton.setTextColor(getResources().getColor(R.color.almostBlack));
-            signupButton.setClickable(false);
+            signupButton.setEnabled(false);
             signupButton.setBackgroundColor(getResources().getColor(R.color.colorButtonInactive));
             signupButton.setTextColor(getResources().getColor(R.color.almostBlack));
         }
