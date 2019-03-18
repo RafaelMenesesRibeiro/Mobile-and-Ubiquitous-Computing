@@ -25,4 +25,9 @@ public class Login {
         return Login.SessionID;
     }
 
+    public String LoginUser(String sessionID) {
+        Login.SessionID = sessionID;
+        return Login.SessionID;
+    }
+
 }

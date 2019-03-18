@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import MobileAndUbiquitousComputing.P2Photos.Helpers.Signup;
+
 public class SignUpActivity extends AppCompatActivity {
 
     @Override
@@ -47,24 +49,39 @@ public class SignUpActivity extends AppCompatActivity {
     private void ActivateButtons(EditText usernameInput, EditText passwordInput, EditText confirmPasswordInput,
                                  Button confirmButton) {
         if (!usernameInput.getText().toString().isEmpty() && !passwordInput.getText().toString().isEmpty() && !confirmPasswordInput.getText().toString().isEmpty()) {
-            confirmButton.setClickable(true);
+            confirmButton.setEnabled(true);
             confirmButton.setBackgroundColor(getResources().getColor(R.color.colorButtonActive));
             confirmButton.setTextColor(getResources().getColor(R.color.white));
         }
         else {
-            confirmButton.setClickable(false);
+            confirmButton.setEnabled(false);
             confirmButton.setBackgroundColor(getResources().getColor(R.color.colorButtonInactive));
             confirmButton.setTextColor(getResources().getColor(R.color.almostBlack));
         }
     }
 
     public void SignUpClicked(View view) {
-        String username = ((EditText) findViewById(R.id.usernameInputBox)).getText().toString();
-        String password = ((EditText) findViewById(R.id.passwordInputBox)).getText().toString();
-        String confirmPassword = ((EditText) findViewById(R.id.confirmPasswordInputBox)).getText().toString();
+        EditText usernameInput = (EditText) findViewById(R.id.usernameInputBox);
+        EditText passwordInput = (EditText) findViewById(R.id.passwordInputBox);
+        EditText confirmPasswordInput = (EditText) findViewById(R.id.confirmPasswordInputBox);
+        String username = usernameInput.getText().toString();
+        String password = passwordInput.getText().toString();
+        String confirmPassword = confirmPasswordInput.getText().toString();
+
+        // TODO - Request server if username already exists. //
 
         if (!password.equals(confirmPassword)) {
-            // TODO //
+            passwordInput.setText("");
+            confirmPasswordInput.setText("");
+            return;
         }
+
+        boolean isSuccess = Signup.SignupUser(username, password);
+        if (!isSuccess) {
+            // TODO - Implement what happens when sign up fails. //
+        }
+
+        Intent intent = new Intent(this, MainMenuActivity.class);
+        startActivity(intent);
     }
 }
