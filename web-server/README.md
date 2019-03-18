@@ -71,7 +71,7 @@
 
 * **Method:**
 
- `POST`
+    `POST`
  
 *  **URL Params**
 
@@ -115,206 +115,208 @@
   **Log Out**
   ----
   
-  * **URL**
-  
-      /logout
-  
-  * **Method:**
-  
+* **URL**
+
+  /logout
+
+* **Method:**
+
     `POST`
-    
-  *  **URL Params**
+
+*  **URL Params**
+
+     Not available;
   
-      Not available;
-      
-  * **Data Params**
-      ```
-      {
-          "operation" : "logout",
-          "username" : "a_username"
-      }
-       ```
-  * **Success Response:**
-    
-     **Code:** 200 <br />
-     **Content:**
-      ```
-      {
-           "operation" : "logout",
-           "code" : 200,
-           "message" : "OK"
-      }
-      ```
+* **Data Params**
+  ```
+  {
+      "operation" : "logout",
+      "username" : "a_username"
+  }
+   ```
+* **Success Response:**
+
+    **Code:** 200 <br />
+    **Content:**
+  ```
+  {
+       "operation" : "logout",
+       "code" : 200,
+       "message" : "OK"
+  }
+  ```
    
-   --------------------------------
+--------------------------------
+
+**Create Album**
+----
+
+* **URL**
+
+   /newalbum
+
+* **Method:**
+
+    `POST`
+ 
+*  **URL Params**
+
+   Not available;
    
-   **Create Album**
-   ----
-   
-   * **URL**
-   
-       /newalbum
-   
-   * **Method:**
-   
-     `POST`
-     
-   *  **URL Params**
-   
-       Not available;
-       
-   * **Data Params**
-       ```
-       {
-           "operation" : "newalbum",
-           "username" : "a_username",
-           "album_name" : "a_name",
-           "slice_url" : "http://www.acloudprovider.com/a_album_slice"
-       }
-        ```
-   * **Success Response:**
-     
-      **Code:** 200 <br />
-      **Content:**
-       ```
-       {
-            "operation" : "newalbum", 
-            "album_name" : "name_in_post_request",
-            "album_id" : 9991310417811031,
-            "code" : 200,
-            "message" : "OK"
-       }
-       ```
-    
-   * **Error Response:**
-   
-       **Code:** 403 <br />
-       **Content:**
-       ```
-       {
-            "operation" : "newalbum",
-            "code" : 403,
-            "message" : "server understood the request but refuses to authorize it",
-            "reason" : "invalid album name"
-       }
-       ```
+* **Data Params**
+   ```
+   {
+       "operation" : "newalbum",
+       "username" : "a_username",
+       "album_name" : "a_name",
+       "slice_url" : "http://www.acloudprovider.com/a_album_slice"
+   }
+    ```
+* **Success Response:**
+ 
+  **Code:** 200 <br />
+  **Content:**
+   ```
+   {
+        "operation" : "newalbum", 
+        "album_name" : "name_in_post_request",
+        "album_id" : 9991310417811031,
+        "code" : 200,
+        "message" : "OK"
+   }
+   ```
+
+* **Error Response:**
+
+   **Code:** 403 <br />
+   **Content:**
+   ```
+   {
+        "operation" : "newalbum",
+        "code" : 403,
+        "message" : "server understood the request but refuses to authorize it",
+        "reason" : "invalid album name"
+   }
+   ```
 
    --------------------------------
    
-   **Find Users**
-   ----
-   
-   * **URL**
-   
-       /findusers
-   
-   * **Method:**
-   
-     `GET`
-     
-   *  **URL Params**
-   
-        ***Required:***
+**Find Users**
+----
+
+* **URL**
+
+   /findusers
+
+* **Method:**
+
+    `GET`
+ 
+*  **URL Params**
+
+    ***Required:***
+    
+        username_pattern=[integer]
+
+* **Data Params**
+
+    Not Available;
         
-            username_pattern=[integer]
+* **Success Response:**
+ 
+  **Code:** 200 <br />
+  **Content:**
+   ```
+   {
+        "operation" : "findusers", 
+        "found_users" : [
+            {
+                "a_user" : [ "an_album_id", "another_album_id"],
+                "another_user" : [ ]          
+            }
+        ]
+        "code" : 200,
+        "message" : "OK"
+   }
+   ```
 
-   * **Data Params**
-   
-        Not Available;
-            
-   * **Success Response:**
-     
-      **Code:** 200 <br />
-      **Content:**
-       ```
-       {
-            "operation" : "findusers", 
-            "found_users" : [
-                {
-                    "a_user" : [ "an_album_id", "another_album_id"],
-                    "another_user" : [ ]          
-                }
-            ]
-            "code" : 200,
-            "message" : "OK"
-       }
-       ```
-    
-   * **Error Response:**
-   
-       **Code:** 404 <br />
-       **Content:**
-       ```
-       {
-            "operation" : "findusers",
-            "code" : 404,
-            "message" : "resource not found",
-            "reason" : "no users match the existing search parameter"
-       }
-       ```
+* **Error Response:**
+
+   **Code:** 404 <br />
+   **Content:**
+   ```
+   {
+        "operation" : "findusers",
+        "code" : 404,
+        "message" : "resource not found",
+        "reason" : "no users match the existing search parameter"
+   }
+   ```
        
-  --------------------------------
+--------------------------------
+
+**Add Users to Album**
+----
   
-  **Add Users to Album**
-  ----
-      
-  * **URL**
-  
-      /adduserstoalbum
-  
-  * **Method:**
-  
+* **URL**
+
+  /adduserstoalbum
+
+* **Method:**
+
     `POST`
-    
-  *  **URL Params**
+
+*  **URL Params**
+
+  Not available;
   
-      Not available;
-      
-  * **Data Params**
-      ```
-      {
-          "operation" : "adduserstoalbum",
-          "album_id" :  13125618841614,
-          "usernames" : [ "a_username", "another_username" ]
-      }
-       ```
-  * **Success Response:**
-    
-     **Code:** 200 <br />
-     **Content:**
-      ```
-      {
-           "operation" : "adduserstoalbum", 
-           "album_id" : 13125618841614,
-           "added_users" : [ "a_username", "another_username" ],
-           "code" : 200,
-           "message" : "OK"
-      }
-      ```
+* **Data Params**
+  ```
+  {
+      "operation" : "adduserstoalbum",
+      "album_id" :  13125618841614,
+      "usernames" : [ "a_username", "another_username" ]
+  }
+   ```
+* **Success Response:**
+
+    **Code:** 200 <br />
+    **Content:**
+  ```
+  {
+       "operation" : "adduserstoalbum", 
+       "album_id" : 13125618841614,
+       "added_users" : [ "a_username", "another_username" ],
+       "code" : 200,
+       "message" : "OK"
+  }
+  ```
+
+* **Error Response:**
+
+  **Code:** 404 <br />
+  **Content:**
+   ```
+   {
+        "operation" : "adduserstoalbum",
+        "code" : 404,
+        "message" : "resource not found",
+        "reason" : "album does not exists"
+   }
+   ```
    
-  * **Error Response:**
-  
-      **Code:** 404 <br />
-       ```
-       {
-            "operation" : "adduserstoalbum",
-            "code" : 404,
-            "message" : "resource not found",
-            "reason" : "album does not exists"
-       }
-       ```
-       
-       OR
+   OR
        
      **Code:** 400 <br />
-      ```
-      {
-           "operation" : "adduserstoalbum",
-           "code" : 400,
-           "message" : "bad request",
-           "reason" : "one or more users do not exists or could not be added"
-      }
-      ```
+     **Content:**
+  ```
+  {
+       "operation" : "adduserstoalbum",
+       "code" : 400,
+       "message" : "bad request",
+       "reason" : "one or more users do not exists or could not be added"
+  }
+  ```
       
 --------------------------------
 
@@ -327,7 +329,7 @@
 
 * **Method:**
 
- `GET`
+    `GET`
  
 *  **URL Params**
 
@@ -375,7 +377,7 @@
  
  * **Method:**
  
-  `GET`
+    `GET`
   
  *  **URL Params**
  
