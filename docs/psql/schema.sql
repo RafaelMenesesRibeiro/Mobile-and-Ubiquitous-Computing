@@ -1,6 +1,7 @@
 ----------------------------------------
 -- Table Creation
 ----------------------------------------
+CREATE EXTENSION pgcrypto;
 
 CREATE TABLE IF NOT EXISTS users (
 	username varchar(50) PRIMARY KEY,
