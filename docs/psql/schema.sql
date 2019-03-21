@@ -3,11 +3,11 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE IF NOT EXISTS users (
 	username varchar(50) PRIMARY KEY,
 	password_hash varchar NOT NULL,
-	session_id varchar(50)
+	session_id varchar(50) UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
-	session_id varchar(50) PRIMARY KEY REFERENCES users,
+	session_id varchar(50) PRIMARY KEY REFERENCES users(session_id),
 	ip varchar(16) NOT NULL,
 	user_agent varchar(50) NOT NULL,
 	user_data text,
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS 	catalogs (
 );
 
 CREATE TABLE IF NOT EXISTS memberships (
-    catalog_id numeric(10) REFERENCES catalogs,
-    username varchar(50) REFERENCES users,
+    catalog_id numeric(10) REFERENCES catalogs(catalog_id),
+    username varchar(50) REFERENCES users(username),
     PRIMARY KEY (catalog_id, username)
 );
