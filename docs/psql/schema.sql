@@ -1,7 +1,4 @@
-----------------------------------------
--- Table Creation
-----------------------------------------
-CREATE EXTENSION pgcrypto;
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS users (
 	username varchar(50) PRIMARY KEY,
@@ -11,10 +8,10 @@ CREATE TABLE IF NOT EXISTS users (
 
 CREATE TABLE IF NOT EXISTS sessions (
 	session_id varchar(50) PRIMARY KEY REFERENCES users,
-	ip varchar(16) DEFAULT '0' NOT NULL,
+	ip varchar(16) NOT NULL,
 	user_agent varchar(50) NOT NULL,
-	user_data text NOT NULL,
-	last_activity numeric(10) DEFAULT 0 NOT NULL CHECK (last_activity >= 0)
+	user_data text,
+	last_activity numeric(10) NOT NULL CHECK (last_activity > 0)
 );
 
 CREATE TABLE IF NOT EXISTS 	catalogs (
