@@ -16,8 +16,7 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 CREATE TABLE IF NOT EXISTS 	catalogs (
 	catalog_id numeric(10) CHECK (catalog_id > 0) PRIMARY KEY,
-	catalog_name varchar(25) NOT NULL,
-	members varchar NOT NULL,
+	catalog_title varchar(50) NOT NULL,
 	slices varchar NOT NULL
 );
 
