@@ -15,12 +15,12 @@ public class Signup {
 
     public static boolean SignupUser(String username, String password) {
         Log.i("MSG", "Signing up in as " + username + ".");
-        String url = "http://p2photo-production.herokuapp.com/signUp";
+        String url = "http://p2photo-production.herokuapp.com/signup";
         JSONObject json = new JSONObject();
         try {
             // TODO - Fetch these properties. //
-            json.accumulate("username", "monkey12");
-            json.accumulate("password", "macaco90");
+            json.accumulate("username", username);
+            json.accumulate("password", password);
         }
         catch (JSONException jex) {
             jex.printStackTrace();
