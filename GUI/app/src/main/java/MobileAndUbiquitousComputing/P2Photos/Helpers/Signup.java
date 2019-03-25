@@ -18,7 +18,6 @@ public class Signup {
         String url = "http://p2photo-production.herokuapp.com/signup";
         JSONObject json = new JSONObject();
         try {
-            // TODO - Fetch these properties. //
             json.accumulate("username", username);
             json.accumulate("password", password);
         }
