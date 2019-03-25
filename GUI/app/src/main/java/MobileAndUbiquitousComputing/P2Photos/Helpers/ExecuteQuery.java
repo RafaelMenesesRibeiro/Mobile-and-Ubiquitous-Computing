@@ -88,7 +88,11 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
         if ((output = br.readLine()) != null) {
             Log.i("STATUS", "NEW LINE: " + output);
             JSONObject jsonObject = new JSONObject(output);
+
             Log.i("STATUS", "Return code: " + jsonObject.get("code"));
+            Log.i("MSG", "Return reason: " + jsonObject.get("reason"));
+            Log.i("MSG", "Return message: " + jsonObject.get("message"));
+
             int code = (int) jsonObject.get("code");
             if (code == 200) {
                 result = new ResponseData(ResponseData.ResponseCode.SUCCESS, 200);
@@ -100,15 +104,5 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
         is.close();
         br.close();
         return result;
-
-        /*
-        Map<String, List<String>> headerFields = conn.getHeaderFields();
-        for (String key : headerFields.keySet()) {
-            Log.i("MSG", "KEY - " + key);
-            for (String value : headerFields.get(key)) {
-                Log.i("MSG", "\t\tNEW VALUE - " + value);
-            }
-        }
-        */
     }
 }
