@@ -1,19 +1,10 @@
 package MobileAndUbiquitousComputing.P2Photos.Helpers;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.concurrent.ExecutionException;
 
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
@@ -30,18 +21,13 @@ public class Login {
     public static String getUsername() { return username; }
     public static String getPassword() { return password; }
 
-    public static void setSessionID(String sessionID) { SessionID = sessionID; }
-    public static void setUsername(String username) { Login.username = username; }
-    public static void setPassword(String password) { Login.password = password; }
-
     public Login(String username, String password) {
         Log.i("MSG", "Logging in as " + username + ".");
         String url = "http://p2photo-production.herokuapp.com/login";
         JSONObject json = new JSONObject();
         try {
-            // TODO - Fetch these properties. //
-            json.accumulate("username", "monkey12");
-            json.accumulate("password", "macaco90");
+            json.accumulate("username", username);
+            json.accumulate("password", password);
         }
         catch (JSONException jex) {
             jex.printStackTrace();
