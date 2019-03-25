@@ -5,7 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 
-import static MobileAndUbiquitousComputing.P2Photos.Helpers.Logout.LogoutUser;
+import MobileAndUbiquitousComputing.P2Photos.Helpers.Logout;
 
 public class MainMenuActivity extends AppCompatActivity {
 
@@ -51,7 +51,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void LogoutClicked(View view) {
-        LogoutUser();
+        Logout.LogoutUser();
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
     }
