@@ -56,15 +56,4 @@ public class Login {
         Login.username = username;
         Login.password = password;
     }
-
-    public String LoginUser() {
-        Login.SessionID = "sessionID";
-        return Login.SessionID;
-    }
-
-    public String LoginUser(String sessionID) {
-        Login.SessionID = sessionID;
-        return Login.SessionID;
-    }
-
 }

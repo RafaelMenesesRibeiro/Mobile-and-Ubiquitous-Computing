@@ -45,9 +45,9 @@ public class Signup {
             iex.printStackTrace();
         }
 
-        Login login = new Login(username, password);
-        String sessionID = "sessionID";
-        login.LoginUser(sessionID);
+        // TODO - Implement session ID handling. //
+        new Login(username, password);
+
         // Returns true if successful, false otherwise.
         return true;
     }
