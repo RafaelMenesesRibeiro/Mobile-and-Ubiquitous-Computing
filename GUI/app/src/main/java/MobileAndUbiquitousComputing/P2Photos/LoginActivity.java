@@ -76,7 +76,6 @@ public class LoginActivity extends AppCompatActivity {
         String username = ((EditText) findViewById(R.id.usernameInputBox)).getText().toString();
         String password = ((EditText) findViewById(R.id.passwordInputBox)).getText().toString();
         Login login = new Login(username, password);
-        login.LoginUser();
         Intent intent = new Intent(this, MainMenuActivity.class);
         startActivity(intent);
     }
