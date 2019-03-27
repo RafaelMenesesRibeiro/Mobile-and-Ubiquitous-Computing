@@ -47,6 +47,10 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
                     result = PostRequest(connection, rData);
                 case PUT:
                     break;
+                case DELETE:
+                    connection.setRequestMethod("DELETE");
+                    result = DeleteRequest(connection, rData);
+                    break;
                 default:
                     Log.i("ERROR", "Should never be here.");
                     break;
@@ -80,7 +84,17 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
         os.close();
 
         connection.connect();
+        ResponseData result = GetResponseData(connection);
+        return result;
+    }
 
+    private ResponseData DeleteRequest(HttpURLConnection connection, RequestData requestData) throws IOException, JSONException {
+        connection.connect();
+        ResponseData result = GetResponseData(connection);
+        return result;
+    }
+
+    private ResponseData GetResponseData(HttpURLConnection connection) throws IOException, JSONException {
         InputStream is = connection.getInputStream();
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         ResponseData result = new ResponseData(ResponseData.ResponseCode.NO_CODE, -1);
@@ -88,10 +102,6 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
         if ((output = br.readLine()) != null) {
             Log.i("STATUS", "NEW LINE: " + output);
             JSONObject jsonObject = new JSONObject(output);
-
-            Log.i("STATUS", "Return code: " + jsonObject.get("code"));
-            Log.i("MSG", "Return reason: " + jsonObject.get("reason"));
-            Log.i("MSG", "Return message: " + jsonObject.get("message"));
 
             int code = (int) jsonObject.get("code");
             if (code == 200) {
