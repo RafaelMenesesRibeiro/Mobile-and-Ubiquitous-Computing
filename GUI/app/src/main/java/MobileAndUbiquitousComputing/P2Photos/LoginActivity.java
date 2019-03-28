@@ -8,7 +8,10 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
 import MobileAndUbiquitousComputing.P2Photos.R;
 
@@ -74,10 +77,22 @@ public class LoginActivity extends AppCompatActivity {
 
     public void LoginClicked(View view) {
         String username = ((EditText) findViewById(R.id.usernameInputBox)).getText().toString();
-        String password = ((EditText) findViewById(R.id.passwordInputBox)).getText().toString();
-        Login login = new Login(username, password);
-        Intent intent = new Intent(this, MainMenuActivity.class);
-        startActivity(intent);
+        EditText passwordInput = findViewById(R.id.passwordInputBox);
+        String password = passwordInput.getText().toString();
+        username = username.trim();
+        password = password.trim();
+        try {
+            Login login = new Login(username, password);
+            Intent intent = new Intent(this, MainMenuActivity.class);
+            startActivity(intent);
+        }
+        catch (WrongCredentialsException wcex) {
+            passwordInput.setText("");
+        }
+        catch (FailedLoginException flex) {
+            Toast toast = Toast.makeText(this, "The Login operation failed. Try again later", Toast.LENGTH_LONG);
+            toast.show();
+        }
     }
 
     public void SignUpClicked(View view) {

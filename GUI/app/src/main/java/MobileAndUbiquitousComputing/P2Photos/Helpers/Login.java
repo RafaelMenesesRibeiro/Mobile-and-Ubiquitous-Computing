@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutionException;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 
 public class Login {
     private static String SessionID;
@@ -21,7 +23,7 @@ public class Login {
     public static String getUsername() { return username; }
     public static String getPassword() { return password; }
 
-    public Login(String username, String password) {
+    public Login(String username, String password) throws FailedLoginException {
         Log.i("MSG", "Logging in as " + username + ".");
         String url = "http://p2photo-production.herokuapp.com/login";
         JSONObject json = new JSONObject();
@@ -38,12 +40,16 @@ public class Login {
             int code = result.getServerCode();
             if (code == 200) {
                 Log.i("STATUS", "The login operation was successful");
+                Login.username = username;
+                Login.password = password;
             }
             else if (code == 401) {
                 Log.i("STATUS", "The login operation was unsuccessful. The username or password are incorrect.");
+                throw new WrongCredentialsException();
             }
             else {
                 Log.i("STATUS", "The login operation was unsuccessful. Unknown error.");
+                throw new FailedLoginException();
             }
         }
         catch (ExecutionException eex) {
@@ -52,8 +58,5 @@ public class Login {
         catch (InterruptedException iex) {
             iex.printStackTrace();
         }
-
-        Login.username = username;
-        Login.password = password;
     }
 }

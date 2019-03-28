@@ -1,7 +1,7 @@
 package MobileAndUbiquitousComputing.P2Photos.DataObjects;
 
 public class RequestData {
-    public enum RequestType {POST, GET, PUT, DELETE}
+    public enum RequestType {POST, GET, PUT, DELETE, GETFINDUSER}
 
     private RequestType requestType;
     private String url;

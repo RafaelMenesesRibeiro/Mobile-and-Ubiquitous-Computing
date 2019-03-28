@@ -1,6 +1,7 @@
 package MobileAndUbiquitousComputing.P2Photos.Helpers;
 
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,10 +11,11 @@ import java.util.concurrent.ExecutionException;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 
 public class Signup {
-
-    public static boolean SignupUser(String username, String password) {
+    public static void SignupUser(String username, String password) throws FailedLoginException{
         Log.i("MSG", "Signing up in as " + username + ".");
         String url = "http://p2photo-production.herokuapp.com/signup";
         JSONObject json = new JSONObject();
@@ -46,9 +48,12 @@ public class Signup {
         }
 
         // TODO - Implement session ID handling. //
-        new Login(username, password);
-
-        // Returns true if successful, false otherwise.
-        return true;
+        try {
+            new Login(username, password);
+        }
+        catch (WrongCredentialsException wcex) {
+            // Do nothing.
+            // SHOULD NEVER BE HERE. AS THE CREDENTIALS WERE USED WITHOUT CHANGE FOR SIGNING UP.
+        }
     }
 }

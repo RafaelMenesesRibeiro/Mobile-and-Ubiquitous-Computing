@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.UsernameExistsException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.Signup;
 
 public class SignUpActivity extends AppCompatActivity {
@@ -68,20 +70,24 @@ public class SignUpActivity extends AppCompatActivity {
         String password = passwordInput.getText().toString();
         String confirmPassword = confirmPasswordInput.getText().toString();
 
-        // TODO - Request server if username already exists. //
-
         if (!password.equals(confirmPassword)) {
             passwordInput.setText("");
             confirmPasswordInput.setText("");
             return;
         }
 
-        boolean isSuccess = Signup.SignupUser(username, password);
-        if (!isSuccess) {
-            // TODO - Implement what happens when sign up fails. //
+        try {
+            Signup.SignupUser(username, password);
+            Intent intent = new Intent(this, MainMenuActivity.class);
+            startActivity(intent);
         }
-
-        Intent intent = new Intent(this, MainMenuActivity.class);
-        startActivity(intent);
+        catch (UsernameExistsException ueex) {
+            Toast toast = Toast.makeText(this, "The username '" + username + "' already exists", Toast.LENGTH_LONG);
+            toast.show();
+        }
+        catch (FailedLoginException flex) {
+            Toast toast = Toast.makeText(this, "The Login operation failed. Try again later", Toast.LENGTH_LONG);
+            toast.show();
+        }
     }
 }

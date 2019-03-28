@@ -3,6 +3,10 @@ package MobileAndUbiquitousComputing.P2Photos;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
+
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.BadInputException;
+import MobileAndUbiquitousComputing.P2Photos.Helpers.FindUser;
 
 public class SearchUserActivity extends AppCompatActivity {
 
@@ -13,6 +17,17 @@ public class SearchUserActivity extends AppCompatActivity {
     }
 
     public void SearchUser(View view) {
+        String username = ((EditText) findViewById(R.id.usernameInputBox)).getText().toString();
+        if (username.equals("")) {
+            throw new BadInputException("The username to find cannot be empty.");
+        }
+        try {
+            // TODO - Design tick box for 'bringAlmbums'. //
+            FindUser.FindUser(username, true);
+        }
+        catch (Exception e) {
+
+        }
 
     }
 }
