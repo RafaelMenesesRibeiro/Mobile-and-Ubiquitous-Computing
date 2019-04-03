@@ -16,7 +16,7 @@
         android:layout_marginTop="60dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="User's albums"
+        android:text="@string/user_albums"
         android:textColor="@color/colorPrimary"
         android:textSize="30sp"
         app:fontFamily="sans-serif"
@@ -27,12 +27,15 @@
     <ListView
         android:id="@+id/AlbumList"
         android:layout_width="389dp"
-        android:layout_height="296dp"
+        android:layout_height="490dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="30dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/createAlbumLabel" />
+        app:layout_constraintTop_toBottomOf="@+id/createAlbumLabel"
+        app:layout_constraintVertical_bias="0.137" />
 
 </android.support.constraint.ConstraintLayout>
