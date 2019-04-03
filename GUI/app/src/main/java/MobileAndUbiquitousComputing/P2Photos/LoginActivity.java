@@ -82,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
         username = username.trim();
         password = password.trim();
         try {
-            Login login = new Login(username, password);
+            Login login = new Login(this, username, password);
             Intent intent = new Intent(this, MainMenuActivity.class);
             startActivity(intent);
         }

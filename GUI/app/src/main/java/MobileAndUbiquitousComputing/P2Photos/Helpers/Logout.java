@@ -1,5 +1,6 @@
 package MobileAndUbiquitousComputing.P2Photos.Helpers;
 
+import android.app.Activity;
 import android.util.Log;
 
 import java.util.concurrent.ExecutionException;
@@ -9,14 +10,16 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 
 public class Logout {
 
-    public static void LogoutUser() {
+    public static void LogoutUser(Activity activity) {
         String username = Login.getUsername();
         Log.i("MSG", "Logging in as " + username + ".");
         String url = "http://p2photo-production.herokuapp.com/logout/" + username;
         RequestData rData = new RequestData(RequestData.RequestType.DELETE, url);
         try {
             ResponseData result = new ExecuteQuery().execute(rData).get();
-            // TODO - Implement return code handling. //
+            //TODO - Implement return code handling.
+
+            SessionID.deleteSessionID(activity);
         }
         catch (ExecutionException eex) {
             eex.printStackTrace();

@@ -77,7 +77,7 @@ public class SignUpActivity extends AppCompatActivity {
         }
 
         try {
-            Signup.SignupUser(username, password);
+            Signup.SignupUser(this, username, password);
             Intent intent = new Intent(this, MainMenuActivity.class);
             startActivity(intent);
         }

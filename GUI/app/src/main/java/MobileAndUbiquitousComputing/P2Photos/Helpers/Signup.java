@@ -1,5 +1,6 @@
 package MobileAndUbiquitousComputing.P2Photos.Helpers;
 
+import android.app.Activity;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -15,7 +16,7 @@ import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 
 public class Signup {
-    public static void SignupUser(String username, String password) throws FailedLoginException{
+    public static void SignupUser(Activity activity, String username, String password) throws FailedLoginException{
         Log.i("MSG", "Signing up in as " + username + ".");
         String url = "http://p2photo-production.herokuapp.com/signup";
         JSONObject json = new JSONObject();
@@ -47,9 +48,9 @@ public class Signup {
             iex.printStackTrace();
         }
 
-        // TODO - Implement session ID handling. //
+        //TODO - Implement session ID handling.
         try {
-            new Login(username, password);
+            new Login(activity, username, password);
         }
         catch (WrongCredentialsException wcex) {
             // Do nothing.

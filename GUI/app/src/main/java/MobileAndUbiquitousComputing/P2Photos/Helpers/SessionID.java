@@ -8,7 +8,7 @@ import MobileAndUbiquitousComputing.P2Photos.R;
 
 public class SessionID {
 
-    public String getSessionID(Activity activity) {
+    public static String getSessionID(Activity activity) {
         SharedPreferences sharedPref = activity.getSharedPreferences(
                 activity.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         return sharedPref.getString(activity.getString(R.string.session_id_key), null);

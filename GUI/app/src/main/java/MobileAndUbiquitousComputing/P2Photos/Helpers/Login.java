@@ -1,5 +1,6 @@
 package MobileAndUbiquitousComputing.P2Photos.Helpers;
 
+import android.app.Activity;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -14,16 +15,16 @@ import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 
 public class Login {
-    private static String SessionID;
+    private static String sessionID;
     private static String username;
 
     private static String password;
 
-    public static String getSessionID() { return SessionID; }
+    public static String getSessionID() { return sessionID; }
     public static String getUsername() { return username; }
     public static String getPassword() { return password; }
 
-    public Login(String username, String password) throws FailedLoginException {
+    public Login(Activity activity, String username, String password) throws FailedLoginException {
         Log.i("MSG", "Logging in as " + username + ".");
         String url = "http://p2photo-production.herokuapp.com/login";
         JSONObject json = new JSONObject();
@@ -42,6 +43,8 @@ public class Login {
                 Log.i("STATUS", "The login operation was successful");
                 Login.username = username;
                 Login.password = password;
+
+                //TODO - SessionID.updateSessionID(activity, sessionID);
             }
             else if (code == 401) {
                 Log.i("STATUS", "The login operation was unsuccessful. The username or password are incorrect.");
