@@ -61,17 +61,11 @@ public class LoginActivity extends AppCompatActivity {
             loginButton.setEnabled(true);
             loginButton.setBackgroundColor(getResources().getColor(R.color.colorButtonActive));
             loginButton.setTextColor(getResources().getColor(R.color.white));
-            signupButton.setEnabled(true);
-            signupButton.setBackgroundColor(getResources().getColor(R.color.colorButtonActive));
-            signupButton.setTextColor(getResources().getColor(R.color.white));
         }
         else {
             loginButton.setEnabled(false);
             loginButton.setBackgroundColor(getResources().getColor(R.color.colorButtonInactive));
             loginButton.setTextColor(getResources().getColor(R.color.almostBlack));
-            signupButton.setEnabled(false);
-            signupButton.setBackgroundColor(getResources().getColor(R.color.colorButtonInactive));
-            signupButton.setTextColor(getResources().getColor(R.color.almostBlack));
         }
     }
 
