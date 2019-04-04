@@ -53,6 +53,10 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
                     result = login(activity, connection, rData);
                     break;
+                case LOGOUT:
+                    connection.setRequestMethod("DELETE");
+                    result = logout(activity, connection);
+                    break;
                 case GETFINDUSER:
                     connection.setRequestMethod("GET");
                     // TODO //
@@ -202,6 +206,14 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         sendJSON(connection, postData.getParams());
         getCookies(activity, connection);
         SuccessResponse payload = QueryManager.getSuccessResponse(connection);
+        return new ResponseData(payload.getCode(), payload);
+    }
+
+    private ResponseData logout(Activity activity, HttpURLConnection connection) throws IOException {
+        String cookie = "sessionId=" + SessionID.getSessionID(activity);
+        connection.setRequestProperty("Cookie", cookie);
+        connection.connect();
+        BasicResponse payload = QueryManager.getBasicResponse(connection);
         return new ResponseData(payload.getCode(), payload);
     }
 }

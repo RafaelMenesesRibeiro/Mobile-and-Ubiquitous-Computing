@@ -13,7 +13,7 @@ public class FindUser {
     public static void FindUser(String usernameToFind, boolean bringAlbums) throws UnsupportedOperationException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
         String url = "http://p2photo-production.herokuapp.com/findUsers?searchPatter=" +
-                usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + Login.getUsername();
+                usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.username;
         // TODO - Needs redoing. //
         throw new UnsupportedOperationException();
         /*

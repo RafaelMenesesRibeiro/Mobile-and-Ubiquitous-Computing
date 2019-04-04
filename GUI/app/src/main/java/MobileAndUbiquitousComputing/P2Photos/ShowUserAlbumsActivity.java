@@ -20,10 +20,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
+import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionID;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
 
-import static MobileAndUbiquitousComputing.P2Photos.Helpers.Login.P2PHOTO_DOMAIN;
-import static MobileAndUbiquitousComputing.P2Photos.Helpers.Login.P2PHOTO_HOST;
+import static MobileAndUbiquitousComputing.P2Photos.Helpers.ConnectionManager.P2PHOTO_DOMAIN;
+import static MobileAndUbiquitousComputing.P2Photos.Helpers.ConnectionManager.P2PHOTO_HOST;
+import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.username;
 
 public class ShowUserAlbumsActivity extends AppCompatActivity {
     @Override
@@ -45,7 +47,7 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
     }
 
     private HashMap<String, String> buildCatalogsMap() {
-        String baseUrl = P2PHOTO_HOST + "viewAlbumDetails?calleeUsername=" + Login.getUsername() + "&catalogId=";
+        String baseUrl = P2PHOTO_HOST + "viewAlbumDetails?calleeUsername=" + username + "&catalogId=";
         ArrayList<String> catalogIdList = getIntent().getStringArrayListExtra("catalogs");
         HashMap<String, String> catalogsMap = new HashMap<>();
         for (String catalogId : catalogIdList) {
@@ -83,7 +85,7 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
     }
 
     private void setCookie() {
-        HttpCookie cookie = new HttpCookie("sessionId", Login.getSessionID());
+        HttpCookie cookie = new HttpCookie("sessionId", SessionID.getSessionID(this));
         cookie.setDomain(P2PHOTO_DOMAIN);
         cookie.setPath("/");
         cookie.setVersion(0);

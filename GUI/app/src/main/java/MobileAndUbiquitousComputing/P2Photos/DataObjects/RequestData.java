@@ -5,6 +5,7 @@ import android.app.Activity;
 public class RequestData {
     public enum RequestType {
         LOGIN,
+        LOGOUT,
         SIGNUP,
         POST, GET, PUT, DELETE, GETFINDUSER}
 

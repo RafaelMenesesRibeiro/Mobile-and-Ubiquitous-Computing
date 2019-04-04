@@ -16,15 +16,7 @@ import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 
 public class Login {
-    private static String username;
-    private static String password;
-    private static String sessionID;
-
-    public static final String P2PHOTO_DOMAIN = "p2photo-production.herokuapp.com/";
-    public static final String P2PHOTO_HOST = "https://p2photo-production.herokuapp.com/";
-    private static final String LOGIN_OPERATION = "login";
     public final static CookieManager cookieManager = new CookieManager();
-    // TODO IMPLEMENT A COOKIE MANAGER AND A COOKIESTORE
 
     private Login() {
         // Prevents this class from being instantiated. //
@@ -32,9 +24,9 @@ public class Login {
 
     // TODO - Use SessionManager and ConnectionManager to form everything. //
     public static void login(Activity activity, String username, String password) throws FailedLoginException {
-        Log.i("MSG", "Logging in as " + username + ".");
+        Log.i("MSG", "Login: " + username);
 
-        String url = Login.P2PHOTO_HOST + Login.LOGIN_OPERATION;
+        String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.LOGIN_OPERATION;
         try {
             JSONObject requestBody = new JSONObject();
             requestBody.put("username", username);
@@ -46,8 +38,8 @@ public class Login {
             if (code == 200) { // TODO Our server already supports ResponseEntities as taught by you.
                 Log.i("STATUS", "The login operation was successful");
 
-                Login.username = username;
-                Login.password = password;
+                SessionManager.username = username;
+                SessionManager.password = password;
                 // The SessionID cookie is stored in getJSONStringFromHttpResponse //
             }
             else if (code == 401) {
@@ -62,17 +54,5 @@ public class Login {
         catch (JSONException | ExecutionException | InterruptedException ex) {
             throw new FailedLoginException(ex.getMessage());
         }
-    }
-
-    public static String getUsername() {
-        return username;
-    }
-
-    public static String getPassword() {
-        return password;
-    }
-
-    public static String getSessionID() {
-        return sessionID;
     }
 }
