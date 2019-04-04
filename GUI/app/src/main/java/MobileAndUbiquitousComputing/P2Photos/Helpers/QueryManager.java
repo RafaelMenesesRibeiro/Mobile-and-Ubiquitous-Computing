@@ -74,10 +74,6 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     break;
                 case PUT:
                     break;
-                case DELETE:
-                    connection.setRequestMethod("DELETE");
-                    result = DeleteRequest(connection);
-                    break;
                 default:
                     Log.i("ERROR", "Should never be here.");
                     break;
@@ -106,12 +102,6 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         writer.flush();
         writer.write(json.toString());
         writer.flush();
-        BasicResponse payload = QueryManager.getBasicResponse(connection);
-        return new ResponseData(payload.getCode(), payload);
-    }
-
-    private ResponseData DeleteRequest(HttpURLConnection connection) throws IOException {
-        connection.connect();
         BasicResponse payload = QueryManager.getBasicResponse(connection);
         return new ResponseData(payload.getCode(), payload);
     }
