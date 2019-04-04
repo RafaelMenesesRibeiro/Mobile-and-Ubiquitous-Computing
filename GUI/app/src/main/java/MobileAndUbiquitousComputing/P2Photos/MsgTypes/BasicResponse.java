@@ -37,4 +37,11 @@ public class BasicResponse {
     public void setMessage(String message) {
         this.message = message;
     }
+
+    @Override
+    public String toString() {
+        return "Code: " + code + "\n" +
+                "Operation: " + operation + "\n" +
+                "Message: " + operation + "\n";
+    }
 }

@@ -17,4 +17,11 @@ public class SuccessResponse extends BasicResponse {
     public void setResult(Object result) {
         this.result = result;
     }
+
+    @Override
+    public String toString() {
+        return "SuccessResponse{" +
+                "result=" + result +
+                '}';
+    }
 }

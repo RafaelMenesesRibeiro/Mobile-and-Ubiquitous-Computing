@@ -18,4 +18,9 @@ public class ResponseData {
     public BasicResponse getPayload() {
         return payload;
     }
+
+    @Override
+    public String toString() {
+        return "Server code: " + serverCode + ".\n" + payload.toString();
+    }
 }

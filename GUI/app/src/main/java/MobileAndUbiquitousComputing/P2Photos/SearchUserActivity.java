@@ -16,17 +16,17 @@ public class SearchUserActivity extends AppCompatActivity {
         setContentView(R.layout.activity_search_user);
     }
 
-    public void SearchUser(View view) {
+    public void SearchUser(View view) throws BadInputException {
         String username = ((EditText) findViewById(R.id.usernameInputBox)).getText().toString();
         if (username.equals("")) {
             throw new BadInputException("The username to find cannot be empty.");
         }
         try {
             // TODO - Design tick box for 'bringAlmbums'. //
-            FindUser.FindUser(username, true);
+            FindUser.findUser(this, username, false);
         }
         catch (Exception e) {
-
+            // TODO - Deal with this. //
         }
 
     }

@@ -1,21 +1,44 @@
 package MobileAndUbiquitousComputing.P2Photos.Helpers;
 
+import android.app.Activity;
 import android.util.Log;
 
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.UserData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.UsersResponseData;
+import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
 
 public class FindUser {
-    public static void FindUser(String usernameToFind, boolean bringAlbums) throws UnsupportedOperationException {
+    private FindUser() {
+        // Prevents this class from being instantiated. //
+    }
+
+    public static void findUser(Activity activity, String usernameToFind, boolean bringAlbums) throws UnsupportedOperationException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
-        String url = "http://p2photo-production.herokuapp.com/findUsers?searchPatter=" +
-                usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.username;
-        // TODO - Needs redoing. //
-        throw new UnsupportedOperationException();
+        String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.FIND_USERS_OPERATION + "?searchPatter="
+                    + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.username;
+
+        try {
+            RequestData requestData = new RequestData(activity, RequestData.RequestType.FINDUSERS, url);
+
+            ResponseData result = new QueryManager().execute(requestData).get();
+            System.out.println("asdasdasdasdads22222222 " + result.toString());
+            int code = result.getServerCode();
+            // TODO - Response codes are now in a ResponseEntity. //
+            if (code == 200) {
+                Log.i("STATUS", "The find users operation was successful");
+            }
+            else {
+                System.out.println("asdasdasdasdads " + result.toString());
+                Log.i("STATUS", "The find users operation was unsuccessful. Unknown error.");
+                throw new FailedOperationException("URL: " + url);
+            }
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+
         /*
         RequestData requestData = new RequestData(RequestData.RequestType.GETFINDUSER, url);
         try {
