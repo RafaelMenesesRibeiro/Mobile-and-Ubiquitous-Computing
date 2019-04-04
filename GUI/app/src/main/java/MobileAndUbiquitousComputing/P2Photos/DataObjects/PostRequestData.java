@@ -1,12 +1,14 @@
 package MobileAndUbiquitousComputing.P2Photos.DataObjects;
 
+import android.app.Activity;
+
 import org.json.JSONObject;
 
 public class PostRequestData extends RequestData {
     private JSONObject params;
 
-    public PostRequestData(RequestType requestType, String url, JSONObject params) {
-        super(requestType, url);
+    public PostRequestData(Activity activity, RequestType requestType, String url, JSONObject params) {
+        super(activity, requestType, url);
         this.params = params;
     }
 

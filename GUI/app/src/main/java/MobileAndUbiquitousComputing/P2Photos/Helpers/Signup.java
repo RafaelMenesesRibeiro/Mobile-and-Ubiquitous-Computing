@@ -27,7 +27,7 @@ public class Signup {
         catch (JSONException jex) {
             jex.printStackTrace();
         }
-        RequestData rData = new PostRequestData(RequestData.RequestType.POST, url, json);
+        RequestData rData = new PostRequestData(activity, RequestData.RequestType.POST, url, json);
         try {
             ResponseData result = new ExecuteQuery().execute(rData).get();
             int code = result.getServerCode();

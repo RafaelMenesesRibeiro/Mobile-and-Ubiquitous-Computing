@@ -1,14 +1,25 @@
 package MobileAndUbiquitousComputing.P2Photos.DataObjects;
 
-public class RequestData {
-    public enum RequestType {POST, GET, PUT, DELETE, GETFINDUSER}
+import android.app.Activity;
 
+public class RequestData {
+    public enum RequestType {
+        LOGIN,
+        SIGNUP,
+        POST, GET, PUT, DELETE, GETFINDUSER}
+
+    private Activity activity;
     private RequestType requestType;
     private String url;
 
-    public RequestData(RequestType requestType, String url) {
+    public RequestData(Activity activity, RequestType requestType, String url) {
+        this.activity = activity;
         this.requestType = requestType;
         this.url = url;
+    }
+
+    public Activity getActivity() {
+        return activity;
     }
 
     public RequestType getRequestType() {

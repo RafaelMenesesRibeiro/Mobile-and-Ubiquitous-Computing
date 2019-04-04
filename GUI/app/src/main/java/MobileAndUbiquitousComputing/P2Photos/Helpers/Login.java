@@ -13,20 +13,19 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
+import MobileAndUbiquitousComputing.P2Photos.MsgTypes.BasicResponse;
+import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
 
 public class Login {
-    private static String sessionID;
+    private static final String URL = "http://p2photo-production.herokuapp.com/login";
+
     private static String username;
-
     private static String password;
-
-    public static String getSessionID() { return sessionID; }
-    public static String getUsername() { return username; }
-    public static String getPassword() { return password; }
+    private static String sessionID;
 
     public Login(Activity activity, String username, String password) throws FailedLoginException {
         Log.i("MSG", "Logging in as " + username + ".");
-        String url = "http://p2photo-production.herokuapp.com/login";
+
         JSONObject json = new JSONObject();
         try {
             json.accumulate("username", username);
@@ -34,17 +33,18 @@ public class Login {
         }
         catch (JSONException jex) {
             jex.printStackTrace();
+            throw new FailedLoginException(jex.getMessage());
         }
-        RequestData rData = new PostRequestData(RequestData.RequestType.POST, url, json);
+        RequestData rData = new PostRequestData(activity, RequestData.RequestType.LOGIN, Login.URL, json);
         try {
             ResponseData result = new ExecuteQuery().execute(rData).get();
             int code = result.getServerCode();
             if (code == 200) {
                 Log.i("STATUS", "The login operation was successful");
+
                 Login.username = username;
                 Login.password = password;
-
-                //TODO - SessionID.updateSessionID(activity, sessionID);
+                // The SessionID cookie is stored in getJSONStringFromHttpResponse //
             }
             else if (code == 401) {
                 Log.i("STATUS", "The login operation was unsuccessful. The username or password are incorrect.");
@@ -61,5 +61,17 @@ public class Login {
         catch (InterruptedException iex) {
             iex.printStackTrace();
         }
+    }
+
+    public static String getSessionID() {
+        return sessionID;
+    }
+
+    public static String getUsername() {
+        return username;
+    }
+
+    public static String getPassword() {
+        return password;
     }
 }

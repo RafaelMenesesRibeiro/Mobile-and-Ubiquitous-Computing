@@ -14,7 +14,7 @@ public class Logout {
         String username = Login.getUsername();
         Log.i("MSG", "Logging in as " + username + ".");
         String url = "http://p2photo-production.herokuapp.com/logout/" + username;
-        RequestData rData = new RequestData(RequestData.RequestType.DELETE, url);
+        RequestData rData = new RequestData(activity, RequestData.RequestType.DELETE, url);
         try {
             ResponseData result = new ExecuteQuery().execute(rData).get();
             //TODO - Implement return code handling.

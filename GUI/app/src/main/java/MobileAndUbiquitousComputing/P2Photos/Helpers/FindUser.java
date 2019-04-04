@@ -11,10 +11,13 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.UserData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.UsersResponseData;
 
 public class FindUser {
-    public static void FindUser(String usernameToFind, boolean bringAlbums) {
+    public static void FindUser(String usernameToFind, boolean bringAlbums) throws UnsupportedOperationException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
         String url = "http://p2photo-production.herokuapp.com/findUsers?searchPatter=" +
                 usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + Login.getUsername();
+        // TODO - Needs redoing. //
+        throw new UnsupportedOperationException();
+        /*
         RequestData requestData = new RequestData(RequestData.RequestType.GETFINDUSER, url);
         try {
             UsersResponseData result = (UsersResponseData) new ExecuteQuery().execute(requestData).get();
@@ -40,5 +43,6 @@ public class FindUser {
         catch (InterruptedException iex) {
             iex.printStackTrace();
         }
+        */
     }
 }

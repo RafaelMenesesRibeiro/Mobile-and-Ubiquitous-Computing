@@ -1,26 +1,21 @@
 package MobileAndUbiquitousComputing.P2Photos.DataObjects;
 
+import MobileAndUbiquitousComputing.P2Photos.MsgTypes.BasicResponse;
+
 public class ResponseData {
-    // TODO - Consider removing ResponseCodes if they don't prove useful. //
-    public enum ResponseCode {
-        SUCCESS,
-        UNSUCCESS,
-        NO_CODE,
-    }
-
     private int serverCode;
-    private ResponseCode responseCode;
+    private BasicResponse payload;
 
-    public ResponseData(ResponseCode code, int serverCode) {
-        this.responseCode = code;
+    public ResponseData(int serverCode, BasicResponse payload) {
         this.serverCode = serverCode;
-    }
-
-    public ResponseCode getResponseCode() {
-        return responseCode;
+        this.payload = payload;
     }
 
     public int getServerCode() {
         return serverCode;
+    }
+
+    public BasicResponse getPayload() {
+        return payload;
     }
 }
