@@ -117,7 +117,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
             for (String cookie : cookiesHeader) {
                 // TODO - Check if cookie is in fact SessionID. //
                 System.out.println("NEW COOKIE: " + cookie);
-                SessionID.updateSessionID(activity, cookie);
+                SessionIDManager.updateSessionID(activity, cookie);
             }
         }
     }
@@ -138,7 +138,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData logout(Activity activity, HttpURLConnection connection) throws IOException {
-        String cookie = "sessionId=" + SessionID.getSessionID(activity);
+        String cookie = "sessionId=" + SessionIDManager.getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         connection.connect();
         BasicResponse payload = QueryManager.getBasicResponse(connection);
@@ -146,7 +146,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData findUsers(Activity activity, HttpURLConnection connection) throws IOException {
-        String cookie = "sessionId=" + SessionID.getSessionID(activity);
+        String cookie = "sessionId=" + SessionIDManager.getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         connection.connect();
         SuccessResponse payload = QueryManager.getSuccessResponse(connection);

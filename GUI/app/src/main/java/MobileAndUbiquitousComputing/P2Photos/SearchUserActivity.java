@@ -16,7 +16,6 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.BadInputException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.NoResultsException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.ConnectionManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
@@ -51,7 +50,7 @@ public class SearchUserActivity extends AppCompatActivity {
     public LinkedHashMap<String, ArrayList> findUser(String usernameToFind, boolean bringAlbums)
             throws FailedOperationException, NoResultsException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
-        String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.FIND_USERS_OPERATION + "?searchPattern="
+        String url = getString(R.string.p2photo_host) + getString(R.string.find_users_operation) + "?searchPattern="
                 + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.username;
 
         try {

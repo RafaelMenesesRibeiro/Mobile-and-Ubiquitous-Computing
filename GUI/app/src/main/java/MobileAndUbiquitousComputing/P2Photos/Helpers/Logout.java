@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutionException;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLogoutException;
+import MobileAndUbiquitousComputing.P2Photos.R;
 
 public class Logout {
     private Logout() {
@@ -18,14 +19,14 @@ public class Logout {
         String username = SessionManager.username;
         Log.i("MSG", "Logout: " + username);
 
-        String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.LOGOUT_OPERATION + username;
+        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.logout_operation) + username;
         RequestData rData = new RequestData(activity, RequestData.RequestType.LOGOUT, url);
         try {
             ResponseData result = new QueryManager().execute(rData).get();
             int code = result.getServerCode();
             if (code == 200) {
                 Log.i("STATUS", "The logout operation was successful");
-                SessionID.deleteSessionID(activity);
+                SessionIDManager.deleteSessionID(activity);
             }
             else {
                 Log.i("STATUS", "The login operation was unsuccessful. Unknown error.");

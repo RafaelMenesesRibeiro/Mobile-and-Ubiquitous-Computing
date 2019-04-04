@@ -14,6 +14,7 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
+import MobileAndUbiquitousComputing.P2Photos.R;
 
 public class Login {
     public final static CookieManager cookieManager = new CookieManager();
@@ -22,11 +23,10 @@ public class Login {
         // Prevents this class from being instantiated. //
     }
 
-    // TODO - Use SessionManager and ConnectionManager to form everything. //
     public static void login(Activity activity, String username, String password) throws FailedLoginException {
         Log.i("MSG", "Login: " + username);
 
-        String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.LOGIN_OPERATION;
+        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.login_operation);
         try {
             JSONObject requestBody = new JSONObject();
             requestBody.put("username", username);
@@ -38,8 +38,7 @@ public class Login {
             if (code == 200) { // TODO Our server already supports ResponseEntities as taught by you.
                 Log.i("STATUS", "The login operation was successful");
 
-                SessionManager.username = username;
-                SessionManager.password = password;
+                UserNameManager.updateUserName(activity, username);
                 // The SessionID cookie is stored in getJSONStringFromHttpResponse //
             }
             else if (code == 401) {
