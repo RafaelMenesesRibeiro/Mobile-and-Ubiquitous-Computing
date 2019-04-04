@@ -13,10 +13,12 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedSignupException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.UsernameExistsException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 
 public class Signup {
-    public static void SignupUser(Activity activity, String username, String password) throws FailedLoginException{
+    public static void SignupUser(Activity activity, String username, String password)
+            throws FailedSignupException, FailedLoginException, UsernameExistsException {
         Log.i("MSG", "Signup: " + username);
         String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.SIGNUP_OPERATION;
         try {
@@ -33,9 +35,11 @@ public class Signup {
             }
             else if (code == 422) {
                 Log.i("STATUS", "The sign up operation was unsuccessful. The username chosen already exists.");
+                throw new UsernameExistsException();
             }
             else {
                 Log.i("STATUS", "The sign up operation was unsuccessful. Unknown error.");
+                throw new FailedSignupException();
             }
         }
         catch (JSONException | ExecutionException | InterruptedException ex) {
