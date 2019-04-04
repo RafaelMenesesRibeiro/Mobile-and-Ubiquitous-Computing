@@ -5,12 +5,13 @@ public class BasicResponse {
     private String operation;
     private String message;
 
-    public BasicResponse() {}
-
     public BasicResponse(int code, String message, String operation) {
         this.code = code;
         this.message = message;
         this.operation = operation;
+    }
+
+    public BasicResponse() {
     }
 
     public int getCode() {

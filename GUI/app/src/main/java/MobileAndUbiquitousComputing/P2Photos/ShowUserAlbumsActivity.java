@@ -1,8 +1,5 @@
 package MobileAndUbiquitousComputing.P2Photos;
 
-import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
-import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
-
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ListView;
@@ -10,17 +7,20 @@ import android.widget.SimpleAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.net.HttpCookie;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.HttpCookie;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
+
+import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
+import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
 
 import static MobileAndUbiquitousComputing.P2Photos.Helpers.Login.P2PHOTO_DOMAIN;
 import static MobileAndUbiquitousComputing.P2Photos.Helpers.Login.P2PHOTO_HOST;
@@ -83,7 +83,7 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
     }
 
     private void setCookie() {
-        HttpCookie cookie = new HttpCookie("sessionId", Login.getSessionId());
+        HttpCookie cookie = new HttpCookie("sessionId", Login.getSessionID());
         cookie.setDomain(P2PHOTO_DOMAIN);
         cookie.setPath("/");
         cookie.setVersion(0);

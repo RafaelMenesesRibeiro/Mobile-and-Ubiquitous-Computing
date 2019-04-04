@@ -46,7 +46,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void ListAlbumsClicked(View view) {
-        Intent intent = new Intent(this, ListAlbums.class);
+        Intent intent = new Intent(this, ShowUserAlbumsActivity.class);
         startActivity(intent);
     }
 
