@@ -3,12 +3,16 @@ package MobileAndUbiquitousComputing.P2Photos;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
 import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.net.HttpCookie;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.io.BufferedReader;
@@ -16,31 +20,40 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
+
+import static MobileAndUbiquitousComputing.P2Photos.Helpers.Login.P2PHOTO_DOMAIN;
+import static MobileAndUbiquitousComputing.P2Photos.Helpers.Login.P2PHOTO_HOST;
 
 public class ShowUserAlbumsActivity extends AppCompatActivity {
-    private Intent intent;
-    private final String WEBSERVER = "https://p2photo-production.herokuapp.com/";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.intent = getIntent();
-        HashMap<String, String> catalogsMap = buildCatalogsMap();
         setContentView(R.layout.activity_show_user_albums);
+
+        ListView userAlbumsListView = findViewById(R.id.userAlbumsList);
+        ArrayList<HashMap<String, String>> catalogsList = new ArrayList<>();
+        HashMap<String, String> catalogIdNameMap = buildCatalogsMap();
+        for (Map.Entry keyValuePair : catalogIdNameMap.entrySet()) {
+            HashMap<String, String> catalog = new HashMap<>();
+            catalog.put("catalogId", keyValuePair.getKey().toString());
+            catalog.put("catalogName", keyValuePair.getValue().toString());
+            catalogsList.add(catalog);
+        }
+        SimpleAdapter simpleAdapter = newCatalogAdapter(catalogsList);
+        userAlbumsListView.setAdapter(simpleAdapter);
     }
 
     private HashMap<String, String> buildCatalogsMap() {
-        String baseUrl = WEBSERVER + "viewAlbumDetails?calleeUsername=" + Login.getUsername() + "&catalogId=";
-        ArrayList<String> catalogIdList = intent.getStringArrayListExtra("catalogs");
+        String baseUrl = P2PHOTO_HOST + "viewAlbumDetails?calleeUsername=" + Login.getUsername() + "&catalogId=";
+        ArrayList<String> catalogIdList = getIntent().getStringArrayListExtra("catalogs");
         HashMap<String, String> catalogsMap = new HashMap<>();
-
         for (String catalogId : catalogIdList) {
             try {
-                // TODO SET COOKIE VALUE
                 HttpURLConnection connection = initiateGETConnection(baseUrl + catalogId);
                 if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     SuccessResponse response = getSuccessResponse(connection);
-                    String catalogTitle = (String)response.getResult();
+                    String catalogTitle = (String) response.getResult();
                     catalogsMap.put(catalogId, catalogTitle);
                 }
             } catch (IOException ioe) {
@@ -57,6 +70,7 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
     }
 
     private HttpURLConnection initiateGETConnection(String requestUrl) throws IOException {
+        setCookie(); // TODO FINISH SET COOKIE WHEN OTHER CODE IS STABLE
         URL url = new URL(requestUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
@@ -66,6 +80,18 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
         connection.setRequestProperty("Accept", "application/json");
         connection.setConnectTimeout(2000);
         return connection;
+    }
+
+    private void setCookie() {
+        HttpCookie cookie = new HttpCookie("sessionId", Login.getSessionId());
+        cookie.setDomain(P2PHOTO_DOMAIN);
+        cookie.setPath("/");
+        cookie.setVersion(0);
+        try {
+            Login.cookieManager.getCookieStore().add(new URI(P2PHOTO_HOST), cookie);
+        } catch (URISyntaxException use) {
+            use.printStackTrace();
+        }
     }
 
     private String getJSONStringFromHttpResponse(HttpURLConnection connection) throws IOException {
@@ -80,4 +106,13 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
         inputStream.close();
         return jsonResponse.toString();
     }
+
+    private SimpleAdapter newCatalogAdapter(ArrayList<HashMap<String, String>> itemsMap) {
+        return new SimpleAdapter(this,
+                itemsMap,
+                R.layout.hashmap_array_adapter_layout,
+                new String[]{"catalogId", "catalogName"},
+                new int[]{android.R.id.text1, android.R.id.text2}
+        );
+    };
 }

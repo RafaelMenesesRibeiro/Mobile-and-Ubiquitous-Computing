@@ -30,7 +30,7 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.UserData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.UsersResponseData;
 
-public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
+public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
 
     @Override
     protected ResponseData doInBackground(RequestData... requestData) {
@@ -40,9 +40,10 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
 
         ResponseData result = new ResponseData(ResponseData.ResponseCode.UNSUCCESS, -1);
         try {
-            URL url = new URL(rData.getUrl());
+            URL url = new URL(rData.getUrl()); // TODO rData is not a human readable name, requestData as suggested by
+            // IDE
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoOutput(true);
+            connection.setDoOutput(true); // TODO THIS SHOULD BE FALSE IN GET REQUESTS
             connection.setDoInput(true);
 
             RequestData.RequestType type = rData.getRequestType();
@@ -55,6 +56,7 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
                     break;
                 case POST:
                     connection.setRequestMethod("POST");
+                    // TODO all requests regardless of type need content-type, accept and u-agent
                     connection.setRequestProperty("Content-Type", "application/json");
                     connection.setRequestProperty("Accept","application/json");
                     connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
@@ -72,6 +74,8 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
             connection.disconnect();
             return result;
         }
+        // TODO If you are only printing stacktrace, just do Exception1 | Exception 2 exc { ... }
+        // No point having multiple catch statements for different exceptions with same treatment.
         catch (MalformedURLException murlex) {
             murlex.printStackTrace();
             return result;

@@ -2,7 +2,6 @@ package MobileAndUbiquitousComputing.P2Photos.Helpers;
 
 import android.app.Activity;
 import android.util.Log;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,7 +28,7 @@ public class Signup {
         }
         RequestData rData = new PostRequestData(RequestData.RequestType.POST, url, json);
         try {
-            ResponseData result = new ExecuteQuery().execute(rData).get();
+            ResponseData result = new QueryManager().execute(rData).get();
             int code = result.getServerCode();
             if (code == 200) {
                 Log.i("STATUS", "The sign up operation was successful");

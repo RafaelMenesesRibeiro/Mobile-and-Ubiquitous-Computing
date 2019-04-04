@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.UserData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.UsersResponseData;
 
@@ -17,7 +16,7 @@ public class FindUser {
                 usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + Login.getUsername();
         RequestData requestData = new RequestData(RequestData.RequestType.GETFINDUSER, url);
         try {
-            UsersResponseData result = (UsersResponseData) new ExecuteQuery().execute(requestData).get();
+            UsersResponseData result = (UsersResponseData) new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
             if (code == 200) {
                 Log.i("STATUS", "The find user operation was successful");

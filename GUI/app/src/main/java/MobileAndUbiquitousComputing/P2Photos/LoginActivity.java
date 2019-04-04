@@ -13,7 +13,6 @@ import android.widget.Toast;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
-import MobileAndUbiquitousComputing.P2Photos.R;
 
 public class LoginActivity extends AppCompatActivity {
 
