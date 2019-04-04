@@ -14,11 +14,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.HttpCookie;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -26,12 +22,8 @@ import java.util.Map;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.UsersResponseData;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.BasicResponse;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
-
-import static MobileAndUbiquitousComputing.P2Photos.Helpers.ConnectionManager.P2PHOTO_DOMAIN;
-import static MobileAndUbiquitousComputing.P2Photos.Helpers.ConnectionManager.P2PHOTO_HOST;
 
 public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     private static final String COOKIES_HEADER = "Set-Cookie";
