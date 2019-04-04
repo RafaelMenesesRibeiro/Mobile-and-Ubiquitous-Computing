@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -68,6 +69,7 @@ public class SearchUserActivity extends AppCompatActivity {
 
                 if (bringAlbums) {
                     LinkedHashMap<String, ArrayList> map = (LinkedHashMap<String, ArrayList>) object;
+                    Log.i("MSG", "Users and respective albums: " + map.toString());
                     if (map.size() == 0) {
                         throw new NoResultsException();
                     }

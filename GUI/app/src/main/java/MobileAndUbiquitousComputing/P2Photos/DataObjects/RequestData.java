@@ -7,7 +7,9 @@ public class RequestData {
         LOGIN,
         LOGOUT,
         SIGNUP,
-        SEARCH_USERS}
+        SEARCH_USERS,
+        NEW_ALBUM
+    }
 
     private Activity activity;
     private RequestType requestType;

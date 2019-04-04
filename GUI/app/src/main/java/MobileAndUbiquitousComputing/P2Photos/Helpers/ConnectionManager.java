@@ -7,4 +7,5 @@ public class ConnectionManager {
     public static final String LOGIN_OPERATION = "login";
     public static final String LOGOUT_OPERATION = "logout/";
     public static final String FIND_USERS_OPERATION = "findUsers/";
+    public static final String NEW_ALBUM_OPERATION = "newAlbum";
 }
