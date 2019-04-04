@@ -104,7 +104,7 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
-    public void signup(String username, String password)
+    private void signup(String username, String password)
             throws FailedSignupException, FailedLoginException, UsernameExistsException {
         Log.i("MSG", "Signup: " + username);
         String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.SIGNUP_OPERATION;
