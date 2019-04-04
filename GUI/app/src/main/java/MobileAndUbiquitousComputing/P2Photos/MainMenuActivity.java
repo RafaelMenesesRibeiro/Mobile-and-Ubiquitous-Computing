@@ -51,7 +51,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void LogoutClicked(View view) {
-        Logout.LogoutUser(this);
+        Logout.logout(this);
         Intent intent = new Intent(this, LoginActivity.class);
         startActivity(intent);
     }

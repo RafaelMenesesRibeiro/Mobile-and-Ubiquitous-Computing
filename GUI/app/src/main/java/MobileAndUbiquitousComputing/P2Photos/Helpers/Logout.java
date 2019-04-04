@@ -10,12 +10,15 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLogoutException;
 
 public class Logout {
+    private Logout() {
+        // Prevents this class from being instantiated. //
+    }
 
-    public static void LogoutUser(Activity activity) {
+    public static void logout(Activity activity) {
         String username = SessionManager.username;
         Log.i("MSG", "Logout: " + username);
 
-        String url = "http://p2photo-production.herokuapp.com/logout/" + username;
+        String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.LOGOUT_OPERATION + username;
         RequestData rData = new RequestData(activity, RequestData.RequestType.LOGOUT, url);
         try {
             ResponseData result = new QueryManager().execute(rData).get();
