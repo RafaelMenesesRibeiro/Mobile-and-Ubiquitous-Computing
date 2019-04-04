@@ -1,7 +1,6 @@
 package MobileAndUbiquitousComputing.P2Photos.Helpers;
 
 import android.app.Activity;
-import android.content.res.Resources;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -15,7 +14,6 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
-import MobileAndUbiquitousComputing.P2Photos.R;
 
 public class Login {
     private static String username;
@@ -28,9 +26,12 @@ public class Login {
     public final static CookieManager cookieManager = new CookieManager();
     // TODO IMPLEMENT A COOKIE MANAGER AND A COOKIESTORE
 
-    // TODO move Login class to Login Activity as login() method, use SessionManager and and ConnectionManager
-    // to form everything you need.
-    public Login(Activity activity, String username, String password) throws FailedLoginException {
+    private Login() {
+        // Prevents this class from being instantiated. //
+    }
+
+    // TODO - Use SessionManager and ConnectionManager to form everything. //
+    public static void login(Activity activity, String username, String password) throws FailedLoginException {
         Log.i("MSG", "Logging in as " + username + ".");
 
         String url = Login.P2PHOTO_HOST + Login.LOGIN_OPERATION;

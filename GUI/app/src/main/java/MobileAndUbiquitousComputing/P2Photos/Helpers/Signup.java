@@ -49,7 +49,7 @@ public class Signup {
 
         //TODO - Implement session ID handling.
         try {
-            new Login(activity, username, password);
+            Login.login(activity, username, password);
         }
         catch (WrongCredentialsException wcex) {
             // Do nothing.
