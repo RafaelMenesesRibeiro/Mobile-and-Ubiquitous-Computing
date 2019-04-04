@@ -13,7 +13,6 @@ import android.widget.Toast;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
-import MobileAndUbiquitousComputing.P2Photos.R;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -23,16 +22,17 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login_screen);
 
         final Button loginButton = findViewById(R.id.LoginButton);
-        final Button signupButton = findViewById(R.id.SignUpBottom);
+        final Button signUpButton = findViewById(R.id.SignUpBottom);
         final EditText usernameInput = findViewById(R.id.usernameInputBox);
         final EditText passwordInput = findViewById(R.id.passwordInputBox);
 
         usernameInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing. */ }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                ActivateButtons(usernameInput, passwordInput, loginButton, signupButton);
+                ActivateButtons(usernameInput, passwordInput, loginButton, signUpButton);
             }
             @Override
             public void afterTextChanged(Editable s) { /* Do nothing */ }
@@ -41,9 +41,10 @@ public class LoginActivity extends AppCompatActivity {
         passwordInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing. */ }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                ActivateButtons(usernameInput, passwordInput, loginButton, signupButton);
+                ActivateButtons(usernameInput, passwordInput, loginButton, signUpButton);
             }
             @Override
             public void afterTextChanged(Editable s) { /* Do nothing. */ }

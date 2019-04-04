@@ -16,7 +16,7 @@ public class Logout {
         String url = "http://p2photo-production.herokuapp.com/logout/" + username;
         RequestData rData = new RequestData(activity, RequestData.RequestType.DELETE, url);
         try {
-            ResponseData result = new ExecuteQuery().execute(rData).get();
+            ResponseData result = new QueryManager().execute(rData).get();
             //TODO - Implement return code handling.
 
             SessionID.deleteSessionID(activity);

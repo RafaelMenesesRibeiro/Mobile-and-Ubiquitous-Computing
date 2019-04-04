@@ -28,7 +28,7 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.UsersResponseData;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.BasicResponse;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
 
-public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
+public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     private static final String COOKIES_HEADER = "Set-Cookie";
 
     @Override
@@ -40,9 +40,10 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
         Activity activity = rData.getActivity();
         ResponseData result = new ResponseData(-1, null);
         try {
-            URL url = new URL(rData.getUrl());
+            URL url = new URL(rData.getUrl()); // TODO rData is not a human readable name, requestData as suggested by
+            // IDE
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoOutput(true);
+            connection.setDoOutput(true); // TODO THIS SHOULD BE FALSE IN GET REQUESTS
             connection.setDoInput(true);
             RequestData.RequestType type = rData.getRequestType();
             switch (type) {
@@ -62,6 +63,7 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
                     break;
                 case POST:
                     connection.setRequestMethod("POST");
+                    // TODO all requests regardless of type need content-type, accept and u-agent
                     connection.setRequestProperty("Content-Type", "application/json");
                     connection.setRequestProperty("Accept","application/json");
                     connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
@@ -80,6 +82,8 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
             connection.disconnect();
             return result;
         }
+        // TODO If you are only printing stacktrace, just do Exception1 | Exception 2 exc { ... }
+        // No point having multiple catch statements for different exceptions with same treatment.
         catch (MalformedURLException murlex) {
             murlex.printStackTrace();
             return result;
@@ -99,13 +103,13 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
         writer.flush();
         writer.write(json.toString());
         writer.flush();
-        BasicResponse payload = ExecuteQuery.getBasicResponse(connection);
+        BasicResponse payload = QueryManager.getBasicResponse(connection);
         return new ResponseData(payload.getCode(), payload);
     }
 
     private ResponseData DeleteRequest(HttpURLConnection connection) throws IOException {
         connection.connect();
-        BasicResponse payload = ExecuteQuery.getBasicResponse(connection);
+        BasicResponse payload = QueryManager.getBasicResponse(connection);
         return new ResponseData(payload.getCode(), payload);
     }
 
@@ -198,7 +202,7 @@ public class ExecuteQuery extends AsyncTask<RequestData, Void, ResponseData> {
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
         getCookies(activity, connection);
-        SuccessResponse payload = ExecuteQuery.getSuccessResponse(connection);
+        SuccessResponse payload = QueryManager.getSuccessResponse(connection);
         return new ResponseData(payload.getCode(), payload);
     }
 }
