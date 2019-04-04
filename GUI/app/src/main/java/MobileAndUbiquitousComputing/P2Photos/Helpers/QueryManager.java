@@ -42,14 +42,18 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
             URL url = new URL(rData.getUrl()); // TODO rData is not a human readable name, requestData as suggested by
             // IDE
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("Content-Type", "application/json");
+            connection.setRequestProperty("Accept","application/json");
             connection.setDoOutput(true); // TODO THIS SHOULD BE FALSE IN GET REQUESTS
             connection.setDoInput(true);
             RequestData.RequestType type = rData.getRequestType();
             switch (type) {
+                case SIGNUP:
+                    connection.setRequestMethod("POST");
+                    result = signup(connection, rData);
+                    break;
                 case LOGIN:
                     connection.setRequestMethod("POST");
-                    connection.setRequestProperty("Content-Type", "application/json");
-                    connection.setRequestProperty("Accept","application/json");
                     connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
                     result = login(activity, connection, rData);
                     break;
@@ -61,18 +65,6 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     connection.setRequestMethod("GET");
                     // TODO //
                     // result = FindUser(connection, rData);
-                    break;
-                case GET:
-                    break;
-                case POST:
-                    connection.setRequestMethod("POST");
-                    // TODO all requests regardless of type need content-type, accept and u-agent
-                    connection.setRequestProperty("Content-Type", "application/json");
-                    connection.setRequestProperty("Accept","application/json");
-                    connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
-                    result = PostRequest(connection, rData);
-                    break;
-                case PUT:
                     break;
                 default:
                     Log.i("ERROR", "Should never be here.");
@@ -189,6 +181,13 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                 SessionID.updateSessionID(activity, cookie);
             }
         }
+    }
+
+    private ResponseData signup(HttpURLConnection connection, RequestData requestData) throws IOException {
+        PostRequestData postData = (PostRequestData) requestData;
+        sendJSON(connection, postData.getParams());
+        BasicResponse payload = QueryManager.getBasicResponse(connection);
+        return new ResponseData(payload.getCode(), payload);
     }
 
     private ResponseData login(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
