@@ -12,24 +12,22 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedSignupException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 
 public class Signup {
     public static void SignupUser(Activity activity, String username, String password) throws FailedLoginException{
-        Log.i("MSG", "Signing up in as " + username + ".");
-        String url = "http://p2photo-production.herokuapp.com/signup";
-        JSONObject json = new JSONObject();
+        Log.i("MSG", "Signup: " + username);
+        String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.SIGNUP_OPERATION;
         try {
-            json.accumulate("username", username);
-            json.accumulate("password", password);
-        }
-        catch (JSONException jex) {
-            jex.printStackTrace();
-        }
-        RequestData rData = new PostRequestData(activity, RequestData.RequestType.POST, url, json);
-        try {
-            ResponseData result = new QueryManager().execute(rData).get();
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("username", username);
+            requestBody.put("password", password);
+            RequestData requestData = new PostRequestData(activity, RequestData.RequestType.SIGNUP, url, requestBody);
+
+            ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
+            // TODO - Response codes are now in a ResponseEntity. //
             if (code == 200) {
                 Log.i("STATUS", "The sign up operation was successful");
             }
@@ -40,14 +38,10 @@ public class Signup {
                 Log.i("STATUS", "The sign up operation was unsuccessful. Unknown error.");
             }
         }
-        catch (ExecutionException eex) {
-            eex.printStackTrace();
-        }
-        catch (InterruptedException iex) {
-            iex.printStackTrace();
+        catch (JSONException | ExecutionException | InterruptedException ex) {
+            throw new FailedSignupException(ex.getMessage());
         }
 
-        //TODO - Implement session ID handling.
         try {
             Login.login(activity, username, password);
         }

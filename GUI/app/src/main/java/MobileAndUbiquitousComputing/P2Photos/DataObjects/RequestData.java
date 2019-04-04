@@ -7,7 +7,7 @@ public class RequestData {
         LOGIN,
         LOGOUT,
         SIGNUP,
-        POST, GET, PUT, GETFINDUSER}
+        GETFINDUSER}
 
     private Activity activity;
     private RequestType requestType;
