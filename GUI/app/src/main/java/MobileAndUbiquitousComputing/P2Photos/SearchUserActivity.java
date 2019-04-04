@@ -4,8 +4,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.BadInputException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.NoResultsException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.FindUser;
 
 public class SearchUserActivity extends AppCompatActivity {
@@ -23,11 +29,15 @@ public class SearchUserActivity extends AppCompatActivity {
         }
         try {
             // TODO - Design tick box for 'bringAlmbums'. //
-            FindUser.findUser(this, username, false);
+            LinkedHashMap<String, ArrayList> usernames = FindUser.findUser(this, username, true);
         }
-        catch (Exception e) {
-            // TODO - Deal with this. //
+        catch (NoResultsException nrex) {
+            Toast toast = Toast.makeText(this, "No results were found", Toast.LENGTH_LONG);
+            toast.show();
         }
-
+        catch (FailedOperationException foex) {
+            Toast toast = Toast.makeText(this, "The find users operation failed. Try again later", Toast.LENGTH_LONG);
+            toast.show();
+        }
     }
 }

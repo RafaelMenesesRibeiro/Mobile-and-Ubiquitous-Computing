@@ -69,7 +69,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                 case FINDUSERS:
                     connection.setRequestMethod("GET");
                     connection.setDoOutput(false);
-                    result = findUsers(activity, connection, requestData);
+                    result = findUsers(activity, connection);
                     break;
                 default:
                     Log.i("ERROR", "Should never be here.");
@@ -153,51 +153,11 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         return new ResponseData(payload.getCode(), payload);
     }
 
-    private ResponseData findUsers(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
+    private ResponseData findUsers(Activity activity, HttpURLConnection connection) throws IOException {
         String cookie = "sessionId=" + SessionID.getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         connection.connect();
-        Log.i("WARNINGININASDA", "Server code: " + connection.getResponseCode());
-        Log.i("WARNINGININASDA", "Server code: " + connection.getResponseMessage());
         SuccessResponse payload = QueryManager.getSuccessResponse(connection);
-        Object result = payload.getResult();
-        System.out.println("GOT AN ANSWER. CLASS OF OBJECT IS: " + result.getClass().getName());
-        System.out.println("GOT AN ANSWER. OBJECT: " + result.toString());
         return new ResponseData(payload.getCode(), payload);
-
-        /*
-        InputStream is = connection.getInputStream();
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        UsersResponseData result = new UsersResponseData(ResponseData.ResponseCode.NO_CODE, -1);
-        List<UserData> usersData = new ArrayList<>();
-        String output;
-        if ((output = br.readLine()) != null) {
-            Log.i("STATUS", "NEW LINE: " + output);
-            JSONObject jsonObject = new JSONObject(output);
-
-            int code = (int) jsonObject.get("code");
-            if (code == 200) {
-                try {
-                    HashMap<String, ArrayList<BigDecimal>> usersAlbumMap = (HashMap<String, ArrayList<BigDecimal>>) jsonObject.get("result");
-                    for (Object o : usersAlbumMap.entrySet()) {
-                        Map.Entry<String, ArrayList<BigDecimal>> pair = (Map.Entry<String, ArrayList<BigDecimal>>) o;
-                        UserData user = new UserData(pair.getKey(), pair.getValue());
-                        usersData.add(user);
-                    }
-                    return new UsersResponseData();
-                }
-                catch (ClassCastException ccex) {
-                    Log.i("ERROR", "Failed to cast while trying to find user.");
-                    result = new UsersResponseData();
-                }
-            }
-            else {
-                result = new UsersResponseData();
-            }
-        }
-        is.close();
-        br.close();
-        return result;
-        */
     }
 }
