@@ -58,7 +58,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     connection.setRequestMethod("DELETE");
                     result = logout(activity, connection);
                     break;
-                case FINDUSERS:
+                case SEARCH_USERS:
                     connection.setRequestMethod("GET");
                     connection.setDoOutput(false);
                     result = findUsers(activity, connection);

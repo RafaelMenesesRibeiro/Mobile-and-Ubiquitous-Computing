@@ -36,7 +36,7 @@ public class SearchUserActivity extends AppCompatActivity {
         }
         try {
             // TODO - Design tick box for 'bringAlmbums'. //
-            LinkedHashMap<String, ArrayList> usernames = findUser(username, true);
+            LinkedHashMap<String, ArrayList> usernames = searchUser(username, true);
         }
         catch (NoResultsException nrex) {
             Toast toast = Toast.makeText(this, "No results were found", Toast.LENGTH_LONG);
@@ -48,14 +48,14 @@ public class SearchUserActivity extends AppCompatActivity {
         }
     }
 
-    public LinkedHashMap<String, ArrayList> findUser(String usernameToFind, boolean bringAlbums)
+    public LinkedHashMap<String, ArrayList> searchUser(String usernameToFind, boolean bringAlbums)
             throws FailedOperationException, NoResultsException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
         String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.FIND_USERS_OPERATION + "?searchPattern="
                 + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.username;
 
         try {
-            RequestData requestData = new RequestData(this, RequestData.RequestType.FINDUSERS, url);
+            RequestData requestData = new RequestData(this, RequestData.RequestType.SEARCH_USERS, url);
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
