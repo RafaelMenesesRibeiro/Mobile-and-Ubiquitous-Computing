@@ -37,31 +37,30 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     private static final String COOKIES_HEADER = "Set-Cookie";
 
     @Override
-    protected ResponseData doInBackground(RequestData... requestData) {
+    protected ResponseData doInBackground(RequestData... requestDataArray) {
         Log.i("STATUS", "Starting request");
-        RequestData rData = requestData[0];
-        Log.i("STATUS", "\nPARAMETERS: \n" + rData.toString());
+        RequestData requestData = requestDataArray[0];
+        Log.i("STATUS", "\nPARAMETERS: \n" + requestData.toString());
 
-        Activity activity = rData.getActivity();
+        Activity activity = requestData.getActivity();
         ResponseData result = new ResponseData(-1, null);
         try {
-            URL url = new URL(rData.getUrl()); // TODO rData is not a human readable name, requestData as suggested by
-            // IDE
+            URL url = new URL(requestData.getUrl());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Accept","application/json");
             connection.setDoOutput(true); // TODO THIS SHOULD BE FALSE IN GET REQUESTS
             connection.setDoInput(true);
-            RequestData.RequestType type = rData.getRequestType();
+            RequestData.RequestType type = requestData.getRequestType();
             switch (type) {
                 case SIGNUP:
                     connection.setRequestMethod("POST");
-                    result = signup(connection, rData);
+                    result = signup(connection, requestData);
                     break;
                 case LOGIN:
                     connection.setRequestMethod("POST");
                     connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
-                    result = login(activity, connection, rData);
+                    result = login(activity, connection, requestData);
                     break;
                 case LOGOUT:
                     connection.setRequestMethod("DELETE");
@@ -70,7 +69,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                 case FINDUSERS:
                     connection.setRequestMethod("GET");
                     connection.setDoOutput(false);
-                    result = findUsers(activity, connection, rData);
+                    result = findUsers(activity, connection, requestData);
                     break;
                 default:
                     Log.i("ERROR", "Should never be here.");
