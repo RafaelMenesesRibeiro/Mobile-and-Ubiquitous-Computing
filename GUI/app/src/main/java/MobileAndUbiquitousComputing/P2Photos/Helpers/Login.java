@@ -6,7 +6,6 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.net.CookieManager;
 import java.util.concurrent.ExecutionException;
 
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
@@ -17,11 +16,6 @@ import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsExceptio
 import MobileAndUbiquitousComputing.P2Photos.R;
 
 public class Login {
-    public final static CookieManager cookieManager = new CookieManager();
-
-    private Login() {
-        // Prevents this class from being instantiated. //
-    }
 
     public static void login(Activity activity, String username, String password) throws FailedLoginException {
         Log.i("MSG", "Login: " + username);
