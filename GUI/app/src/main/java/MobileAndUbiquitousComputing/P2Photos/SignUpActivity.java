@@ -98,6 +98,10 @@ public class SignUpActivity extends AppCompatActivity {
             Toast toast = Toast.makeText(this, "The username '" + username + "' already exists", Toast.LENGTH_LONG);
             toast.show();
         }
+        catch (FailedSignupException fsex) {
+            Toast toast = Toast.makeText(this, "The Sign Up operation failed. Try again later", Toast.LENGTH_LONG);
+            toast.show();
+        }
         catch (FailedLoginException flex) {
             Toast toast = Toast.makeText(this, "The Login operation failed. Try again later", Toast.LENGTH_LONG);
             toast.show();
