@@ -131,7 +131,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
         BasicResponse payload = QueryManager.getBasicResponse(connection);
-        return new ResponseData(payload.getCode(), payload);
+        return new ResponseData(connection.getResponseCode(), payload);
     }
 
     private ResponseData login(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
@@ -139,7 +139,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         sendJSON(connection, postData.getParams());
         getCookies(activity, connection);
         SuccessResponse payload = QueryManager.getSuccessResponse(connection);
-        return new ResponseData(payload.getCode(), payload);
+        return new ResponseData(connection.getResponseCode(), payload);
     }
 
     private ResponseData logout(Activity activity, HttpURLConnection connection) throws IOException {
@@ -147,7 +147,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         connection.setRequestProperty("Cookie", cookie);
         connection.connect();
         BasicResponse payload = QueryManager.getBasicResponse(connection);
-        return new ResponseData(payload.getCode(), payload);
+        return new ResponseData(connection.getResponseCode(), payload);
     }
 
     private ResponseData findUsers(Activity activity, HttpURLConnection connection) throws IOException {
@@ -155,7 +155,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         connection.setRequestProperty("Cookie", cookie);
         connection.connect();
         SuccessResponse payload = QueryManager.getSuccessResponse(connection);
-        return new ResponseData(payload.getCode(), payload);
+        return new ResponseData(connection.getResponseCode(), payload);
     }
 
     private ResponseData newAlbum(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
@@ -165,6 +165,6 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         sendJSON(connection, postData.getParams());
         connection.connect();
         SuccessResponse payload = QueryManager.getSuccessResponse(connection);
-        return new ResponseData(payload.getCode(), payload);
+        return new ResponseData(connection.getResponseCode(), payload);
     }
 }
