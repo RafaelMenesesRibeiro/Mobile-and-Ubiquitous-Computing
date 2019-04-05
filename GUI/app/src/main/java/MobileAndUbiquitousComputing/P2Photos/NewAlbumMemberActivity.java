@@ -17,8 +17,11 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.NoMembershipException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.UsernameException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
+import MobileAndUbiquitousComputing.P2Photos.MsgTypes.ErrorResponse;
 
 public class NewAlbumMemberActivity extends AppCompatActivity {
 
@@ -46,9 +49,18 @@ public class NewAlbumMemberActivity extends AppCompatActivity {
             Toast toast = Toast.makeText(this, "The add user to album operation failed. Try again later", Toast.LENGTH_LONG);
             toast.show();
         }
+        catch (NoMembershipException nmex) {
+            Toast toast = Toast.makeText(this, "The add user to album operation failed. No membership", Toast.LENGTH_LONG);
+            toast.show();
+        }
+        catch (UsernameException uex) {
+            Toast toast = Toast.makeText(this, "The add user to album operation failed. User does not exist", Toast.LENGTH_LONG);
+            toast.show();
+        }
     }
 
-    private void addMember(String albumID, String username) throws FailedOperationException{
+    private void addMember(String albumID, String username)
+            throws FailedOperationException, NoMembershipException, UsernameException {
         Log.i("MSG", "Add User to Album: " + albumID + ", " + username);
         String url = getString(R.string.p2photo_host) + getString(R.string.add_member_operation);
 
@@ -66,9 +78,29 @@ public class NewAlbumMemberActivity extends AppCompatActivity {
                 Log.i("STATUS", "The add user to album operation was successful");
             }
             else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
-                // TODO //
+                ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
+                String reason = errorResponse.getReason();
                 Log.i("STATUS", "The add user to album operation was unsuccessful. " +
-                        "HTTP_BARD_REQUEST. Server response code: " + code);
+                        "HTTP_BARD_REQUEST. Server response code: " + code + ".\n" + reason);
+                throw new FailedOperationException(reason);
+            }
+            else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
+                String reason = errorResponse.getReason();
+                if (reason.equals(getString(R.string.no_membership))) {
+                    Log.i("STATUS", "The add user to album operation was unsuccessful. " +
+                            "Callee does not belong to album " + albumID);
+                    throw new NoMembershipException(reason);
+                }
+            }
+            else if (code == HttpURLConnection.HTTP_NOT_FOUND) {
+                ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
+                String reason = errorResponse.getReason();
+                if (reason.equals(getString(R.string.no_user))) {
+                    Log.i("STATUS", "The add user to album operation was unsuccessful. " +
+                            "Username does not exist " + username);
+                    throw new UsernameException(reason);
+                }
             }
             else {
                 Log.i("STATUS", "The add user to album operation was unsuccessful. Server response code: " + code);
