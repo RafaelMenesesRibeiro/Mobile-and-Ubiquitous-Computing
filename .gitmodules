@@ -1,0 +1,3 @@
+[submodule "p2photo"]
+	path = p2photo
+	url = https://git.heroku.com/p2photo.git
