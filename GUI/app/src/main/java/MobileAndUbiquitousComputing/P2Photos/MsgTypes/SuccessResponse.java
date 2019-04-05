@@ -1,4 +1,6 @@
-package MobileAndUbiquitousComputing.P2Photos.MsgTypes;
+package MobileAndUbiquitousComputing.P2Photos.msgtypes;
+
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.BasicResponse;
 
 public class SuccessResponse extends BasicResponse {
     private Object result;

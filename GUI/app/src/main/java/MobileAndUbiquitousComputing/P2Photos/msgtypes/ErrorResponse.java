@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.MsgTypes;
+package MobileAndUbiquitousComputing.P2Photos.msgtypes;
 
 public class ErrorResponse extends BasicResponse {
     private String reason;
