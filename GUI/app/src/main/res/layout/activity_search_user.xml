@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".NewAlbumActivity">
+    tools:context=".SearchUserActivity">
 
     <TextView
         android:id="@+id/searchUserLabel"
@@ -24,35 +24,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <android.support.design.widget.TextInputLayout
-        android:id="@+id/userSearchInputBox"
-        style="InputLabelHints"
-        android:layout_width="395dp"
-        android:layout_height="55dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginTop="60dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginRight="8dp"
-        android:hint=""
-        android:textColorHint="@android:color/darker_gray"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchUserLabel">
-        style="@style/MainLabel"
 
-        <android.support.design.widget.TextInputEditText
-            android:id="@+id/userSearchPlaceholder"
-            style="@style/InputLabels"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Introduce username to search"
-            android:text=""
-            android:textAppearance="@style/TextAppearance.AppCompat"
-            android:textColor="@color/colorAccent"
-            android:textSize="18sp"
-            android:typeface="sans" />
-    </android.support.design.widget.TextInputLayout>
+    <EditText
+        android:id="@+id/usernameInputBox"
+        style="@style/InputLabels"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="90dp"
+        android:hint="Introduce username to search"
+        android:inputType="text"
+        app:layout_constraintTop_toBottomOf="@+id/searchUserLabel"
+        tools:layout_editor_absoluteX="20dp" />
 
     <Button
         android:id="@+id/AlbumDone"
@@ -63,6 +45,7 @@
         android:layout_marginRight="30dp"
         android:layout_marginBottom="30dp"
         android:text="Done"
+        android:onClick="SearchUser"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 

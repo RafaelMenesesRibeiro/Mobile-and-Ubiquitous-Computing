@@ -1,4 +1,11 @@
 <resources>
+    <string name="p2photo_domain">p2photo-production.herokuapp.com/</string>
+    <string name="p2photo_host">https://p2photo-production.herokuapp.com/</string>
+    <string name="signup_operation">signup</string>
+    <string name="login_operation">login</string>
+    <string name="logout_operation">logout/</string>
+    <string name="find_users_operation">findUsers/</string>
+    <string name="new_album_operation">newAlbum/</string>
     <string name="app_name">P2Photos</string>
     <string name="introduce_a_title_for_your_album">Introduce a title for your album</string>
     <string name="done">Done</string>
@@ -7,4 +14,8 @@
     <string name="placeholder_for_album_name">placeholder-for-album-name</string>
     <string name="add_user">Add User</string>
     <string name="add_photo">Add Photo</string>
+    <string name="preference_file_key">MobileAndUbiquitousComputing.P2Photos.PREFERENCE_FILE_KEY</string>
+    <string name="session_id_key">sessionID</string>
+    <string name="user_name_key">userName</string>
+    <string name="user_albums">User albums</string>
 </resources>
