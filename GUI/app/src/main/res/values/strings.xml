@@ -8,7 +8,7 @@
     <string name="find_users_operation">findUsers/</string>
     <string name="new_album_operation">newAlbum/</string>
     <string name="add_member_operation">newAlbumMember</string>
-
+    <string name="view_album_details_endpoint">https://p2photo-production.herokuapp.com/viewAlbumDetails</string>
     <!-- Labels -->
     <string name="app_name">P2Photos</string>
     <string name="introduce_a_title_for_your_album">Introduce a title for your album</string>
