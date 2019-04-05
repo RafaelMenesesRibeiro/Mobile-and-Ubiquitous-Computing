@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
@@ -45,7 +47,10 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void AddPhotosClicked(View view) {
-        // TODO - Design GUI for this. //
+        Intent intent = new Intent(this, ShowUserAlbumsActivity.class);
+        ArrayList<String> catalogIdList = new ArrayList<>(Arrays.asList("239287741", "401094244", "519782246"));
+        intent.putStringArrayListExtra("catalogs",catalogIdList);
+        startActivity(intent);
     }
 
     public void AddUsersClicked(View view) {

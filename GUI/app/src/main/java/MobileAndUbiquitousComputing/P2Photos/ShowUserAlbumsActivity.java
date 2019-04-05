@@ -8,6 +8,7 @@ import android.widget.SimpleAdapter;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -24,7 +25,6 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_user_albums);
-
         ListView userAlbumsListView = findViewById(R.id.userAlbumsList);
         ArrayList<HashMap<String, String>> catalogsList = new ArrayList<>();
         HashMap<String, String> catalogIdNameMap = buildCatalogsMap();
