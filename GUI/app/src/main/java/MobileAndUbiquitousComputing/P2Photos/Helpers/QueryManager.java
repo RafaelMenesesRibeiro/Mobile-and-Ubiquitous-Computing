@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -23,6 +24,7 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.BasicResponse;
+import MobileAndUbiquitousComputing.P2Photos.MsgTypes.ErrorResponse;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
 
 public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
@@ -82,22 +84,30 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         }
     }
 
-    private static SuccessResponse getSuccessResponse(HttpURLConnection connection) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonResponse = getJSONStringFromHttpResponse(connection);
-        return objectMapper.readValue(jsonResponse, SuccessResponse.class);
+    private void sendJSON(HttpURLConnection connection, JSONObject json) throws IOException {
+        OutputStream os = connection.getOutputStream();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
+        writer.flush();
+        writer.write(json.toString());
+        writer.flush();
     }
 
-    private static BasicResponse getBasicResponse(HttpURLConnection connection) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonResponse = getJSONStringFromHttpResponse(connection);
-        return objectMapper.readValue(jsonResponse, BasicResponse.class);
+    private static boolean is400Response(HttpURLConnection connection) throws IOException {
+        return (connection.getResponseCode() == HttpURLConnection.HTTP_BAD_REQUEST);
     }
 
-    private static String getJSONStringFromHttpResponse(HttpURLConnection connection) throws IOException {
+    private static InputStreamReader getBufferedReaderFromHttpURLConnection(HttpURLConnection connection, boolean isBadRequest)
+            throws IOException {
+        if (isBadRequest) {
+            return new InputStreamReader(connection.getErrorStream());
+        }
+        return new InputStreamReader(connection.getInputStream());
+    }
+
+    private static String getJSONStringFromHttpResponse(HttpURLConnection connection, boolean isBadRequest) throws IOException {
         String currentLine;
         StringBuilder jsonResponse = new StringBuilder();
-        InputStreamReader inputStream = new InputStreamReader(connection.getInputStream());
+        InputStreamReader inputStream = getBufferedReaderFromHttpURLConnection(connection, isBadRequest);
         BufferedReader bufferedReader = new BufferedReader(inputStream);
         while ((currentLine = bufferedReader.readLine()) != null) {
             jsonResponse.append(currentLine);
@@ -107,12 +117,26 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         return jsonResponse.toString();
     }
 
-    private void sendJSON(HttpURLConnection connection, JSONObject json) throws IOException {
-        OutputStream os = connection.getOutputStream();
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
-        writer.flush();
-        writer.write(json.toString());
-        writer.flush();
+    private static BasicResponse getSuccessResponse(HttpURLConnection connection) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonResponse = getJSONStringFromHttpResponse(connection, is400Response(connection));
+        if (is400Response(connection)) {
+            return objectMapper.readValue(jsonResponse, ErrorResponse.class);
+        }
+        else {
+            return objectMapper.readValue(jsonResponse, SuccessResponse.class);
+        }
+    }
+
+    private static BasicResponse getBasicResponse(HttpURLConnection connection) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonResponse = getJSONStringFromHttpResponse(connection, is400Response(connection));
+        if (is400Response(connection)) {
+            return objectMapper.readValue(jsonResponse, ErrorResponse.class);
+        }
+        else {
+            return objectMapper.readValue(jsonResponse, BasicResponse.class);
+        }
     }
 
     private void getCookies(Activity activity, HttpURLConnection connection) {
@@ -138,7 +162,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
         getCookies(activity, connection);
-        SuccessResponse payload = QueryManager.getSuccessResponse(connection);
+        BasicResponse payload = QueryManager.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
@@ -154,7 +178,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         String cookie = "sessionId=" + SessionManager.getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         connection.connect();
-        SuccessResponse payload = QueryManager.getSuccessResponse(connection);
+        BasicResponse payload = QueryManager.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
@@ -164,7 +188,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
         connection.connect();
-        SuccessResponse payload = QueryManager.getSuccessResponse(connection);
+        BasicResponse payload = QueryManager.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 }
