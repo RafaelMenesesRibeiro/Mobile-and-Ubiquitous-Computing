@@ -68,7 +68,6 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
     }
 
     private HttpURLConnection initiateGETConnection(String requestUrl) throws IOException {
-        setCookie(); // TODO FINISH SET COOKIE WHEN OTHER CODE IS STABLE
         URL url = new URL(requestUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setDoInput(true);
@@ -77,19 +76,13 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setRequestProperty("Accept", "application/json");
         connection.setConnectTimeout(2000);
+        setCookie(connection); // TODO FINISH SET COOKIE WHEN OTHER CODE IS STABLE
         return connection;
     }
 
-    private void setCookie() {
-        HttpCookie cookie = new HttpCookie("sessionId", SessionManager.getSessionID(this));
-        cookie.setDomain(getString(R.string.p2photo_host));
-        cookie.setPath("/");
-        cookie.setVersion(0);
-        try {
-            Login.cookieManager.getCookieStore().add(new URI(getString(R.string.p2photo_host)), cookie);
-        } catch (URISyntaxException use) {
-            use.printStackTrace();
-        }
+    private void setCookie(HttpURLConnection connection) {
+        String cookie = "sessionId=" + SessionManager.getSessionID(this);
+        connection.setRequestProperty("Cookie", cookie);
     }
 
     private String getJSONStringFromHttpResponse(HttpURLConnection connection) throws IOException {

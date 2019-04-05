@@ -52,7 +52,7 @@ public class SearchUserActivity extends AppCompatActivity {
             throws FailedOperationException, NoResultsException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
         String url = getString(R.string.p2photo_host) + getString(R.string.find_users_operation) + "?searchPattern="
-                + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.username;
+                + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.getUserName(this);
 
         try {
             RequestData requestData = new RequestData(this, RequestData.RequestType.SEARCH_USERS, url);
