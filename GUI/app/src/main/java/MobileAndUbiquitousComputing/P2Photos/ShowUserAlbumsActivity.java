@@ -14,14 +14,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.SliceLoader;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
+import MobileAndUbiquitousComputing.P2Photos.helpers.SliceLoader;
 import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
 
-import static MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData.RequestType.GET_CATALOG_TITLE;
-import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.getUsername;
+import static MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData.RequestType.GET_CATALOG_TITLE;
+import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.getUsername;
 
 public class ShowUserAlbumsActivity extends AppCompatActivity {
     private ArrayList<String> catalogIdList;

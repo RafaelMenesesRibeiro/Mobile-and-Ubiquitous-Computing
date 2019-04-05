@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.Helpers;
+package MobileAndUbiquitousComputing.P2Photos.helpers;
 
 import android.widget.ProgressBar;
 import android.os.Handler;

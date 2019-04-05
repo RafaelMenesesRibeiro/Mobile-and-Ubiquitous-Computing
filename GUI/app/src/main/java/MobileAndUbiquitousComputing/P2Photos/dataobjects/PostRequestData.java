@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.DataObjects;
+package MobileAndUbiquitousComputing.P2Photos.dataobjects;
 
 import android.app.Activity;
 

@@ -10,11 +10,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException;
+import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
+import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
 
 public class MainMenuActivity extends AppCompatActivity {
 

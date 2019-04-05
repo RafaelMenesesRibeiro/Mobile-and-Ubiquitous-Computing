@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.Helpers;
+package MobileAndUbiquitousComputing.P2Photos.helpers;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -19,15 +19,15 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.PostRequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.msgtypes.BasicResponse;
 import MobileAndUbiquitousComputing.P2Photos.msgtypes.ErrorResponse;
 import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
 
-import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.getSessionID;
-import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.updateSessionID;
+import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.getSessionID;
+import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.updateSessionID;
 
 public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     private static final String COOKIES_HEADER = "Set-Cookie";

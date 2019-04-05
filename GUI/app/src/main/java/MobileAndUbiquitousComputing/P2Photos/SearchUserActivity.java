@@ -12,13 +12,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.BadInputException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.NoResultsException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.BadInputException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.NoResultsException;
+import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
+import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
 import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
 
 public class SearchUserActivity extends AppCompatActivity {

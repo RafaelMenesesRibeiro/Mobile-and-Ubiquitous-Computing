@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.Exceptions;
+package MobileAndUbiquitousComputing.P2Photos.exceptions;
 
 public class PasswordException extends RuntimeException {
     public PasswordException() {

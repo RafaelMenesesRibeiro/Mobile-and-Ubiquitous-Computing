@@ -10,9 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedLoginException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.WrongCredentialsException;
+import MobileAndUbiquitousComputing.P2Photos.helpers.Login;
 
 public class LoginActivity extends AppCompatActivity {
 

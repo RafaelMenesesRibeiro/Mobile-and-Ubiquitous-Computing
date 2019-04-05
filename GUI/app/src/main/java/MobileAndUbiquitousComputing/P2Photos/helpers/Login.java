@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.Helpers;
+package MobileAndUbiquitousComputing.P2Photos.helpers;
 
 import android.app.Activity;
 import android.util.Log;
@@ -9,11 +9,11 @@ import org.json.JSONObject;
 import java.net.HttpURLConnection;
 import java.util.concurrent.ExecutionException;
 
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.PostRequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedLoginException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.WrongCredentialsException;
 import MobileAndUbiquitousComputing.P2Photos.R;
 
 public class Login {

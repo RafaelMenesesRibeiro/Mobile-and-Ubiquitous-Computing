@@ -17,17 +17,17 @@ import org.json.JSONObject;
 import java.net.HttpURLConnection;
 import java.util.concurrent.ExecutionException;
 
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.PasswordException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.UsernameException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.UsernameExistsException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.PostRequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedLoginException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.PasswordException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.UsernameException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.UsernameExistsException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.WrongCredentialsException;
+import MobileAndUbiquitousComputing.P2Photos.helpers.Login;
+import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.msgtypes.ErrorResponse;
 
 public class SignUpActivity extends AppCompatActivity {
