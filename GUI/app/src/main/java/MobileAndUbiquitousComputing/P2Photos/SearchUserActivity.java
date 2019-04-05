@@ -9,7 +9,6 @@ import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -53,7 +52,7 @@ public class SearchUserActivity extends AppCompatActivity {
             throws FailedOperationException, NoResultsException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
         String url = getString(R.string.p2photo_host) + getString(R.string.find_users_operation) + "?searchPattern="
-                + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.getUserName(this);
+                + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.getUsername(this);
 
         try {
             RequestData requestData = new RequestData(this, RequestData.RequestType.SEARCH_USERS, url);
