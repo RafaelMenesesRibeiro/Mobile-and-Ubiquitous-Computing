@@ -18,4 +18,8 @@
     <string name="session_id_key">sessionID</string>
     <string name="user_name_key">userName</string>
     <string name="user_albums">User albums</string>
+
+    <!-- Server response error reasons -->
+    <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>
+    <string name="bad_pass">invalid password - p2photo passwords must be 8 to 50 characters long</string>
 </resources>

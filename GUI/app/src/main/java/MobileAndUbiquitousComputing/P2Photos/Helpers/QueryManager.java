@@ -101,6 +101,11 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         writer.flush();
     }
 
+    private static boolean is400Response(HttpURLConnection connection) throws IOException {
+        return (connection.getResponseCode() >= HttpURLConnection.HTTP_BAD_REQUEST &&
+                connection.getResponseCode() < HttpURLConnection.HTTP_SERVER_ERROR);
+    }
+
     private static InputStreamReader getBufferedReaderFromHttpURLConnection(
             HttpURLConnection connection, boolean isBadRequest) throws IOException {
 
@@ -123,10 +128,6 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         bufferedReader.close();
         inputStream.close();
         return jsonResponse.toString();
-    }
-
-    private static boolean is400Response(HttpURLConnection connection) throws IOException {
-        return (connection.getResponseCode() == HttpURLConnection.HTTP_BAD_REQUEST);
     }
 
     private static BasicResponse getSuccessResponse(HttpURLConnection connection) throws IOException {
