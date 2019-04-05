@@ -54,7 +54,8 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void AddUsersClicked(View view) {
-        // TODO - Design GUI for this. //
+        Intent intent = new Intent(this, NewAlbumMemberActivity.class);
+        startActivity(intent);
     }
 
     public void ListAlbumsClicked(View view) {

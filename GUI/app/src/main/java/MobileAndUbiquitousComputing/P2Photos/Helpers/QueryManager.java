@@ -79,6 +79,10 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     connection.setRequestMethod("POST");
                     result = newAlbum(activity, connection, requestData);
                     break;
+                case NEW_ALBUM_MEMBER:
+                    connection.setRequestMethod("POST");
+                    result = newAlbumMember(activity, connection, requestData);
+                    break;
                 default:
                     Log.i("ERROR", "Should never be here.");
                     break;
@@ -206,6 +210,16 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         sendJSON(connection, postData.getParams());
         connection.connect();
         BasicResponse payload = QueryManager.getSuccessResponse(connection);
+        return new ResponseData(connection.getResponseCode(), payload);
+    }
+
+    private ResponseData newAlbumMember(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
+        String cookie = "sessionId=" + getSessionID(activity);
+        connection.setRequestProperty("Cookie", cookie);
+        PostRequestData postData = (PostRequestData) requestData;
+        sendJSON(connection, postData.getParams());
+        connection.connect();
+        BasicResponse payload = QueryManager.getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 }
