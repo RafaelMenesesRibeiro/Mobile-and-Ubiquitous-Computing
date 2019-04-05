@@ -8,6 +8,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 
@@ -35,7 +36,7 @@ public class SearchUserActivity extends AppCompatActivity {
         }
         try {
             // TODO - Design tick box for 'bringAlmbums'. //
-            LinkedHashMap<String, ArrayList> usernames = findUser(username, true);
+            LinkedHashMap<String, ArrayList> usernames = searchUser(username, true);
         }
         catch (NoResultsException nrex) {
             Toast toast = Toast.makeText(this, "No results were found", Toast.LENGTH_LONG);
@@ -47,14 +48,14 @@ public class SearchUserActivity extends AppCompatActivity {
         }
     }
 
-    public LinkedHashMap<String, ArrayList> findUser(String usernameToFind, boolean bringAlbums)
+    public LinkedHashMap<String, ArrayList> searchUser(String usernameToFind, boolean bringAlbums)
             throws FailedOperationException, NoResultsException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
         String url = getString(R.string.p2photo_host) + getString(R.string.find_users_operation) + "?searchPattern="
                 + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.username;
 
         try {
-            RequestData requestData = new RequestData(this, RequestData.RequestType.FINDUSERS, url);
+            RequestData requestData = new RequestData(this, RequestData.RequestType.SEARCH_USERS, url);
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
@@ -67,6 +68,7 @@ public class SearchUserActivity extends AppCompatActivity {
 
                 if (bringAlbums) {
                     LinkedHashMap<String, ArrayList> map = (LinkedHashMap<String, ArrayList>) object;
+                    Log.i("MSG", "Users and respective albums: " + map.toString());
                     if (map.size() == 0) {
                         throw new NoResultsException();
                     }
