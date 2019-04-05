@@ -1,72 +1,95 @@
 package MobileAndUbiquitousComputing.P2Photos;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.ProgressBar;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
+import MobileAndUbiquitousComputing.P2Photos.Helpers.SliceLoader;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
 
+import static MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData.RequestType.GET_CATALOG_TITLE;
 import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.getUsername;
 
 public class ShowUserAlbumsActivity extends AppCompatActivity {
-    @Override
+    private ArrayList<String> catalogIdList;
+    private ArrayList<String> catalogTitleList;
+    private ProgressBar progressBar;
+    private Handler progressBarHandler = new Handler();
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_user_albums);
         ListView userAlbumsListView = findViewById(R.id.userAlbumsList);
-        ArrayList<HashMap<String, String>> catalogsList = new ArrayList<>();
-        HashMap<String, String> catalogIdNameMap = buildCatalogsMap();
-        for (Map.Entry keyValuePair : catalogIdNameMap.entrySet()) {
-            HashMap<String, String> catalog = new HashMap<>();
-            catalog.put("catalogId", keyValuePair.getKey().toString());
-            catalog.put("catalogName", keyValuePair.getValue().toString());
-            catalogsList.add(catalog);
+
+        this.catalogIdList = new ArrayList<>();
+        this.catalogTitleList = new ArrayList<>();
+
+        buildCatalogMapping();
+
+        userAlbumsListView.setAdapter(newCatalogAdapter(catalogTitleList));
+
+        progressBar = findViewById(R.id.circularProgressBar);
+
+        try {
+            ArrayList<String> slicesList = getAlbumSlices(catalogIdList.get(0));
+        } catch (ExecutionException e) {
+            // TODO 
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        SimpleAdapter simpleAdapter = newCatalogAdapter(catalogsList);
-        userAlbumsListView.setAdapter(simpleAdapter);
+        /*
+        userAlbumsListView.setOnClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String message = "Loading: " + catalogTitleList.get(position);
+                Toast toast = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
+        */
     }
 
-    private HashMap<String, String> buildCatalogsMap() {
-        HashMap<String, String> catalogsMap = new HashMap<>();
-        ArrayList<String> catalogIdList = getIntent().getStringArrayListExtra("catalogs");
-        String baseUrl = getString(R.string.p2photo_host)+"viewAlbumDetails?calleeUsername="+getUsername(this);
-        for (String catalogId : catalogIdList) {
-            String requestUrl = baseUrl + "&catalogId=" + catalogId;
-            RequestData requestData = new RequestData(this, RequestData.RequestType.GET_CATALOG_TITLE, requestUrl);
-            tryPut(catalogId, catalogsMap, requestData);
-        }
-        return catalogsMap;
+    private ArrayList<String> getAlbumSlices(String catalogId) throws ExecutionException, InterruptedException {
+        SliceLoader sliceLoader = new SliceLoader(catalogId, this.progressBar, this.progressBarHandler);
+        ExecutorService executorService = Executors.newSingleThreadExecutor();
+        Future<ArrayList<String>> future = executorService.submit(sliceLoader);
+        return future.get();
     }
 
-    private void tryPut(String catalogId, HashMap<String, String> catalogsMap, RequestData requestData) {
+    private void buildCatalogMapping() {
+        ArrayList<String> intentedCatalogIdList = getIntent().getStringArrayListExtra("catalogs");
+        String baseUrl = getString(R.string.p2photo_host)+"viewAlbumDetails?calleeUsername=" + getUsername(this);
+        for (String catalogId : intentedCatalogIdList) {
+            tryMap(catalogId, new RequestData(this, GET_CATALOG_TITLE, baseUrl + "&catalogId=" + catalogId));
+        }
+    }
+
+    private void tryMap(String catalogId, RequestData requestData) {
         try {
             ResponseData result = new QueryManager().execute(requestData).get();
             if (result.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse response = (SuccessResponse)result.getPayload();
-                String catalogTitle = (String) response.getResult();
-                catalogsMap.put(catalogId, catalogTitle);
+                this.catalogIdList.add(catalogId);
+                this.catalogTitleList.add((String) response.getResult());
             }
         } catch (ExecutionException | InterruptedException e) { /*continue;*/ }
     }
 
-    private SimpleAdapter newCatalogAdapter(ArrayList<HashMap<String, String>> itemsMap) {
-        return new SimpleAdapter(this,
-                itemsMap,
-                R.layout.hashmap_array_adapter_layout,
-                new String[]{"catalogId", "catalogName"},
-                new int[]{android.R.id.text1, android.R.id.text2}
-        );
-    };
+    private ArrayAdapter<String> newCatalogAdapter(ArrayList<String> items) {
+        return new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
+    }
 }
