@@ -14,20 +14,21 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="MobileAndUbiquitousComputing.p2photo.NewAlbumMemberActivity"></activity>
-        <activity android:name="MobileAndUbiquitousComputing.p2photo.MainMenuActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.p2photo.SignUpActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.p2photo.LoginActivity">
+        <activity android:name=".ShowAlbumActivity"></activity>
+        <activity android:name=".NewAlbumMemberActivity" />
+        <activity android:name=".MainMenuActivity" />
+        <activity android:name=".SignUpActivity" />
+        <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="MobileAndUbiquitousComputing.p2photo.NewAlbumActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.p2photo.SearchUserActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.p2photo.ShowUserAlbumsActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.p2photo.AlbumViewActivity" />
+        <activity android:name=".NewAlbumActivity" />
+        <activity android:name=".SearchUserActivity" />
+        <activity android:name=".ShowUserAlbumsActivity" />
+        <activity android:name=".AlbumViewActivity" />
     </application>
 
 </manifest>
