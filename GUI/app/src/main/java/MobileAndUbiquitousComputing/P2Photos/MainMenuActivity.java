@@ -64,7 +64,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void logout() {
-        String username = SessionManager.getUserName(this);
+        String username = SessionManager.getUsername(this);
         Log.i("MSG", "Logout: " + username);
 
         String url = getString(R.string.p2photo_host) + getString(R.string.logout_operation) + username;
