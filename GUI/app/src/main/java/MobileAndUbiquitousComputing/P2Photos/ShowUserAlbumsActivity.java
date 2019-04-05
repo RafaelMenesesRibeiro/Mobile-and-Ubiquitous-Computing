@@ -5,23 +5,20 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpCookie;
 import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
-import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
+import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
+
+import static MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager.getSuccessResponse;
+import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.getUsername;
 
 public class ShowUserAlbumsActivity extends AppCompatActivity {
     @Override
@@ -43,59 +40,26 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
     }
 
     private HashMap<String, String> buildCatalogsMap() {
-        String baseUrl = getString(R.string.p2photo_host) + "viewAlbumDetails?calleeUsername=" + SessionManager.getUserName(this) + "&catalogId=";
-        ArrayList<String> catalogIdList = getIntent().getStringArrayListExtra("catalogs");
         HashMap<String, String> catalogsMap = new HashMap<>();
+        ArrayList<String> catalogIdList = getIntent().getStringArrayListExtra("catalogs");
+        String baseUrl = getString(R.string.p2photo_host)+"viewAlbumDetails?calleeUsername="+getUsername(this);
         for (String catalogId : catalogIdList) {
-            try {
-                HttpURLConnection connection = initiateGETConnection(baseUrl + catalogId);
-                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    SuccessResponse response = getSuccessResponse(connection);
-                    String catalogTitle = (String) response.getResult();
-                    catalogsMap.put(catalogId, catalogTitle);
-                }
-            } catch (IOException ioe) {
-                // continue;
-            }
+            String requestUrl = baseUrl + "&catalogId=" + catalogId;
+            RequestData requestData = new RequestData(this, RequestData.RequestType.GET_CATALOG_TITLE, requestUrl);
+            tryPut(catalogId, catalogsMap, requestData);
         }
         return catalogsMap;
     }
 
-    private SuccessResponse getSuccessResponse(HttpURLConnection connection) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonResponse = getJSONStringFromHttpResponse(connection);
-        return objectMapper.readValue(jsonResponse, SuccessResponse.class);
-    }
-
-    private HttpURLConnection initiateGETConnection(String requestUrl) throws IOException {
-        URL url = new URL(requestUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoInput(true);
-        connection.setDoOutput(false);
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setConnectTimeout(2000);
-        setCookie(connection); // TODO FINISH SET COOKIE WHEN OTHER CODE IS STABLE
-        return connection;
-    }
-
-    private void setCookie(HttpURLConnection connection) {
-        String cookie = "sessionId=" + SessionManager.getSessionID(this);
-        connection.setRequestProperty("Cookie", cookie);
-    }
-
-    private String getJSONStringFromHttpResponse(HttpURLConnection connection) throws IOException {
-        String currentLine;
-        StringBuilder jsonResponse = new StringBuilder();
-        InputStreamReader inputStream = new InputStreamReader(connection.getInputStream());
-        BufferedReader bufferedReader = new BufferedReader(inputStream);
-        while ((currentLine = bufferedReader.readLine()) != null) {
-            jsonResponse.append(currentLine);
-        }
-        bufferedReader.close();
-        inputStream.close();
-        return jsonResponse.toString();
+    private void tryPut(String catalogId, HashMap<String, String> catalogsMap, RequestData requestData) {
+        try {
+            ResponseData result = new QueryManager().execute(requestData).get();
+            if (result.getServerCode() == HttpURLConnection.HTTP_OK) {
+                SuccessResponse response = (SuccessResponse)result.getPayload();
+                String catalogTitle = (String) response.getResult();
+                catalogsMap.put(catalogId, catalogTitle);
+            }
+        } catch (ExecutionException | InterruptedException e) { /*continue;*/ }
     }
 
     private SimpleAdapter newCatalogAdapter(ArrayList<HashMap<String, String>> itemsMap) {
