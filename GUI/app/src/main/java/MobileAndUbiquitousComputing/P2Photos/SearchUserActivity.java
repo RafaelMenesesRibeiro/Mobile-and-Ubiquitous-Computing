@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -59,8 +60,7 @@ public class SearchUserActivity extends AppCompatActivity {
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
-            // TODO - Response codes are now in a ResponseEntity. //
-            if (code == 200) {
+            if (code == HttpURLConnection.HTTP_OK) {
                 Log.i("STATUS", "The find users operation was successful");
 
                 SuccessResponse payload = (SuccessResponse) result.getPayload();
@@ -87,7 +87,7 @@ public class SearchUserActivity extends AppCompatActivity {
                 }
             }
             else {
-                Log.i("STATUS", "The find users operation was unsuccessful. Unknown error.");
+                Log.i("STATUS", "The find users operation was unsuccessful. Server response code: " + code);
                 throw new FailedOperationException("URL: " + url);
             }
         }

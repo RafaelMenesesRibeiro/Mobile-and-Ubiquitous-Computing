@@ -6,6 +6,7 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.HttpURLConnection;
 import java.util.concurrent.ExecutionException;
 
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
@@ -29,18 +30,18 @@ public class Login {
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
-            if (code == 200) { // TODO Our server already supports ResponseEntities as taught by you.
+            if (code == HttpURLConnection.HTTP_OK) {
                 Log.i("STATUS", "The login operation was successful");
 
                 SessionManager.updateUserName(activity, username);
                 // The SessionID cookie is stored in getJSONStringFromHttpResponse //
             }
-            else if (code == 401) {
+            else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 Log.i("STATUS", "The login operation was unsuccessful. The username or password are incorrect.");
                 throw new WrongCredentialsException();
             }
             else {
-                Log.i("STATUS", "The login operation was unsuccessful. Unknown error.");
+                Log.i("STATUS", "The login operation was unsuccessful. Server response code: " + code);
                 throw new FailedLoginException();
             }
         }

@@ -14,6 +14,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.HttpURLConnection;
 import java.util.concurrent.ExecutionException;
 
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
@@ -115,8 +116,7 @@ public class SignUpActivity extends AppCompatActivity {
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
-            // TODO - Response codes are now in a ResponseEntity. //
-            if (code == 200) {
+            if (code == HttpURLConnection.HTTP_OK) {
                 Log.i("STATUS", "The sign up operation was successful");
             }
             else if (code == 422) {
@@ -124,7 +124,7 @@ public class SignUpActivity extends AppCompatActivity {
                 throw new UsernameExistsException();
             }
             else {
-                Log.i("STATUS", "The sign up operation was unsuccessful. Unknown error.");
+                Log.i("STATUS", "The sign up operation was unsuccessful. Server response code: " + code);
                 throw new FailedSignupException();
             }
         }

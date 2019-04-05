@@ -11,6 +11,7 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.HttpURLConnection;
 import java.util.concurrent.ExecutionException;
 
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
@@ -63,12 +64,11 @@ public class NewAlbumActivity extends AppCompatActivity {
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
-            // TODO - Response codes are now in a ResponseEntity. //
-            if (code == 200) {
+            if (code == HttpURLConnection.HTTP_OK) {
                 Log.i("STATUS", "The new album operation was successful");
             }
             else {
-                Log.i("STATUS", "The new album operation was unsuccessful. Unknown error.");
+                Log.i("STATUS", "The new album operation was unsuccessful. Server response code: " + code);
                 throw new FailedOperationException();
             }
         }
