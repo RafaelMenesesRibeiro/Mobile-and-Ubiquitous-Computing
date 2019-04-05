@@ -32,6 +32,7 @@ public class SearchUserActivity extends AppCompatActivity {
     public void SearchUser(View view) throws BadInputException {
         String username = ((EditText) findViewById(R.id.usernameInputBox)).getText().toString();
         if (username.equals("")) {
+            // TODO - Handle this. //
             throw new BadInputException("The username to find cannot be empty.");
         }
         try {
