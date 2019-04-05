@@ -5,6 +5,7 @@
     <string name="login_operation">login</string>
     <string name="logout_operation">logout/</string>
     <string name="find_users_operation">findUsers/</string>
+    <string name="new_album_operation">newAlbum/</string>
     <string name="app_name">P2Photos</string>
     <string name="introduce_a_title_for_your_album">Introduce a title for your album</string>
     <string name="done">Done</string>

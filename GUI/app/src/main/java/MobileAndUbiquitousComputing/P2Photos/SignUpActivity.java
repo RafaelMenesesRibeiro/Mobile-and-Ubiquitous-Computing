@@ -23,7 +23,6 @@ import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedSignupException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.UsernameExistsException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.ConnectionManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
 
@@ -107,7 +106,7 @@ public class SignUpActivity extends AppCompatActivity {
     private void signup(String username, String password)
             throws FailedSignupException, FailedLoginException, UsernameExistsException {
         Log.i("MSG", "Signup: " + username);
-        String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.SIGNUP_OPERATION;
+        String url = getString(R.string.p2photo_host) + getString(R.string.signup_operation);
         try {
             JSONObject requestBody = new JSONObject();
             requestBody.put("username", username);

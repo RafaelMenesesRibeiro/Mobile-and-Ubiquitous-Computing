@@ -11,9 +11,8 @@ import java.util.concurrent.ExecutionException;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLogoutException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.ConnectionManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionID;
+import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionIDManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
 
 public class MainMenuActivity extends AppCompatActivity {
@@ -69,14 +68,14 @@ public class MainMenuActivity extends AppCompatActivity {
         String username = SessionManager.username;
         Log.i("MSG", "Logout: " + username);
 
-        String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.LOGOUT_OPERATION + username;
+        String url = getString(R.string.p2photo_host) + getString(R.string.logout_operation) + username;
         RequestData rData = new RequestData(this, RequestData.RequestType.LOGOUT, url);
         try {
             ResponseData result = new QueryManager().execute(rData).get();
             int code = result.getServerCode();
             if (code == 200) {
                 Log.i("STATUS", "The logout operation was successful");
-                SessionID.deleteSessionID(this);
+                SessionIDManager.deleteSessionID(this);
             }
             else {
                 Log.i("STATUS", "The login operation was unsuccessful. Unknown error.");

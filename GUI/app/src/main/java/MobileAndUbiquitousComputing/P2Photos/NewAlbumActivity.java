@@ -17,7 +17,6 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.ConnectionManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
 
@@ -52,7 +51,7 @@ public class NewAlbumActivity extends AppCompatActivity {
 
     private void newAlbum(String albumName) {
         Log.i("MSG", "Create album: " + albumName);
-        String url = ConnectionManager.P2PHOTO_HOST + ConnectionManager.NEW_ALBUM_OPERATION;
+        String url = getString(R.string.p2photo_host) + getString(R.string.new_album_operation);
 
         try {
             JSONObject requestBody = new JSONObject();

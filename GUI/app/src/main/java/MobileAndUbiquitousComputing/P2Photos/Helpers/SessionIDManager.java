@@ -19,7 +19,7 @@ public class SessionIDManager {
         return sharedPref.getString(activity.getString(R.string.session_id_key), null);
     }
 
-    static void updateSessionID(Activity activity, String newSessionID) {
+    public static void updateSessionID(Activity activity, String newSessionID) {
         SharedPreferences sharedPref = activity.getSharedPreferences(
                 activity.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -28,7 +28,7 @@ public class SessionIDManager {
         sessionID = newSessionID;
     }
 
-    static void deleteSessionID(Activity activity) {
+    public static void deleteSessionID(Activity activity) {
         updateSessionID(activity,null);
     }
 }

@@ -159,7 +159,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData newAlbum(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
-        String cookie = "sessionId=" + SessionID.getSessionID(activity);
+        String cookie = "sessionId=" + SessionIDManager.getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
