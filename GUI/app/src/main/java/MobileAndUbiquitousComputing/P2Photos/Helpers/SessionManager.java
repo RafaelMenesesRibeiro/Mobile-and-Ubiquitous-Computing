@@ -20,7 +20,7 @@ public class SessionManager {
         return sharedPref.getString(activity.getString(R.string.session_id_key), null);
     }
 
-    public static String getUserName(Activity activity) {
+    public static String getUsername(Activity activity) {
         if (userName != null) {
             return userName;
         }

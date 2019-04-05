@@ -59,7 +59,7 @@ public class NewAlbumActivity extends AppCompatActivity {
             requestBody.put("catalogTitle", albumName);
             // TODO - Implement adding slice to Cloud Provider. //
             requestBody.put("sliceUrl", "http://www.acloudprovider.com/a_album_slice");
-            requestBody.put("calleeUsername", SessionManager.getUserName(this));
+            requestBody.put("calleeUsername", SessionManager.getUsername(this));
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.NEW_ALBUM, url, requestBody);
 
             ResponseData result = new QueryManager().execute(requestData).get();

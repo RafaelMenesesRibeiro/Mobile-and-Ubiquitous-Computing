@@ -11,7 +11,6 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -27,6 +26,9 @@ import MobileAndUbiquitousComputing.P2Photos.MsgTypes.BasicResponse;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.ErrorResponse;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
 
+import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.getSessionID;
+import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.updateSessionID;
+
 public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     private static final String COOKIES_HEADER = "Set-Cookie";
 
@@ -41,10 +43,12 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         try {
             URL url = new URL(requestData.getUrl());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Accept","application/json");
             connection.setDoOutput(true); // TODO THIS SHOULD BE FALSE IN GET REQUESTS
             connection.setDoInput(true);
+            connection.setConnectTimeout(2000);
             RequestData.RequestType type = requestData.getRequestType();
             switch (type) {
                 case SIGNUP:
@@ -53,7 +57,6 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     break;
                 case LOGIN:
                     connection.setRequestMethod("POST");
-                    connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
                     result = login(activity, connection, requestData);
                     break;
                 case LOGOUT:
@@ -65,10 +68,16 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     connection.setDoOutput(false);
                     result = findUsers(activity, connection);
                     break;
+                case GET_CATALOG_TITLE:
+                    connection.setRequestMethod("GET");
+                    connection.setDoOutput(false);
+                    result = getCatalogTitle(activity, connection);
+                    break;
+                case GET_CATALOG:
+                    break;
                 case NEW_ALBUM:
                     connection.setRequestMethod("POST");
                     result = newAlbum(activity, connection, requestData);
-
                     break;
                 default:
                     Log.i("ERROR", "Should never be here.");
@@ -97,15 +106,18 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                 connection.getResponseCode() < HttpURLConnection.HTTP_SERVER_ERROR);
     }
 
-    private static InputStreamReader getBufferedReaderFromHttpURLConnection(HttpURLConnection connection, boolean isBadRequest)
-            throws IOException {
+    private static InputStreamReader getBufferedReaderFromHttpURLConnection(
+            HttpURLConnection connection, boolean isBadRequest) throws IOException {
+
         if (isBadRequest) {
             return new InputStreamReader(connection.getErrorStream());
         }
         return new InputStreamReader(connection.getInputStream());
     }
 
-    private static String getJSONStringFromHttpResponse(HttpURLConnection connection, boolean isBadRequest) throws IOException {
+    private static String getJSONStringFromHttpResponse(HttpURLConnection connection, boolean isBadRequest)
+            throws IOException {
+
         String currentLine;
         StringBuilder jsonResponse = new StringBuilder();
         InputStreamReader inputStream = getBufferedReaderFromHttpURLConnection(connection, isBadRequest);
@@ -118,26 +130,28 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         return jsonResponse.toString();
     }
 
+    private static boolean is400Response(HttpURLConnection connection) throws IOException {
+        return (connection.getResponseCode() == HttpURLConnection.HTTP_BAD_REQUEST);
+    }
+
     private static BasicResponse getSuccessResponse(HttpURLConnection connection) throws IOException {
+        boolean is400Response = is400Response(connection);
+        String jsonResponse = getJSONStringFromHttpResponse(connection, is400Response);
         ObjectMapper objectMapper = new ObjectMapper();
-        String jsonResponse = getJSONStringFromHttpResponse(connection, is400Response(connection));
-        if (is400Response(connection)) {
+        if (is400Response) {
             return objectMapper.readValue(jsonResponse, ErrorResponse.class);
         }
-        else {
-            return objectMapper.readValue(jsonResponse, SuccessResponse.class);
-        }
+        return objectMapper.readValue(jsonResponse, SuccessResponse.class);
     }
 
     private static BasicResponse getBasicResponse(HttpURLConnection connection) throws IOException {
+        boolean is400Response = is400Response(connection);
+        String jsonResponse = getJSONStringFromHttpResponse(connection, is400Response);
         ObjectMapper objectMapper = new ObjectMapper();
-        String jsonResponse = getJSONStringFromHttpResponse(connection, is400Response(connection));
-        if (is400Response(connection)) {
+        if (is400Response) {
             return objectMapper.readValue(jsonResponse, ErrorResponse.class);
         }
-        else {
-            return objectMapper.readValue(jsonResponse, BasicResponse.class);
-        }
+        return objectMapper.readValue(jsonResponse, BasicResponse.class);
     }
 
     private void getCookies(Activity activity, HttpURLConnection connection) {
@@ -147,7 +161,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
             for (String cookie : cookiesHeader) {
                 // TODO - Check if cookie is in fact SessionID. //
                 System.out.println("NEW COOKIE: " + cookie);
-                SessionManager.updateSessionID(activity, cookie);
+                updateSessionID(activity, cookie);
             }
         }
     }
@@ -155,7 +169,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     private ResponseData signup(HttpURLConnection connection, RequestData requestData) throws IOException {
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
-        BasicResponse payload = QueryManager.getBasicResponse(connection);
+        BasicResponse payload = getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
@@ -163,12 +177,12 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
         getCookies(activity, connection);
-        BasicResponse payload = QueryManager.getSuccessResponse(connection);
+        BasicResponse payload = getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
     private ResponseData logout(Activity activity, HttpURLConnection connection) throws IOException {
-        String cookie = "sessionId=" + SessionManager.getSessionID(activity);
+        String cookie = "sessionId=" + getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         connection.connect();
         BasicResponse payload = QueryManager.getBasicResponse(connection);
@@ -176,15 +190,21 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData findUsers(Activity activity, HttpURLConnection connection) throws IOException {
-        String cookie = "sessionId=" + SessionManager.getSessionID(activity);
-        connection.setRequestProperty("Cookie", cookie);
+        connection.setRequestProperty("Cookie",  "sessionId=" + getSessionID(activity));
         connection.connect();
         BasicResponse payload = QueryManager.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
+    private ResponseData getCatalogTitle(Activity activity, HttpURLConnection connection) throws IOException {
+        connection.setRequestProperty("Cookie",  "sessionId=" + getSessionID(activity));
+        connection.connect();
+        BasicResponse payload = getSuccessResponse(connection);
+        return new ResponseData(connection.getResponseCode(), payload);
+    }
+
     private ResponseData newAlbum(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
-        String cookie = "sessionId=" + SessionManager.getSessionID(activity);
+        String cookie = "sessionId=" + getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
