@@ -21,11 +21,14 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedSignupException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.PasswordException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.UsernameException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.UsernameExistsException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
+import MobileAndUbiquitousComputing.P2Photos.MsgTypes.ErrorResponse;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -98,7 +101,15 @@ public class SignUpActivity extends AppCompatActivity {
             Toast toast = Toast.makeText(this, "The username '" + username + "' already exists", Toast.LENGTH_LONG);
             toast.show();
         }
-        catch (FailedSignupException fsex) {
+        catch (UsernameException uex) {
+            Toast toast = Toast.makeText(this, "The username '" + username + "' does not follow the rules", Toast.LENGTH_LONG);
+            toast.show();
+        }
+        catch (PasswordException pex) {
+            Toast toast = Toast.makeText(this, "The password '" + password + "' does not follow the rules", Toast.LENGTH_LONG);
+            toast.show();
+        }
+        catch (FailedOperationException foex) {
             Toast toast = Toast.makeText(this, "The Sign Up operation failed. Try again later", Toast.LENGTH_LONG);
             toast.show();
         }
@@ -109,7 +120,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void signup(String username, String password)
-            throws FailedSignupException, FailedLoginException, UsernameExistsException {
+            throws FailedOperationException, FailedLoginException, UsernameExistsException {
         Log.i("MSG", "Signup: " + username);
         String url = getString(R.string.p2photo_host) + getString(R.string.signup_operation);
         try {
@@ -120,8 +131,24 @@ public class SignUpActivity extends AppCompatActivity {
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
+
             if (code == HttpURLConnection.HTTP_OK) {
                 Log.i("STATUS", "The sign up operation was successful");
+            }
+            else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
+                ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
+                String reason = errorResponse.getReason();
+
+                if (reason.equals(getString(R.string.bad_user))) {
+                    Log.i("STATUS", "The sign up operation was unsuccessful. " +
+                            "The username does not abide the rules: " + getString(R.string.bad_user));
+                    throw new UsernameException();
+                }
+                else if (reason.equals(getString(R.string.bad_pass))) {
+                    Log.i("STATUS", "The sign up operation was unsuccessful. " +
+                            "The password does not abide the rules: " + getString(R.string.bad_pass));
+                    throw new PasswordException();
+                }
             }
             else if (code == 422) {
                 Log.i("STATUS", "The sign up operation was unsuccessful. The username chosen already exists.");
@@ -129,11 +156,11 @@ public class SignUpActivity extends AppCompatActivity {
             }
             else {
                 Log.i("STATUS", "The sign up operation was unsuccessful. Server response code: " + code);
-                throw new FailedSignupException();
+                throw new FailedOperationException();
             }
         }
         catch (JSONException | ExecutionException | InterruptedException ex) {
-            throw new FailedSignupException(ex.getMessage());
+            throw new FailedOperationException(ex.getMessage());
         }
 
         try {
@@ -142,6 +169,9 @@ public class SignUpActivity extends AppCompatActivity {
         catch (WrongCredentialsException wcex) {
             // Do nothing.
             // SHOULD NEVER BE HERE. AS THE CREDENTIALS WERE USED WITHOUT CHANGE FOR SIGNING UP.
+        }
+        catch (FailedLoginException flex) {
+
         }
     }
 }

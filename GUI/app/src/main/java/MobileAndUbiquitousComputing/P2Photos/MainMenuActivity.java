@@ -10,7 +10,7 @@ import java.util.concurrent.ExecutionException;
 
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLogoutException;
+import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
 
@@ -79,11 +79,11 @@ public class MainMenuActivity extends AppCompatActivity {
             }
             else {
                 Log.i("STATUS", "The login operation was unsuccessful. Unknown error.");
-                throw new FailedLogoutException();
+                throw new FailedOperationException();
             }
         }
         catch (ExecutionException | InterruptedException ex) {
-            throw new FailedLogoutException(ex.getMessage());
+            throw new FailedOperationException(ex.getMessage());
         }
     }
 }

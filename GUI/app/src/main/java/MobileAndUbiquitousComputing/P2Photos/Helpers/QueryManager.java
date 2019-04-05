@@ -93,7 +93,8 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private static boolean is400Response(HttpURLConnection connection) throws IOException {
-        return (connection.getResponseCode() == HttpURLConnection.HTTP_BAD_REQUEST);
+        return (connection.getResponseCode() >= HttpURLConnection.HTTP_BAD_REQUEST &&
+                connection.getResponseCode() < HttpURLConnection.HTTP_SERVER_ERROR);
     }
 
     private static InputStreamReader getBufferedReaderFromHttpURLConnection(HttpURLConnection connection, boolean isBadRequest)
