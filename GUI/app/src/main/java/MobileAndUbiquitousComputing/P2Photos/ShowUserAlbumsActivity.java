@@ -17,7 +17,6 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
 
-import static MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager.getSuccessResponse;
 import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.getUsername;
 
 public class ShowUserAlbumsActivity extends AppCompatActivity {
