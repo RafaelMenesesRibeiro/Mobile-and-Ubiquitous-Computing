@@ -122,7 +122,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
             for (String cookie : cookiesHeader) {
                 // TODO - Check if cookie is in fact SessionID. //
                 System.out.println("NEW COOKIE: " + cookie);
-                SessionIDManager.updateSessionID(activity, cookie);
+                SessionManager.updateSessionID(activity, cookie);
             }
         }
     }
@@ -143,7 +143,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData logout(Activity activity, HttpURLConnection connection) throws IOException {
-        String cookie = "sessionId=" + SessionIDManager.getSessionID(activity);
+        String cookie = "sessionId=" + SessionManager.getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         connection.connect();
         BasicResponse payload = QueryManager.getBasicResponse(connection);
@@ -151,7 +151,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData findUsers(Activity activity, HttpURLConnection connection) throws IOException {
-        String cookie = "sessionId=" + SessionIDManager.getSessionID(activity);
+        String cookie = "sessionId=" + SessionManager.getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         connection.connect();
         SuccessResponse payload = QueryManager.getSuccessResponse(connection);
@@ -159,7 +159,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData newAlbum(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
-        String cookie = "sessionId=" + SessionIDManager.getSessionID(activity);
+        String cookie = "sessionId=" + SessionManager.getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());

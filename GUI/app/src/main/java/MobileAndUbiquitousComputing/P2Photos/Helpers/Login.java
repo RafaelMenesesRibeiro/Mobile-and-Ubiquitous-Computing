@@ -38,7 +38,7 @@ public class Login {
             if (code == 200) { // TODO Our server already supports ResponseEntities as taught by you.
                 Log.i("STATUS", "The login operation was successful");
 
-                UserNameManager.updateUserName(activity, username);
+                SessionManager.updateUserName(activity, username);
                 // The SessionID cookie is stored in getJSONStringFromHttpResponse //
             }
             else if (code == 401) {
