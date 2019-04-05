@@ -1,4 +1,5 @@
 <resources>
+    <!-- Operation Endpoints -->
     <string name="p2photo_domain">p2photo-production.herokuapp.com/</string>
     <string name="p2photo_host">https://p2photo-production.herokuapp.com/</string>
     <string name="signup_operation">signup</string>
@@ -6,10 +7,14 @@
     <string name="logout_operation">logout/</string>
     <string name="find_users_operation">findUsers/</string>
     <string name="new_album_operation">newAlbum/</string>
+    <string name="add_member_operation">newAlbumMember</string>
+
+    <!-- Labels -->
     <string name="app_name">P2Photos</string>
     <string name="introduce_a_title_for_your_album">Introduce a title for your album</string>
     <string name="done">Done</string>
     <string name="create_album">Create Album</string>
+    <string name="add_album_member">Add Album Member</string>
     <string name="view_album">View Album</string>
     <string name="placeholder_for_album_name">placeholder-for-album-name</string>
     <string name="add_user">Add User</string>
