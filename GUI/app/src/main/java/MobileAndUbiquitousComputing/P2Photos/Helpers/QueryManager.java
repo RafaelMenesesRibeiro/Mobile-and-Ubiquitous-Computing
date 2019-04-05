@@ -130,10 +130,6 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         return jsonResponse.toString();
     }
 
-    private static boolean is400Response(HttpURLConnection connection) throws IOException {
-        return (connection.getResponseCode() == HttpURLConnection.HTTP_BAD_REQUEST);
-    }
-
     private static BasicResponse getSuccessResponse(HttpURLConnection connection) throws IOException {
         boolean is400Response = is400Response(connection);
         String jsonResponse = getJSONStringFromHttpResponse(connection, is400Response);
