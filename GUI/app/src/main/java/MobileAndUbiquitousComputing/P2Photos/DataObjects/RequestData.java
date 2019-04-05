@@ -8,6 +8,8 @@ public class RequestData {
         LOGOUT,
         SIGNUP,
         SEARCH_USERS,
+        GET_CATALOG_TITLE,
+        GET_CATALOG,
         NEW_ALBUM
     }
 
