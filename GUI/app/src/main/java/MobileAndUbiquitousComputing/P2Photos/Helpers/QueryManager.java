@@ -185,20 +185,19 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData findUsers(Activity activity, HttpURLConnection connection) throws IOException {
-        String cookie = "sessionId=" + getSessionID(activity);
-        connection.setRequestProperty("Cookie", cookie);
+        connection.setRequestProperty("Cookie",  "sessionId=" + getSessionID(activity));
         connection.connect();
         BasicResponse payload = QueryManager.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
     private ResponseData getCatalogTitle(Activity activity, HttpURLConnection connection) throws IOException {
-        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
+        connection.setRequestProperty("Cookie",  "sessionId=" + getSessionID(activity));
         connection.connect();
         BasicResponse payload = getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
-    
+
     private ResponseData newAlbum(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
         String cookie = "sessionId=" + getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
