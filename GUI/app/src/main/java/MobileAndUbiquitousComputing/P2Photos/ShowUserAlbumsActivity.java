@@ -18,7 +18,7 @@ import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.SliceLoader;
-import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
 
 import static MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData.RequestType.GET_CATALOG_TITLE;
 import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.getUsername;
@@ -82,7 +82,7 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
         try {
             ResponseData result = new QueryManager().execute(requestData).get();
             if (result.getServerCode() == HttpURLConnection.HTTP_OK) {
-                SuccessResponse response = (SuccessResponse)result.getPayload();
+                SuccessResponse response = (SuccessResponse) result.getPayload();
                 this.catalogIdList.add(catalogId);
                 this.catalogTitleList.add((String) response.getResult());
             }

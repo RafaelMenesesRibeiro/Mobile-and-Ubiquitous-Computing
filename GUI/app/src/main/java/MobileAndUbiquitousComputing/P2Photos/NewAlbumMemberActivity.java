@@ -21,7 +21,7 @@ import MobileAndUbiquitousComputing.P2Photos.Exceptions.NoMembershipException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.UsernameException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
-import MobileAndUbiquitousComputing.P2Photos.MsgTypes.ErrorResponse;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.ErrorResponse;
 
 public class NewAlbumMemberActivity extends AppCompatActivity {
 

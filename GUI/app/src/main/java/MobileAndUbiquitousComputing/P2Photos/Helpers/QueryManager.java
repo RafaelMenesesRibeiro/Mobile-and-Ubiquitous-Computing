@@ -22,9 +22,9 @@ import java.util.Map;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
-import MobileAndUbiquitousComputing.P2Photos.MsgTypes.BasicResponse;
-import MobileAndUbiquitousComputing.P2Photos.MsgTypes.ErrorResponse;
-import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.BasicResponse;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.ErrorResponse;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
 
 import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.getSessionID;
 import static MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager.updateSessionID;

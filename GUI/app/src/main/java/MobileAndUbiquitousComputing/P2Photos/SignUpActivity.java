@@ -28,7 +28,7 @@ import MobileAndUbiquitousComputing.P2Photos.Exceptions.UsernameExistsException;
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
-import MobileAndUbiquitousComputing.P2Photos.MsgTypes.ErrorResponse;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.ErrorResponse;
 
 public class SignUpActivity extends AppCompatActivity {
 

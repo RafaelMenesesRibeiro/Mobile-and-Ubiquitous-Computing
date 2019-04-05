@@ -19,7 +19,7 @@ import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException
 import MobileAndUbiquitousComputing.P2Photos.Exceptions.NoResultsException;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
-import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
 
 public class SearchUserActivity extends AppCompatActivity {
 
