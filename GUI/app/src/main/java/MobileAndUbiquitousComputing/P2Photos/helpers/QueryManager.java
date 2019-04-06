@@ -77,6 +77,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     connection.setRequestMethod("GET");
                     connection.setDoOutput(false);
                     result = getCatalog(activity, connection);
+                    break;
                 case NEW_ALBUM:
                     connection.setRequestMethod("POST");
                     result = newAlbum(activity, connection, requestData);
