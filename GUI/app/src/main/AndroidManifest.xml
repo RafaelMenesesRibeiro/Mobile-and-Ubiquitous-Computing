@@ -27,7 +27,6 @@
         </activity>
         <activity android:name=".NewAlbumActivity" />
         <activity android:name=".SearchUserActivity" />
-        <activity android:name=".ShowUserAlbumsActivity" />
         <activity android:name=".AlbumViewActivity" />
     </application>
 
