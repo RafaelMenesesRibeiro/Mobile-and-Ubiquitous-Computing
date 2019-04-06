@@ -55,9 +55,7 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
 
                 ArrayList<String> slicesList = getAlbumSlices(catalogIdList.get(position));
 
-                Intent intent = new Intent(ShowUserAlbumsActivity.this, ShowAlbumActivity.class);
-                intent.putStringArrayListExtra("slices", slicesList);
-                startActivity(intent);
+                goToShowAlbumActivity(slicesList);
             }
         });
     }
@@ -97,6 +95,10 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
         } catch (ExecutionException | InterruptedException e) { /*continue;*/ }
     }
 
+    private ArrayAdapter<String> newArrayAdapter(ArrayList<String> items) {
+        return new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
+    }
+
     public void startProgress() {
         progressBarHandler.post(new Runnable() {
             @Override
@@ -116,8 +118,10 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
             }
         });
     }
-    
-    private ArrayAdapter<String> newArrayAdapter(ArrayList<String> items) {
-        return new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
+
+    private void goToShowAlbumActivity(ArrayList<String> slicesList) {
+        Intent intent = new Intent(ShowUserAlbumsActivity.this, ShowAlbumActivity.class);
+        intent.putStringArrayListExtra("slices", slicesList);
+        startActivity(intent);
     }
 }
