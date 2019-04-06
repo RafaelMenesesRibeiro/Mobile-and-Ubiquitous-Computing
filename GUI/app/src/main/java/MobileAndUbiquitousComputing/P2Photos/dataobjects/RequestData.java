@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.DataObjects;
+package MobileAndUbiquitousComputing.P2Photos.dataobjects;
 
 import android.app.Activity;
 
@@ -8,7 +8,10 @@ public class RequestData {
         LOGOUT,
         SIGNUP,
         SEARCH_USERS,
-        NEW_ALBUM
+        GET_CATALOG_TITLE,
+        GET_CATALOG,
+        NEW_ALBUM,
+        NEW_ALBUM_MEMBER
     }
 
     private Activity activity;

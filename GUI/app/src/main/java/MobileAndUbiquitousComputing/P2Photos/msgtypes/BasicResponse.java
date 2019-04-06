@@ -1,17 +1,17 @@
-package MobileAndUbiquitousComputing.P2Photos.MsgTypes;
+package MobileAndUbiquitousComputing.P2Photos.msgtypes;
 
 public class BasicResponse {
     private int code;
     private String operation;
     private String message;
 
-    public BasicResponse(int code, String message, String operation) {
+    BasicResponse(int code, String message, String operation) {
         this.code = code;
         this.message = message;
         this.operation = operation;
     }
 
-    public BasicResponse() {
+    BasicResponse() {
     }
 
     public int getCode() {

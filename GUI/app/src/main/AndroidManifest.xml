@@ -6,26 +6,28 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:usesCleartextTraffic="true"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".MainMenuActivity"/>
-        <activity android:name=".SignUpActivity" />
-        <activity android:name=".LoginActivity" >
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.NewAlbumMemberActivity" />
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.MainMenuActivity" />
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.SignUpActivity" />
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".NewAlbumActivity" />
-        <activity android:name=".SearchUserActivity" />
-        <activity android:name=".ShowUserAlbumsActivity"/>
-        <activity android:name=".AlbumViewActivity"/>
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.NewAlbumActivity" />
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.SearchUserActivity" />
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.ShowUserAlbumsActivity" />
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.ShowAlbumActivity" />
     </application>
 
 </manifest>

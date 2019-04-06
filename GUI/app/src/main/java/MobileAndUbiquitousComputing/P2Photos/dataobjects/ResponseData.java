@@ -1,6 +1,6 @@
-package MobileAndUbiquitousComputing.P2Photos.DataObjects;
+package MobileAndUbiquitousComputing.P2Photos.dataobjects;
 
-import MobileAndUbiquitousComputing.P2Photos.MsgTypes.BasicResponse;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.BasicResponse;
 
 public class ResponseData {
     private int serverCode;

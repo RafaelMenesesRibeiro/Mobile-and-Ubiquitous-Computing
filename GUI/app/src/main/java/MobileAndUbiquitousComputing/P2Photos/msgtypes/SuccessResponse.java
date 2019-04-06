@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.MsgTypes;
+package MobileAndUbiquitousComputing.P2Photos.msgtypes;
 
 public class SuccessResponse extends BasicResponse {
     private Object result;
@@ -8,7 +8,8 @@ public class SuccessResponse extends BasicResponse {
         this.result = result;
     }
 
-    public SuccessResponse() {}
+    public SuccessResponse() {
+    }
 
     public Object getResult() {
         return result;

@@ -10,9 +10,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLoginException;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.WrongCredentialsException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedLoginException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.WrongCredentialsException;
+import MobileAndUbiquitousComputing.P2Photos.helpers.Login;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -28,24 +28,28 @@ public class LoginActivity extends AppCompatActivity {
 
         usernameInput.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing. */ }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /*
+            Do nothing. */ }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 ActivateButtons(usernameInput, passwordInput, loginButton, signUpButton);
             }
+
             @Override
             public void afterTextChanged(Editable s) { /* Do nothing */ }
         });
 
         passwordInput.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing. */ }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /*
+            Do nothing. */ }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 ActivateButtons(usernameInput, passwordInput, loginButton, signUpButton);
             }
+
             @Override
             public void afterTextChanged(Editable s) { /* Do nothing. */ }
         });
@@ -57,13 +61,13 @@ public class LoginActivity extends AppCompatActivity {
         // Prevents going back after logging out.
     }
 
-    private void ActivateButtons(EditText usernameInput, EditText passwordInput, Button loginButton, Button signupButton) {
+    private void ActivateButtons(EditText usernameInput, EditText passwordInput,
+                                 Button loginButton, Button signupButton) {
         if (!usernameInput.getText().toString().isEmpty() && !passwordInput.getText().toString().isEmpty()) {
             loginButton.setEnabled(true);
             loginButton.setBackgroundColor(getResources().getColor(R.color.colorButtonActive));
             loginButton.setTextColor(getResources().getColor(R.color.white));
-        }
-        else {
+        } else {
             loginButton.setEnabled(false);
             loginButton.setBackgroundColor(getResources().getColor(R.color.colorButtonInactive));
             loginButton.setTextColor(getResources().getColor(R.color.almostBlack));
@@ -80,12 +84,11 @@ public class LoginActivity extends AppCompatActivity {
             Login.login(this, username, password);
             Intent intent = new Intent(this, MainMenuActivity.class);
             startActivity(intent);
-        }
-        catch (WrongCredentialsException wcex) {
+        } catch (WrongCredentialsException wcex) {
             passwordInput.setText("");
-        }
-        catch (FailedLoginException flex) {
-            Toast toast = Toast.makeText(this, "The Login operation failed. Try again later", Toast.LENGTH_LONG);
+        } catch (FailedLoginException flex) {
+            Toast toast = Toast.makeText(this, "The Login operation failed. Try again later",
+                    Toast.LENGTH_LONG);
             toast.show();
         }
     }

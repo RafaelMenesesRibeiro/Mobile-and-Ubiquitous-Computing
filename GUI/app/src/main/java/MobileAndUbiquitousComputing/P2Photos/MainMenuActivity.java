@@ -6,13 +6,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedLogoutException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException;
+import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
+import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
 
 public class MainMenuActivity extends AppCompatActivity {
 
@@ -30,7 +32,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void viewAlbumClicked(View view) {
-        Intent intent = new Intent(this, AlbumViewActivity.class);
+        Intent intent = new Intent(this, ShowAlbumActivity.class);
         startActivity(intent);
     }
 
@@ -45,15 +47,18 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void AddPhotosClicked(View view) {
-        // TODO - Design GUI for this. //
+        // TODO - Implement this. //
     }
 
     public void AddUsersClicked(View view) {
-        // TODO - Design GUI for this. //
+        Intent intent = new Intent(this, NewAlbumMemberActivity.class);
+        startActivity(intent);
     }
 
     public void ListAlbumsClicked(View view) {
+        ArrayList<String> items = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
         Intent intent = new Intent(this, ShowUserAlbumsActivity.class);
+        intent.putStringArrayListExtra("catalogs", items);
         startActivity(intent);
     }
 
@@ -64,10 +69,11 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void logout() {
-        String username = SessionManager.getUserName(this);
+        String username = SessionManager.getUsername(this);
         Log.i("MSG", "Logout: " + username);
 
-        String url = getString(R.string.p2photo_host) + getString(R.string.logout_operation) + username;
+        String url =
+                getString(R.string.p2photo_host) + getString(R.string.logout_operation) + username;
         RequestData rData = new RequestData(this, RequestData.RequestType.LOGOUT, url);
         try {
             ResponseData result = new QueryManager().execute(rData).get();
@@ -76,14 +82,12 @@ public class MainMenuActivity extends AppCompatActivity {
                 Log.i("STATUS", "The logout operation was successful");
                 SessionManager.deleteSessionID(this);
                 SessionManager.deleteUserName(this);
-            }
-            else {
+            } else {
                 Log.i("STATUS", "The login operation was unsuccessful. Unknown error.");
-                throw new FailedLogoutException();
+                throw new FailedOperationException();
             }
-        }
-        catch (ExecutionException | InterruptedException ex) {
-            throw new FailedLogoutException(ex.getMessage());
+        } catch (ExecutionException | InterruptedException ex) {
+            throw new FailedOperationException(ex.getMessage());
         }
     }
 }

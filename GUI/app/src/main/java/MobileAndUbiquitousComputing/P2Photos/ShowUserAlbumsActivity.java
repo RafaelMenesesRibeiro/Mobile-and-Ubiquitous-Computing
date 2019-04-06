@@ -1,109 +1,113 @@
 package MobileAndUbiquitousComputing.P2Photos;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpCookie;
 import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
-import MobileAndUbiquitousComputing.P2Photos.Helpers.Login;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
-import MobileAndUbiquitousComputing.P2Photos.MsgTypes.SuccessResponse;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
 
+import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.getUsername;
+import static MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData.RequestType.GET_CATALOG;
+import static MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData.RequestType.GET_CATALOG_TITLE;
+import static android.widget.Toast.LENGTH_LONG;
+import static android.widget.Toast.LENGTH_SHORT;
+
+@SuppressWarnings("unchecked")
 public class ShowUserAlbumsActivity extends AppCompatActivity {
-    @Override
+    private ArrayList<String> catalogIdList;
+    private ArrayList<String> catalogTitleList;
+    protected static ArrayList<String> slicesURLList = new ArrayList<>();
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_user_albums);
 
         ListView userAlbumsListView = findViewById(R.id.userAlbumsList);
-        ArrayList<HashMap<String, String>> catalogsList = new ArrayList<>();
-        HashMap<String, String> catalogIdNameMap = buildCatalogsMap();
-        for (Map.Entry keyValuePair : catalogIdNameMap.entrySet()) {
-            HashMap<String, String> catalog = new HashMap<>();
-            catalog.put("catalogId", keyValuePair.getKey().toString());
-            catalog.put("catalogName", keyValuePair.getValue().toString());
-            catalogsList.add(catalog);
-        }
-        SimpleAdapter simpleAdapter = newCatalogAdapter(catalogsList);
-        userAlbumsListView.setAdapter(simpleAdapter);
-    }
 
-    private HashMap<String, String> buildCatalogsMap() {
-        String baseUrl = getString(R.string.p2photo_host) + "viewAlbumDetails?calleeUsername=" + SessionManager.getUserName(this) + "&catalogId=";
-        ArrayList<String> catalogIdList = getIntent().getStringArrayListExtra("catalogs");
-        HashMap<String, String> catalogsMap = new HashMap<>();
-        for (String catalogId : catalogIdList) {
-            try {
-                HttpURLConnection connection = initiateGETConnection(baseUrl + catalogId);
-                if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    SuccessResponse response = getSuccessResponse(connection);
-                    String catalogTitle = (String) response.getResult();
-                    catalogsMap.put(catalogId, catalogTitle);
+        this.catalogIdList = new ArrayList<>();
+        this.catalogTitleList = new ArrayList<>();
+
+        buildCatalogArrays();
+
+        userAlbumsListView.setAdapter(newArrayAdapter(catalogTitleList));
+        userAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String catalogTitle = catalogTitleList.get(position);
+                String toast = "Loading: " + catalogTitle + "...";
+                Toast.makeText(ShowUserAlbumsActivity.this, toast, LENGTH_SHORT).show();
+                setSliceURLList(catalogIdList.get(position));
+
+                if (!ShowUserAlbumsActivity.slicesURLList.isEmpty())  {
+                    goToShowAlbumActivity(catalogTitle);
+                } else {
+                    Toast.makeText(ShowUserAlbumsActivity.this, "BAD", LENGTH_SHORT).show();
                 }
-            } catch (IOException ioe) {
-                // continue;
             }
+        });
+    }
+
+    private void buildCatalogArrays() {
+        ArrayList<String> intentCatalogIdList = getIntent().getStringArrayListExtra("catalogs");
+        String baseUrl =
+                getString(R.string.view_album_details_endpoint) + "?calleeUsername=" + getUsername(this);
+        for (String catalogId : intentCatalogIdList) {
+            String url = baseUrl + "&catalogId=" + catalogId;
+            tryAdd(catalogId, new RequestData(this, GET_CATALOG_TITLE, url));
         }
-        return catalogsMap;
     }
 
-    private SuccessResponse getSuccessResponse(HttpURLConnection connection) throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonResponse = getJSONStringFromHttpResponse(connection);
-        return objectMapper.readValue(jsonResponse, SuccessResponse.class);
+    private void tryAdd(String catalogId, RequestData requestData) {
+        try {
+            ResponseData result = new QueryManager().execute(requestData).get();
+            if (result.getServerCode() == HttpURLConnection.HTTP_OK) {
+                SuccessResponse response = (SuccessResponse) result.getPayload();
+                this.catalogIdList.add(catalogId);
+                this.catalogTitleList.add((String) response.getResult());
+            }
+        } catch (ExecutionException | InterruptedException e) { /*continue;*/ }
     }
 
-    private HttpURLConnection initiateGETConnection(String requestUrl) throws IOException {
-        URL url = new URL(requestUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoInput(true);
-        connection.setDoOutput(false);
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setConnectTimeout(2000);
-        setCookie(connection); // TODO FINISH SET COOKIE WHEN OTHER CODE IS STABLE
-        return connection;
-    }
+    private void setSliceURLList(String catalogId) {
+        String url = getString(
+                R.string.view_album_endpoint) +
+                "?calleeUsername=" + getUsername(this) +
+                "&catalogId=" + catalogId;
 
-    private void setCookie(HttpURLConnection connection) {
-        String cookie = "sessionId=" + SessionManager.getSessionID(this);
-        connection.setRequestProperty("Cookie", cookie);
-    }
-
-    private String getJSONStringFromHttpResponse(HttpURLConnection connection) throws IOException {
-        String currentLine;
-        StringBuilder jsonResponse = new StringBuilder();
-        InputStreamReader inputStream = new InputStreamReader(connection.getInputStream());
-        BufferedReader bufferedReader = new BufferedReader(inputStream);
-        while ((currentLine = bufferedReader.readLine()) != null) {
-            jsonResponse.append(currentLine);
+        try {
+            RequestData requestData = new RequestData(this, GET_CATALOG, url);
+            ResponseData responseData = new QueryManager().execute(requestData).get();
+            if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
+                SuccessResponse payload = (SuccessResponse) responseData.getPayload();
+                ShowUserAlbumsActivity.slicesURLList = (ArrayList<String>) payload.getResult();
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            // pass;
         }
-        bufferedReader.close();
-        inputStream.close();
-        return jsonResponse.toString();
     }
 
-    private SimpleAdapter newCatalogAdapter(ArrayList<HashMap<String, String>> itemsMap) {
-        return new SimpleAdapter(this,
-                itemsMap,
-                R.layout.hashmap_array_adapter_layout,
-                new String[]{"catalogId", "catalogName"},
-                new int[]{android.R.id.text1, android.R.id.text2}
-        );
-    };
+    private void goToShowAlbumActivity(String catalogTitle) {
+        Intent intent = new Intent(ShowUserAlbumsActivity.this, ShowAlbumActivity.class);
+        intent.putExtra("title", catalogTitle);
+        intent.putStringArrayListExtra("slices", slicesURLList);
+        startActivity(intent);
+    }
+
+    private ArrayAdapter<String> newArrayAdapter(ArrayList<String> items) {
+        return new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
+    }
 }

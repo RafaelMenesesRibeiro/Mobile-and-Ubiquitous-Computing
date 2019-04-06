@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.Helpers;
+package MobileAndUbiquitousComputing.P2Photos.helpers;
 
 import android.app.Activity;
 import android.content.Context;
@@ -20,7 +20,7 @@ public class SessionManager {
         return sharedPref.getString(activity.getString(R.string.session_id_key), null);
     }
 
-    public static String getUserName(Activity activity) {
+    public static String getUsername(Activity activity) {
         if (userName != null) {
             return userName;
         }
@@ -48,10 +48,10 @@ public class SessionManager {
     }
 
     public static void deleteSessionID(Activity activity) {
-        updateSessionID(activity,null);
+        updateSessionID(activity, null);
     }
 
     public static void deleteUserName(Activity activity) {
-        updateUserName(activity,null);
+        updateUserName(activity, null);
     }
 }

@@ -11,14 +11,15 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.HttpURLConnection;
 import java.util.concurrent.ExecutionException;
 
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.PostRequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.RequestData;
-import MobileAndUbiquitousComputing.P2Photos.DataObjects.ResponseData;
-import MobileAndUbiquitousComputing.P2Photos.Exceptions.FailedOperationException;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.QueryManager;
-import MobileAndUbiquitousComputing.P2Photos.Helpers.SessionManager;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.PostRequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException;
+import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
+import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
 
 public class NewAlbumActivity extends AppCompatActivity {
 
@@ -42,9 +43,9 @@ public class NewAlbumActivity extends AppCompatActivity {
             newAlbum(title);
             Intent intent = new Intent(this, MainMenuActivity.class);
             startActivity(intent);
-        }
-        catch (FailedOperationException foex) {
-            Toast toast = Toast.makeText(this, "The create album operation failed. Try again later", Toast.LENGTH_LONG);
+        } catch (FailedOperationException foex) {
+            Toast toast = Toast.makeText(this, "The create album operation failed. Try again " +
+                    "later", Toast.LENGTH_LONG);
             toast.show();
         }
     }
@@ -58,21 +59,20 @@ public class NewAlbumActivity extends AppCompatActivity {
             requestBody.put("catalogTitle", albumName);
             // TODO - Implement adding slice to Cloud Provider. //
             requestBody.put("sliceUrl", "http://www.acloudprovider.com/a_album_slice");
-            requestBody.put("calleeUsername", SessionManager.getUserName(this));
-            RequestData requestData = new PostRequestData(this, RequestData.RequestType.NEW_ALBUM, url, requestBody);
+            requestBody.put("calleeUsername", SessionManager.getUsername(this));
+            RequestData requestData = new PostRequestData(this, RequestData.RequestType.NEW_ALBUM
+                    , url, requestBody);
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
-            // TODO - Response codes are now in a ResponseEntity. //
-            if (code == 200) {
+            if (code == HttpURLConnection.HTTP_OK) {
                 Log.i("STATUS", "The new album operation was successful");
-            }
-            else {
-                Log.i("STATUS", "The new album operation was unsuccessful. Unknown error.");
+            } else {
+                Log.i("STATUS", "The new album operation was unsuccessful. Server response code: "
+                        + code);
                 throw new FailedOperationException();
             }
-        }
-        catch (JSONException | ExecutionException | InterruptedException ex) {
+        } catch (JSONException | ExecutionException | InterruptedException ex) {
             throw new FailedOperationException(ex.getMessage());
         }
     }

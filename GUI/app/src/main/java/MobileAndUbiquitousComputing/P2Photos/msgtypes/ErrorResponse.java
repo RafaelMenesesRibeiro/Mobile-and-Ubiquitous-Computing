@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.MsgTypes;
+package MobileAndUbiquitousComputing.P2Photos.msgtypes;
 
 public class ErrorResponse extends BasicResponse {
     private String reason;
@@ -8,7 +8,8 @@ public class ErrorResponse extends BasicResponse {
         this.reason = reason;
     }
 
-    public ErrorResponse() {}
+    public ErrorResponse() {
+    }
 
     public String getReason() {
         return reason;
