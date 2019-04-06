@@ -47,10 +47,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void AddPhotosClicked(View view) {
-        ArrayList<String> items = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
-        Intent intent = new Intent(this, ShowUserAlbumsActivity.class);
-        intent.putStringArrayListExtra("catalogs", items);
-        startActivity(intent);
+        // TODO - Implement this. //
     }
 
     public void AddUsersClicked(View view) {
@@ -59,7 +56,9 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void ListAlbumsClicked(View view) {
+        ArrayList<String> items = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
         Intent intent = new Intent(this, ShowUserAlbumsActivity.class);
+        intent.putStringArrayListExtra("catalogs", items);
         startActivity(intent);
     }
 
