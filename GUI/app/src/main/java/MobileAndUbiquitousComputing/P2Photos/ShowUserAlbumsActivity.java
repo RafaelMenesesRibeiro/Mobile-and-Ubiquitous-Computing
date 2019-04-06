@@ -28,18 +28,18 @@ package MobileAndUbiquitousComputing.P2Photos;
         import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.getUsername;
 
 public class ShowUserAlbumsActivity extends AppCompatActivity {
-    public ListView userAlbumsListView;
+    private ListView userAlbumsListView;
     private ArrayList<String> catalogIdList;
     private ArrayList<String> catalogTitleList;
-    public ProgressBar progressBar;
-    public static Handler progressBarHandler = new Handler();
+    private ProgressBar progressBar;
+    private Handler progressBarHandler = new Handler();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_user_albums);
 
-        this.userAlbumsListView = findViewById(R.id.userAlbumsList);
-        this.progressBar = findViewById(R.id.circularProgressBar);
+        progressBar = findViewById(R.id.progressBar);
+        userAlbumsListView = findViewById(R.id.userAlbumsList);
         this.catalogIdList = new ArrayList<>();
         this.catalogTitleList = new ArrayList<>();
 
@@ -52,24 +52,8 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String toast = "Loading: " + catalogTitleList.get(position) + "...";
                 Toast.makeText(ShowUserAlbumsActivity.this, toast, Toast.LENGTH_LONG).show();
-
-                progressBarHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        userAlbumsListView.setVisibility(View.INVISIBLE);
-                        progressBar.setVisibility(View.VISIBLE);
-                    }
-                });
-
+                
                 ArrayList<String> slicesList = getAlbumSlices(catalogIdList.get(position));
-
-                progressBarHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        userAlbumsListView.setVisibility(View.VISIBLE);
-                        progressBar.setVisibility(View.GONE);
-                    }
-                });
 
                 Intent intent = new Intent(ShowUserAlbumsActivity.this, ShowAlbumActivity.class);
                 intent.putStringArrayListExtra("slices", slicesList);
@@ -79,7 +63,7 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
     }
 
     private ArrayList<String> getAlbumSlices(String catalogId) {
-        SliceLoader sliceLoader = new SliceLoader(catalogId);
+        SliceLoader sliceLoader = new SliceLoader(catalogId, this);
         ExecutorService executorService = Executors.newSingleThreadExecutor();
         Future<ArrayList<String>> future = executorService.submit(sliceLoader);
         try {
@@ -89,27 +73,6 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
             Toast.makeText(ShowUserAlbumsActivity.this, toast, Toast.LENGTH_LONG).show();
             return new ArrayList<>();
         }
-    }
-
-    @Deprecated
-    private void startProgress() {
-        progressBarHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                userAlbumsListView.setVisibility(View.INVISIBLE);
-                progressBar.setVisibility(View.VISIBLE);
-            }
-        });
-    }
-
-    @Deprecated void finishProgress() {
-        progressBarHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                userAlbumsListView.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-            }
-        });
     }
 
     private void buildCatalogMapping() {
@@ -132,6 +95,30 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
                 this.catalogTitleList.add((String) response.getResult());
             }
         } catch (ExecutionException | InterruptedException e) { /*continue;*/ }
+    }
+
+    public void startProgress() {
+        progressBarHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                userAlbumsListView.setVisibility(View.INVISIBLE);
+                progressBar.setVisibility(View.VISIBLE);
+            }
+        });
+    }
+
+    public void finishProgress() {
+        progressBarHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                userAlbumsListView.setVisibility(View.VISIBLE);
+                progressBar.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    public Handler getProgressBarHandler() {
+        return this.progressBarHandler;
     }
 
     private ArrayAdapter<String> newArrayAdapter(ArrayList<String> items) {
