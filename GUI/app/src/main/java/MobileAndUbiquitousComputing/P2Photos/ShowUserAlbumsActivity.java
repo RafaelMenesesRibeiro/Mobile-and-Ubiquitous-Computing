@@ -1,90 +1,77 @@
 package MobileAndUbiquitousComputing.P2Photos;
 
-        import android.content.Intent;
-        import android.os.Bundle;
-        import android.os.Handler;
-        import android.support.v7.app.AppCompatActivity;
-        import android.view.View;
-        import android.widget.AdapterView;
-        import android.widget.ArrayAdapter;
-        import android.widget.ListView;
-        import android.widget.ProgressBar;
-        import android.widget.Toast;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.Toast;
 
-        import java.net.HttpURLConnection;
-        import java.util.ArrayList;
-        import java.util.concurrent.ExecutionException;
-        import java.util.concurrent.ExecutorService;
-        import java.util.concurrent.Executors;
-        import java.util.concurrent.Future;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-        import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
-        import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
-        import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
-        import MobileAndUbiquitousComputing.P2Photos.helpers.SliceLoader;
-        import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
-        import static MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData.RequestType.GET_CATALOG_TITLE;
-        import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.getUsername;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
+import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
+import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
 
+import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.getUsername;
+import static MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData.RequestType.GET_CATALOG;
+import static MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData.RequestType.GET_CATALOG_TITLE;
+import static android.widget.Toast.LENGTH_LONG;
+
+@SuppressWarnings("unchecked")
 public class ShowUserAlbumsActivity extends AppCompatActivity {
-    private ListView userAlbumsListView;
     private ArrayList<String> catalogIdList;
     private ArrayList<String> catalogTitleList;
-    private ProgressBar progressBar;
-    private Handler progressBarHandler = new Handler();
+    protected static ArrayList<String> slicesURLList = new ArrayList<>();
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_user_albums);
 
-        progressBar = findViewById(R.id.progressBar);
-        userAlbumsListView = findViewById(R.id.userAlbumsList);
+        ListView userAlbumsListView = findViewById(R.id.userAlbumsList);
+
         this.catalogIdList = new ArrayList<>();
         this.catalogTitleList = new ArrayList<>();
 
-        buildCatalogMapping();
+        buildCatalogArrays();
 
         userAlbumsListView.setAdapter(newArrayAdapter(catalogTitleList));
-
         userAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String toast = "Loading: " + catalogTitleList.get(position) + "...";
-                Toast.makeText(ShowUserAlbumsActivity.this, toast, Toast.LENGTH_LONG).show();
+                String catalogTitle = catalogTitleList.get(position);
+                String toast = "Loading: " + catalogTitle + "...";
+                Toast.makeText(ShowUserAlbumsActivity.this, toast, LENGTH_LONG).show();
+                setSliceURLList(catalogIdList.get(position));
 
-                ArrayList<String> slicesList = getAlbumSlices(catalogIdList.get(position));
-
-                goToShowAlbumActivity(slicesList);
+                if (!ShowUserAlbumsActivity.slicesURLList.isEmpty())  {
+                    // TODO goToShowAlbumActivity(catalogTitle);
+                    Toast.makeText(ShowUserAlbumsActivity.this, "GOOD", LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(ShowUserAlbumsActivity.this, "BAD", LENGTH_LONG).show();
+                }
             }
         });
     }
 
-    private ArrayList<String> getAlbumSlices(String catalogId) {
-        SliceLoader sliceLoader = new SliceLoader(catalogId, this);
-        ExecutorService executorService = Executors.newSingleThreadExecutor();
-        Future<ArrayList<String>> future = executorService.submit(sliceLoader);
-        try {
-            return future.get();
-        } catch (ExecutionException | InterruptedException exc) {
-            String toast = "Unable to load catalog...";
-            Toast.makeText(ShowUserAlbumsActivity.this, toast, Toast.LENGTH_LONG).show();
-            return new ArrayList<>();
-        }
-    }
-
-    private void buildCatalogMapping() {
+    private void buildCatalogArrays() {
         ArrayList<String> intentCatalogIdList = getIntent().getStringArrayListExtra("catalogs");
         String baseUrl =
                 getString(R.string.view_album_details_endpoint) + "?calleeUsername=" + getUsername(this);
-
         for (String catalogId : intentCatalogIdList) {
-            String requestUrl = baseUrl + "&catalogId=" + catalogId;
-            tryMap(catalogId, new RequestData(this, GET_CATALOG_TITLE, requestUrl));
+            String url = baseUrl + "&catalogId=" + catalogId;
+            tryAdd(catalogId, new RequestData(this, GET_CATALOG_TITLE, url));
         }
     }
 
-    private void tryMap(String catalogId, RequestData requestData) {
+    private void tryAdd(String catalogId, RequestData requestData) {
         try {
             ResponseData result = new QueryManager().execute(requestData).get();
             if (result.getServerCode() == HttpURLConnection.HTTP_OK) {
@@ -95,33 +82,32 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
         } catch (ExecutionException | InterruptedException e) { /*continue;*/ }
     }
 
+    private void setSliceURLList(String catalogId) {
+        String url = getString(
+                R.string.view_album_endpoint) +
+                "?calleeUsername=" + getUsername(this) +
+                "&catalogId=" + catalogId;
+
+        try {
+            RequestData requestData = new RequestData(this, GET_CATALOG, url);
+            ResponseData responseData = new QueryManager().execute(requestData).get();
+            if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
+                SuccessResponse payload = (SuccessResponse) responseData.getPayload();
+                ShowUserAlbumsActivity.slicesURLList = (ArrayList<String>) payload.getResult();
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            // pass;
+        }
+    }
+
+    private void goToShowAlbumActivity(String catalogTitle) {
+        Intent intent = new Intent(ShowUserAlbumsActivity.this, ShowAlbumActivity.class);
+        intent.putExtra("title", catalogTitle);
+        intent.putStringArrayListExtra("slices", slicesURLList);
+        startActivity(intent);
+    }
+
     private ArrayAdapter<String> newArrayAdapter(ArrayList<String> items) {
         return new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
-    }
-
-    public void startProgress() {
-        progressBarHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                userAlbumsListView.setVisibility(View.INVISIBLE);
-                progressBar.setVisibility(View.VISIBLE);
-            }
-        });
-    }
-
-    public void finishProgress() {
-        progressBarHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                userAlbumsListView.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-            }
-        });
-    }
-
-    private void goToShowAlbumActivity(ArrayList<String> slicesList) {
-        Intent intent = new Intent(ShowUserAlbumsActivity.this, ShowAlbumActivity.class);
-        intent.putStringArrayListExtra("slices", slicesList);
-        startActivity(intent);
     }
 }
