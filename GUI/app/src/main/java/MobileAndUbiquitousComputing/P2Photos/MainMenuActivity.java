@@ -32,7 +32,7 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void viewAlbumClicked(View view) {
-        Intent intent = new Intent(this, AlbumViewActivity.class);
+        Intent intent = new Intent(this, ShowAlbumActivity.class);
         startActivity(intent);
     }
 
