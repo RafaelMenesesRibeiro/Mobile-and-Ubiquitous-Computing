@@ -24,6 +24,7 @@ import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.getUs
 import static MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData.RequestType.GET_CATALOG;
 import static MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData.RequestType.GET_CATALOG_TITLE;
 import static android.widget.Toast.LENGTH_LONG;
+import static android.widget.Toast.LENGTH_SHORT;
 
 @SuppressWarnings("unchecked")
 public class ShowUserAlbumsActivity extends AppCompatActivity {
@@ -48,14 +49,13 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String catalogTitle = catalogTitleList.get(position);
                 String toast = "Loading: " + catalogTitle + "...";
-                Toast.makeText(ShowUserAlbumsActivity.this, toast, LENGTH_LONG).show();
+                Toast.makeText(ShowUserAlbumsActivity.this, toast, LENGTH_SHORT).show();
                 setSliceURLList(catalogIdList.get(position));
 
                 if (!ShowUserAlbumsActivity.slicesURLList.isEmpty())  {
-                    // TODO goToShowAlbumActivity(catalogTitle);
-                    Toast.makeText(ShowUserAlbumsActivity.this, "GOOD", LENGTH_LONG).show();
+                    goToShowAlbumActivity(catalogTitle);
                 } else {
-                    Toast.makeText(ShowUserAlbumsActivity.this, "BAD", LENGTH_LONG).show();
+                    Toast.makeText(ShowUserAlbumsActivity.this, "BAD", LENGTH_SHORT).show();
                 }
             }
         });
