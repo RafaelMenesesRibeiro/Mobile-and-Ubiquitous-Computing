@@ -21,6 +21,7 @@ import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
 import MobileAndUbiquitousComputing.P2Photos.msgtypes.SuccessResponse;
 
+@SuppressWarnings("unchecked")
 public class SearchUserActivity extends AppCompatActivity {
 
     @Override
