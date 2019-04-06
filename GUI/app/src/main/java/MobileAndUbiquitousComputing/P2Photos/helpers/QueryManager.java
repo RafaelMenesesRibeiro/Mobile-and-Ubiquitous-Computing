@@ -74,7 +74,9 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     result = getCatalogTitle(activity, connection);
                     break;
                 case GET_CATALOG:
-                    break;
+                    connection.setRequestMethod("GET");
+                    connection.setDoOutput(false);
+                    result = getCatalog(activity, connection);
                 case NEW_ALBUM:
                     connection.setRequestMethod("POST");
                     result = newAlbum(activity, connection, requestData);
@@ -199,6 +201,13 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData getCatalogTitle(Activity activity, HttpURLConnection connection) throws IOException {
+        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
+        connection.connect();
+        BasicResponse payload = getSuccessResponse(connection);
+        return new ResponseData(connection.getResponseCode(), payload);
+    }
+
+    private ResponseData getCatalog(Activity activity, HttpURLConnection connection) throws IOException  {
         connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
         connection.connect();
         BasicResponse payload = getSuccessResponse(connection);
