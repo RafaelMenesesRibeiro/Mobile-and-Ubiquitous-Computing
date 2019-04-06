@@ -52,7 +52,7 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String toast = "Loading: " + catalogTitleList.get(position) + "...";
                 Toast.makeText(ShowUserAlbumsActivity.this, toast, Toast.LENGTH_LONG).show();
-                
+
                 ArrayList<String> slicesList = getAlbumSlices(catalogIdList.get(position));
 
                 Intent intent = new Intent(ShowUserAlbumsActivity.this, ShowAlbumActivity.class);
@@ -116,11 +116,7 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
             }
         });
     }
-
-    public Handler getProgressBarHandler() {
-        return this.progressBarHandler;
-    }
-
+    
     private ArrayAdapter<String> newArrayAdapter(ArrayList<String> items) {
         return new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
     }
