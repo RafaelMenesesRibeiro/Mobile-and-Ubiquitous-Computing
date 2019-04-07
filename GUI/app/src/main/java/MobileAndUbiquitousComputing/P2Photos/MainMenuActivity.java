@@ -1,10 +1,15 @@
 package MobileAndUbiquitousComputing.P2Photos;
 
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,12 +21,31 @@ import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException
 import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
 
+import static com.google.android.gms.common.GooglePlayServicesUtil.getErrorDialog;
+
 public class MainMenuActivity extends AppCompatActivity {
+
+    private static final int GPS_REQUEST_CODE = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+
+        GoogleApiAvailability apiAvailabilityInstance = GoogleApiAvailability.getInstance();
+
+        int resultCode = apiAvailabilityInstance.isGooglePlayServicesAvailable(getApplicationContext());
+        if (!(resultCode == ConnectionResult.SUCCESS)) {
+            Dialog errorDialog = apiAvailabilityInstance.getErrorDialog(
+                    this, resultCode, GPS_REQUEST_CODE, new DialogInterface.OnCancelListener() {
+                        @Override
+                        public void onCancel(DialogInterface dialog) {
+                            finish();
+                        }
+                    });
+
+            if (errorDialog != null) { errorDialog.show(); }
+        }
     }
 
     @Override
