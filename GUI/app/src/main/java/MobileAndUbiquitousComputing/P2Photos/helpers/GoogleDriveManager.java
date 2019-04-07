@@ -1,8 +1,7 @@
 package MobileAndUbiquitousComputing.P2Photos.helpers;
 
-import android.view.View;
+import android.os.Environment;
 import android.widget.Toast;
-import android.content.Context;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.extensions.java6.auth.oauth2.AuthorizationCodeInstalledApp;
@@ -17,8 +16,6 @@ import com.google.api.client.http.GenericUrl;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.Preconditions;
-import com.google.api.client.util.store.DataStoreFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
@@ -28,25 +25,132 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.GeneralSecurityException;
 import java.util.Collections;
+import java.util.UUID;
+
+import MobileAndUbiquitousComputing.P2Photos.exceptions.GoogleDriveException;
 
 public class GoogleDriveManager {
 
-    private static final String APPLICATION_NAME = "p2photos/1.0";
-    private static final String UPLOAD_FILE_PATH = "Enter File Path";
-    private static final String DIR_FOR_DOWNLOADS = "Enter Download Directory";
-    private static final String FILE_NAME = "catalog";
-    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-
-    /**
-     * Global instance of the {@link DataStoreFactory}. It's best practice to use Singleton pattern.
-     */
     private static FileDataStoreFactory dataStoreFactory;
-    private static Drive drive;
-    private static HttpTransport httpTransport;
+    private static final String MIME_TXT = "text/plain";
+    private static final String MIME_JPG = "image/jpeg";
+    private static final String MIME_PNG = "image/png";
+
+    private final String APPLICATION_NAME = "p2photos/1.0";
+    private final String CATALOG_NAME = "catalog";
+    private final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+
+    private HttpTransport httpTransport;
+    private Drive drive;
+    private java.io.File downloadDirectory;
+
+    /*****************************************************
+     *
+     * GoogleDriveManager CONSTRUCTORS and PRIVATE METHODS
+     *
+     *****************************************************/
+
+    private static class GoogleDriveManagerHolder {
+        private static final GoogleDriveManager INSTANCE = new GoogleDriveManager();
+    }
+
+    public static synchronized GoogleDriveManager getInstance() {
+        return GoogleDriveManagerHolder.INSTANCE;
+    }
+
+    private GoogleDriveManager() {
+        try {
+            this.downloadDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            this.drive = newDrive(newCredential());
+            this.httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            GoogleDriveManager.dataStoreFactory = newFileDataStoreFactory();
+        } catch (IOException | GeneralSecurityException | GoogleDriveException exc) {
+            String message = "Could not construct a new Google Drive Manager";
+            Toast.makeText(AppContext.getAppContext(), message, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private File uploadFile(String fileName, String mimeType, boolean useDirectUpload) throws IOException {
+        File fileMetadata = new File();
+        fileMetadata.setName(fileName);
+
+        FileContent fileContent = new FileContent(mimeType, new java.io.File("TODO")); // TODO
+
+        Drive.Files.Create insert = drive.files().create(fileMetadata, fileContent);
+        MediaHttpUploader uploader = insert.getMediaHttpUploader();
+        uploader.setDirectUploadEnabled(useDirectUpload);
+        uploader.setProgressListener(null);
+        return insert.execute();
+    }
+
+    /*****************************************************
+     *
+     * GoogleDriveManager PUBLIC METHODS
+     *
+     *****************************************************/
+
+    public void downloadFile(boolean useDirectDownload, String googleDriveUrl)
+            throws GoogleDriveException {
+
+        try {
+            if (invalidDownloadDirectory()) {
+                throw new GoogleDriveException("Unable to create parent directory");
+            }
+
+            java.io.File uploadedFile = newUploadedFile(googleDriveUrl);
+            OutputStream out = new FileOutputStream(new java.io.File(downloadDirectory, uploadedFile.getName()));
+
+            MediaHttpDownloader downloader =
+                    new MediaHttpDownloader(httpTransport, drive.getRequestFactory().getInitializer());
+
+            downloader.setDirectDownloadEnabled(useDirectDownload);
+            downloader.setProgressListener(null);
+
+            downloader.download(new GenericUrl(new URL(googleDriveUrl)), out);
+        } catch (IOException | URISyntaxException exc) {
+            throw new GoogleDriveException("Could not download file from Google Drive");
+        }
+
+    }
+
+    public File uploadTXTFile() throws IOException {
+     return uploadFile(CATALOG_NAME, MIME_TXT, true);
+    }
+
+    public File uploadJPEGFile() throws IOException {
+    return uploadFile(UUID.randomUUID().toString(), MIME_JPG, true);
+    }
+
+    public File uploadPNGFile() throws IOException {
+    return uploadFile(UUID.randomUUID().toString(), MIME_PNG, true);
+    }
+
+    /*****************************************************
+     *
+     * PRIVATE HELPERS
+     *
+    *****************************************************/
+
+    private boolean validClientID(GoogleClientSecrets clientSecrets) {
+        return clientSecrets.getDetails().getClientId().trim().equals("");
+    }
+
+    private boolean validClientSecret(GoogleClientSecrets clientSecrets) {
+        return clientSecrets.getDetails().getClientSecret().trim().equals("");
+    }
+
+    private boolean invalidDownloadDirectory() {
+        return !downloadDirectory.exists() && !downloadDirectory.mkdirs();
+    }
 
     /** Authorizes the installed application to access user's protected data. */
-    private static Credential authorize(Context context) throws Exception {
+    private Credential newCredential() throws IOException, GoogleDriveException {
         // load client secrets
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(
                 JSON_FACTORY, new InputStreamReader(
@@ -54,8 +158,7 @@ public class GoogleDriveManager {
         );
         // soft validate secrets
         if (!validClientID(clientSecrets) || !validClientSecret(clientSecrets)) {
-            String message = "Please insert clientID and clientSecret into client_secrets.json";
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show();
+            throw new GoogleDriveException("Invalid client_secrets.json");
         }
 
         // set up authorization code flow
@@ -64,96 +167,30 @@ public class GoogleDriveManager {
                 Collections.singleton(DriveScopes.DRIVE_FILE)).setDataStoreFactory(dataStoreFactory)
                 .build();
 
-        // authorize
+        // newCredential
         return new AuthorizationCodeInstalledApp(flow, new LocalServerReceiver()).authorize("user");
     }
 
-    private static boolean validClientID(GoogleClientSecrets clientSecrets) {
-        return clientSecrets.getDetails().getClientId().trim().equals("");
+    private Drive newDrive(Credential credential) {
+        return new Drive.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(APPLICATION_NAME).build();
     }
 
-    private static boolean validClientSecret(GoogleClientSecrets clientSecrets) {
-        return clientSecrets.getDetails().getClientSecret().trim().equals("");
-    }
-
-    public static void main(String[] args) {
-        Preconditions.checkArgument(
-                !UPLOAD_FILE_PATH.startsWith("Enter ") && !DIR_FOR_DOWNLOADS.startsWith("Enter "),
-                "Please enter the upload file path and download directory in %s", DriveSample.class);
-
-        try {
-            httpTransport = GoogleNetHttpTransport.newTrustedTransport();
-            dataStoreFactory = new FileDataStoreFactory(DATA_STORE_DIR);
-            // authorization
-            Credential credential = authorize();
-            // set up the global Drive instance
-            drive = new Drive.Builder(httpTransport, JSON_FACTORY, credential).setApplicationName(
-                    APPLICATION_NAME).build();
-
-            // run commands
-
-            View.header1("Starting Resumable Media Upload");
-            File uploadedFile = uploadFile(false);
-
-            View.header1("Updating Uploaded File Name");
-            File updatedFile = updateFileWithTestSuffix(uploadedFile.getId());
-
-            View.header1("Starting Resumable Media Download");
-            downloadFile(false, updatedFile);
-
-            View.header1("Starting Simple Media Upload");
-            uploadedFile = uploadFile(true);
-
-            View.header1("Starting Simple Media Download");
-            downloadFile(true, uploadedFile);
-
-            View.header1("Success!");
-            return;
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-        } catch (Throwable t) {
-            t.printStackTrace();
+    /** Attempts to instantiate a FileDataStoreFactory that is shared by all GoogleDriveManagers */
+    private FileDataStoreFactory newFileDataStoreFactory() throws GoogleDriveException {
+        if (GoogleDriveManager.dataStoreFactory == null) {
+            try {
+                return new FileDataStoreFactory(AppContext.getAppContext().getFilesDir());
+            } catch (IOException ioe) {
+                String message = "Google Drive Manager FileDataStoreFactory could't be obtained";
+                throw new GoogleDriveException(message);
+            }
         }
-        System.exit(1);
+        return GoogleDriveManager.dataStoreFactory;
     }
-
-    /** Uploads a file using either resumable or direct media upload. */
-    private static File uploadFile(boolean useDirectUpload) throws IOException {
-        File fileMetadata = new File();
-        fileMetadata.setTitle(UPLOAD_FILE.getName());
-
-        FileContent mediaContent = new FileContent("image/jpeg", UPLOAD_FILE);
-
-        Drive.Files.Insert insert = drive.files().insert(fileMetadata, mediaContent);
-        MediaHttpUploader uploader = insert.getMediaHttpUploader();
-        uploader.setDirectUploadEnabled(useDirectUpload);
-        uploader.setProgressListener(new FileUploadProgressListener());
-        return insert.execute();
-    }
-
-    /** Updates the name of the uploaded file to have a "drivetest-" prefix. */
-    private static File updateFileWithTestSuffix(String id) throws IOException {
-        File fileMetadata = new File();
-        fileMetadata.setTitle("drivetest-" + UPLOAD_FILE.getName());
-
-        Drive.Files.Update update = drive.files().update(id, fileMetadata);
-        return update.execute();
-    }
-
-    /** Downloads a file using either resumable or direct media download. */
-    private static void downloadFile(boolean useDirectDownload, File uploadedFile)
-            throws IOException {
-        // create parent directory (if necessary)
-        java.io.File parentDir = new java.io.File(DIR_FOR_DOWNLOADS);
-        if (!parentDir.exists() && !parentDir.mkdirs()) {
-            throw new IOException("Unable to create parent directory");
-        }
-        OutputStream out = new FileOutputStream(new java.io.File(parentDir, uploadedFile.getTitle()));
-
-        MediaHttpDownloader downloader =
-                new MediaHttpDownloader(httpTransport, drive.getRequestFactory().getInitializer());
-        downloader.setDirectDownloadEnabled(useDirectDownload);
-        downloader.setProgressListener(new FileDownloadProgressListener());
-        downloader.download(new GenericUrl(uploadedFile.getDownloadUrl()), out);
+    ;
+    private java.io.File newUploadedFile(String urlString) throws MalformedURLException, URISyntaxException {
+        URL url = new URL(urlString);
+        URI uri = url.toURI();
+        return new java.io.File(uri);
     }
 }
