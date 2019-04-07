@@ -26,7 +26,7 @@ import MobileAndUbiquitousComputing.P2Photos.exceptions.PasswordException;
 import MobileAndUbiquitousComputing.P2Photos.exceptions.UsernameException;
 import MobileAndUbiquitousComputing.P2Photos.exceptions.UsernameExistsException;
 import MobileAndUbiquitousComputing.P2Photos.exceptions.WrongCredentialsException;
-import MobileAndUbiquitousComputing.P2Photos.helpers.Login;
+import MobileAndUbiquitousComputing.P2Photos.helpers.LoginManager;
 import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.msgtypes.ErrorResponse;
 
@@ -116,7 +116,7 @@ public class SignUpActivity extends AppCompatActivity {
                     Toast.LENGTH_LONG);
             toast.show();
         } catch (FailedLoginException flex) {
-            Toast toast = Toast.makeText(this, "The Login operation failed. Try again later",
+            Toast toast = Toast.makeText(this, "The LoginManager operation failed. Try again later",
                     Toast.LENGTH_LONG);
             toast.show();
         }
@@ -165,7 +165,7 @@ public class SignUpActivity extends AppCompatActivity {
         }
 
         try {
-            Login.login(this, username, password);
+            LoginManager.login(this, username, password);
         } catch (WrongCredentialsException wcex) {
             // Do nothing.
             // SHOULD NEVER BE HERE. AS THE CREDENTIALS WERE USED WITHOUT CHANGE FOR SIGNING UP.

@@ -12,7 +12,7 @@ import android.widget.Toast;
 
 import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.exceptions.WrongCredentialsException;
-import MobileAndUbiquitousComputing.P2Photos.helpers.Login;
+import MobileAndUbiquitousComputing.P2Photos.helpers.LoginManager;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -81,13 +81,13 @@ public class LoginActivity extends AppCompatActivity {
         username = username.trim();
         password = password.trim();
         try {
-            Login.login(this, username, password);
+            LoginManager.login(this, username, password);
             Intent intent = new Intent(this, MainMenuActivity.class);
             startActivity(intent);
         } catch (WrongCredentialsException wcex) {
             passwordInput.setText("");
         } catch (FailedLoginException flex) {
-            Toast toast = Toast.makeText(this, "The Login operation failed. Try again later",
+            Toast toast = Toast.makeText(this, "The LoginManager operation failed. Try again later",
                     Toast.LENGTH_LONG);
             toast.show();
         }

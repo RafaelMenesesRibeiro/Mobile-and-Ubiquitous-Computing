@@ -16,10 +16,10 @@ import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedLoginException;
 import MobileAndUbiquitousComputing.P2Photos.exceptions.WrongCredentialsException;
 
-public class Login {
+public class LoginManager {
 
     public static void login(Activity activity, String username, String password) throws FailedLoginException {
-        Log.i("MSG", "Login: " + username);
+        Log.i("MSG", "LoginManager: " + username);
 
         String url =
                 activity.getString(R.string.p2photo_host) + activity.getString(R.string.login_operation);
