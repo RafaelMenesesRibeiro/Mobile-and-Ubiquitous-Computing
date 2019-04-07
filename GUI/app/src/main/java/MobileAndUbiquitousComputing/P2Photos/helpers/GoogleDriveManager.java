@@ -94,8 +94,7 @@ public class GoogleDriveManager {
      *
      *****************************************************/
 
-    public void downloadFile(boolean useDirectDownload, String googleDriveUrl)
-            throws GoogleDriveException {
+    public void downloadFile(boolean useDirectDownload, String googleDriveUrl) throws GoogleDriveException {
 
         try {
             if (invalidDownloadDirectory()) {
@@ -111,6 +110,7 @@ public class GoogleDriveManager {
             downloader.setDirectDownloadEnabled(useDirectDownload);
             downloader.setProgressListener(null);
 
+            // TODO Verify why it used to be uploadedFile.getDownloadUrl() inside GenericUrl
             downloader.download(new GenericUrl(new URL(googleDriveUrl)), out);
         } catch (IOException | URISyntaxException exc) {
             throw new GoogleDriveException("Could not download file from Google Drive");
@@ -119,22 +119,22 @@ public class GoogleDriveManager {
     }
 
     public File uploadTXTFile() throws IOException {
-     return uploadFile(CATALOG_NAME, MIME_TXT, true);
+        return uploadFile(CATALOG_NAME, MIME_TXT, true);
     }
 
     public File uploadJPEGFile() throws IOException {
-    return uploadFile(UUID.randomUUID().toString(), MIME_JPG, true);
+        return uploadFile(UUID.randomUUID().toString(), MIME_JPG, true);
     }
 
     public File uploadPNGFile() throws IOException {
-    return uploadFile(UUID.randomUUID().toString(), MIME_PNG, true);
+        return uploadFile(UUID.randomUUID().toString(), MIME_PNG, true);
     }
 
     /*****************************************************
      *
      * PRIVATE HELPERS
      *
-    *****************************************************/
+     *****************************************************/
 
     private boolean validClientID(GoogleClientSecrets clientSecrets) {
         return clientSecrets.getDetails().getClientId().trim().equals("");
@@ -145,11 +145,13 @@ public class GoogleDriveManager {
     }
 
     private boolean invalidDownloadDirectory() {
+        // TODO is this check necessary in android?
         return !downloadDirectory.exists() && !downloadDirectory.mkdirs();
     }
 
     /** Authorizes the installed application to access user's protected data. */
     private Credential newCredential() throws IOException, GoogleDriveException {
+        // TODO Get credentials the android way - lets google it
         // load client secrets
         GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(
                 JSON_FACTORY, new InputStreamReader(
@@ -178,6 +180,9 @@ public class GoogleDriveManager {
     private FileDataStoreFactory newFileDataStoreFactory() throws GoogleDriveException {
         if (GoogleDriveManager.dataStoreFactory == null) {
             try {
+                // TODO #1 AppContext.getAppContext() is the only way to get a Context inside a
+                // TODO #1... Singleton instance of GoogleDriveManager
+                // TODO #2 getFilesDir() android, is this it? What should be here.
                 return new FileDataStoreFactory(AppContext.getAppContext().getFilesDir());
             } catch (IOException ioe) {
                 String message = "Google Drive Manager FileDataStoreFactory could't be obtained";
@@ -186,7 +191,7 @@ public class GoogleDriveManager {
         }
         return GoogleDriveManager.dataStoreFactory;
     }
-    ;
+
     private java.io.File newUploadedFile(String urlString) throws MalformedURLException, URISyntaxException {
         URL url = new URL(urlString);
         URI uri = url.toURI();
