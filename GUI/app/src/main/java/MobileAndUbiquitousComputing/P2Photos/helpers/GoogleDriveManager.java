@@ -41,10 +41,9 @@ public class GoogleDriveManager {
     private static final String MIME_TXT = "text/plain";
     private static final String MIME_JPG = "image/jpeg";
     private static final String MIME_PNG = "image/png";
-
-    private final String APPLICATION_NAME = "p2photos/1.0";
-    private final String CATALOG_NAME = "catalog";
-    private final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
+    private static final String APPLICATION_NAME = "p2photos/1.0";
+    private static final String CATALOG_NAME = "catalog";
+    private static final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
     private HttpTransport httpTransport;
     private Drive drive;
