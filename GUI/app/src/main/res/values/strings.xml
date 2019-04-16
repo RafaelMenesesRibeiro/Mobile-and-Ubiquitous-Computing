@@ -22,15 +22,13 @@
     <string name="choose_photo">Choose photo</string>
     <string name="add_photos">Add Photos</string>
     <string name="add_photo">Add Photo</string>
-    <string name="preference_file_key">MobileAndUbiquitousComputing.P2Photos.PREFERENCE_FILE_KEY</string>
-    <string name="session_id_key">sessionID</string>
     <string name="user_name_key">userName</string>
     <string name="user_albums">User albums</string>
 
     <!-- Server response error reasons -->
     <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>
     <string name="bad_pass">invalid password - p2photo passwords must be 8 to 50 characters long</string>
-    <string name="loading_complete">Loading complete...</string>
+    <string name="loading_complete">Loading complete…</string>
     <string name="no_membership">invalid membership - user does not belong to referenced album</string>
     <string name="no_user">invalid username - does not exist in p2photo databases</string>
 </resources>
