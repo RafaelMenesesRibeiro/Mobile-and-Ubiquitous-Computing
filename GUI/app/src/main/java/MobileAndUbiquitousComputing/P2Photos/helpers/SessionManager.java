@@ -20,6 +20,7 @@ public class SessionManager {
 
     private static final String SESSION_ID_SHARED_PREF = "P2Photos.SessionIDPreference";
     private static final String SESSION_ID_KEY = "sessionID";
+    private static final String USER_NAME_KEY = "userName";
 
     private static String sessionID;
     private static String userName = null;
@@ -33,7 +34,7 @@ public class SessionManager {
     public static String getUsername(Activity activity) {
         if (userName != null) { return userName; }
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
-        return sharedPref.getString(activity.getString(R.string.user_name_key), null);
+        return sharedPref.getString(USER_NAME_KEY, null);
     }
 
     public static void updateSessionID(Activity activity, String newSessionID) {
@@ -47,7 +48,7 @@ public class SessionManager {
     public static void updateUserName(Activity activity, String newUserName) {
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(activity.getString(R.string.user_name_key), newUserName);
+        editor.putString(USER_NAME_KEY, newUserName);
         editor.apply();
         userName = newUserName;
     }
