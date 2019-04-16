@@ -20,6 +20,8 @@ public class SessionManager {
     private static final String SESSION_ID_KEY = "sessionID";
     private static final String USER_NAME_KEY = "userName";
 
+    public static final String AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
+    public static final String TOKEN_ENDPOINT = "https://www.googleapis.com/oauth2/v4/token";
     private static String sessionID;
     private static String userName = null;
 
