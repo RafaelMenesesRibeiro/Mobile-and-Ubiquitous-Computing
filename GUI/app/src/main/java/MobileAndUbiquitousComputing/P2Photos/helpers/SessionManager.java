@@ -15,44 +15,40 @@ import org.json.JSONException;
 import MobileAndUbiquitousComputing.P2Photos.R;
 
 public class SessionManager {
-    private static final String AUTH_STATE = "AUTH_STATE";
-    private static final String AUTH_STATE_SHARED_PREF = "AuthStatePreference";
+    private static final String AUTH_STATE_SHARED_PREF = "P2Photos.AuthStatePreference";
+    private static final String AUTH_STATE_KEY = "authState";
+
+    private static final String SESSION_ID_SHARED_PREF = "P2Photos.SessionIDPreference";
+    private static final String SESSION_ID_KEY = "sessionID";
+
     private static String sessionID;
     private static String userName = null;
 
     public static String getSessionID(Activity activity) {
-        if (sessionID != null) {
-            return sessionID;
-        }
-        SharedPreferences sharedPref = activity.getSharedPreferences(
-                activity.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        return sharedPref.getString(activity.getString(R.string.session_id_key), null);
+        if (sessionID != null) { return sessionID; }
+        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
+        return sharedPref.getString(SESSION_ID_KEY, null);
     }
 
     public static String getUsername(Activity activity) {
-        if (userName != null) {
-            return userName;
-        }
-        SharedPreferences sharedPref = activity.getSharedPreferences(
-                activity.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        if (userName != null) { return userName; }
+        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         return sharedPref.getString(activity.getString(R.string.user_name_key), null);
     }
 
     public static void updateSessionID(Activity activity, String newSessionID) {
-        SharedPreferences sharedPref = activity.getSharedPreferences(
-                activity.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(activity.getString(R.string.session_id_key), newSessionID);
-        editor.apply(); //TODO: Change to editor.commit() if this will be called async
+        editor.putString(SESSION_ID_KEY, newSessionID);
+        editor.apply();
         sessionID = newSessionID;
     }
 
     public static void updateUserName(Activity activity, String newUserName) {
-        SharedPreferences sharedPref = activity.getSharedPreferences(
-                activity.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(activity.getString(R.string.user_name_key), newUserName);
-        editor.apply(); //TODO: Change to editor.commit() if this will be called async
+        editor.apply();
         userName = newUserName;
     }
 
@@ -67,20 +63,20 @@ public class SessionManager {
     @SuppressLint("ApplySharedPref")
     public static  void persistAuthState(@NonNull AuthState authState, @NonNull Activity activity) {
         activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE).edit()
-                .putString(AUTH_STATE, authState.jsonSerialize().toString())
+                .putString(AUTH_STATE_KEY, authState.jsonSerialize().toString())
                 .apply();
     }
 
     public static  void clearAuthState(@NonNull Activity activity) {
         activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE)
                 .edit()
-                .remove(AUTH_STATE)
+                .remove(AUTH_STATE_KEY)
                 .apply();
     }
 
     @Nullable
     public static AuthState restoreAuthState(@NonNull Activity activity) {
-        String jsonString =  activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE).getString(AUTH_STATE, null);
+        String jsonString =  activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE).getString(AUTH_STATE_KEY, null);
         if (!TextUtils.isEmpty(jsonString)) {
             try {
                 assert jsonString != null;
