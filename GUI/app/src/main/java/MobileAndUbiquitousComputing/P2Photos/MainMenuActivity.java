@@ -36,6 +36,8 @@ import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
 
 import static MobileAndUbiquitousComputing.P2Photos.helpers.AppContext.APP_LOG_TAG;
+import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.AUTH_ENDPOINT;
+import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.TOKEN_ENDPOINT;
 import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.persistAuthState;
 import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.restoreAuthState;
 
@@ -56,10 +58,8 @@ public class MainMenuActivity extends AppCompatActivity {
         @Override
         public void onClick(View view) {
             // Declare the authorization and token endpoints of the OAuth server we wish to authorize with
-            AuthorizationServiceConfiguration serviceConfiguration = new AuthorizationServiceConfiguration(
-                    Uri.parse("https://accounts.google.com/o/oauth2/v2/auth"),  // auth endpoint
-                    Uri.parse("https://www.googleapis.com/oauth2/v4/token")     // token endpoint
-            );
+            AuthorizationServiceConfiguration serviceConfiguration =
+                    new AuthorizationServiceConfiguration(Uri.parse(AUTH_ENDPOINT), Uri.parse(TOKEN_ENDPOINT), null);
 
             // Describes actual authorization request, including our OAuth APP clientId and the scopes we are requesting
             String clientId = "327056365677-stsv6tntebv1f2jj8agkcr84vrbs3llk.apps.googleusercontent.com";
