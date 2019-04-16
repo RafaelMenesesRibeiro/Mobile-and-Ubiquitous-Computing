@@ -71,7 +71,8 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void AddPhotosClicked(View view) {
-        // TODO - Implement this. //
+        Intent intent = new Intent(this, AddPhotosActivity.class);
+        startActivity(intent);
     }
 
     public void AddUsersClicked(View view) {
