@@ -14,9 +14,8 @@ import org.json.JSONException;
 
 import MobileAndUbiquitousComputing.P2Photos.R;
 
-import static MobileAndUbiquitousComputing.P2Photos.helpers.AppContext.AUTH_STATE;
-
 public class SessionManager {
+    private static final String AUTH_STATE = "AUTH_STATE";
     private static final String AUTH_STATE_SHARED_PREF = "AuthStatePreference";
     private static String sessionID;
     private static String userName = null;
