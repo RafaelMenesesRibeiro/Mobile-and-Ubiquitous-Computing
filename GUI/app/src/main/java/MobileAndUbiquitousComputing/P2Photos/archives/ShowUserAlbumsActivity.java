@@ -31,8 +31,14 @@ import static MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData.Requ
 import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.getUsername;
 */
 
-/*
+
+import android.annotation.SuppressLint;
+import android.support.v7.app.AppCompatActivity;
+
+@SuppressLint("Registered")
+@Deprecated
 public class ShowUserAlbumsActivity extends AppCompatActivity {
+    /*
     private ListView userAlbumsListView;
     private ArrayList<String> catalogIdList;
     private ArrayList<String> catalogTitleList;
@@ -150,5 +156,5 @@ public class ShowUserAlbumsActivity extends AppCompatActivity {
         intent.putStringArrayListExtra("slices", slicesList);
         startActivity(intent);
     }
+    */
 }
-*/

@@ -1,4 +1,4 @@
-package MobileAndUbiquitousComputing.P2Photos.helpers;
+package MobileAndUbiquitousComputing.P2Photos.archives;
 
 import android.os.Environment;
 import android.widget.Toast;
@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.UUID;
 
 import MobileAndUbiquitousComputing.P2Photos.exceptions.GoogleDriveException;
+import MobileAndUbiquitousComputing.P2Photos.helpers.AppContext;
 
 @Deprecated
 public class GoogleDriveManager {

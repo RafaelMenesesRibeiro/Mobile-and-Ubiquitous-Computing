@@ -1,11 +1,15 @@
 package MobileAndUbiquitousComputing.P2Photos.archives;
-/*
+
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
-import MobileAndUbiquitousComputing.P2Photos.ShowUserAlbumsActivity;
-
+@Deprecated
 public class SliceLoader implements Callable<ArrayList<String>> {
+    @Override
+    public ArrayList<String> call() throws Exception {
+        return null;
+    }
+    /*
     private final String catalogId;
     private final ShowUserAlbumsActivity activity;
 
@@ -23,5 +27,5 @@ public class SliceLoader implements Callable<ArrayList<String>> {
         return slicesList;
 
     }
+    */
 }
-*/
