@@ -35,6 +35,7 @@ import java.util.UUID;
 
 import MobileAndUbiquitousComputing.P2Photos.exceptions.GoogleDriveException;
 
+@Deprecated
 public class GoogleDriveManager {
 
     private static FileDataStoreFactory dataStoreFactory;
