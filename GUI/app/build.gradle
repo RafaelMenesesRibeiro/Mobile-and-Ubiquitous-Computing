@@ -38,7 +38,8 @@ dependencies {
     implementation 'com.google.apis:google-api-services-drive:v3-rev110-1.23.0'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'com.squareup.picasso:picasso:2.5.2'
-    implementation 'net.openid:appauth:0.7.1'
+    //noinspection GradleDependency
+    implementation 'net.openid:appauth:0.5.1'
 
     //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:28.0.0'
