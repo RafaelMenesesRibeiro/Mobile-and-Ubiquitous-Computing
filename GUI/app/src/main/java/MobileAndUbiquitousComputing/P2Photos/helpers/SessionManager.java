@@ -12,8 +12,6 @@ import net.openid.appauth.AuthState;
 
 import org.json.JSONException;
 
-import MobileAndUbiquitousComputing.P2Photos.R;
-
 public class SessionManager {
     private static final String AUTH_STATE_SHARED_PREF = "P2Photos.AuthStatePreference";
     private static final String AUTH_STATE_KEY = "authState";
