@@ -29,6 +29,7 @@
         <activity android:name="MobileAndUbiquitousComputing.P2Photos.SearchUserActivity" />
         <activity android:name="MobileAndUbiquitousComputing.P2Photos.ShowUserAlbumsActivity" />
         <activity android:name="MobileAndUbiquitousComputing.P2Photos.ShowAlbumActivity" />
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.AddPhotosActivity" />
     </application>
 
 </manifest>
