@@ -16,12 +16,15 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning"
         tools:targetApi="m">
 
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.SignUpActivity">
+        <activity android:name="net.openid.appauth.RedirectUriReceiverActivity">
             <intent-filter>
-                <action android:name="MobileAndUbiquitousComputing.HANDLE_AUTHORIZATION_RESPONSE"/>
+                <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="com.google.codelabs.appauth"/>
             </intent-filter>
         </activity>
+
         <activity android:name="MobileAndUbiquitousComputing.P2Photos.LoginActivity">
             <intent-filter>
                 <action android:name="MobileAndUbiquitousComputing.HANDLE_AUTHORIZATION_RESPONSE"/>
@@ -32,14 +35,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="net.openid.appauth.RedirectUriReceiverActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="com.google.codelabs.appauth"/>
-            </intent-filter>
-        </activity>
+
         <activity android:name="MobileAndUbiquitousComputing.P2Photos.MainMenuActivity"/>
         <activity android:name="MobileAndUbiquitousComputing.P2Photos.NewAlbumMemberActivity" />
         <activity android:name="MobileAndUbiquitousComputing.P2Photos.NewAlbumActivity" />

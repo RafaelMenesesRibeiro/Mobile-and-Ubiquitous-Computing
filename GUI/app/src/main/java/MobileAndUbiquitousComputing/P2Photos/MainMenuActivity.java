@@ -2,18 +2,11 @@ package MobileAndUbiquitousComputing.P2Photos;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-
-import net.openid.appauth.AuthState;
-import net.openid.appauth.AuthorizationException;
-import net.openid.appauth.AuthorizationResponse;
-import net.openid.appauth.AuthorizationService;
-import net.openid.appauth.TokenResponse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,9 +18,6 @@ import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException
 import MobileAndUbiquitousComputing.P2Photos.helpers.AppContext;
 import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
-
-import static MobileAndUbiquitousComputing.P2Photos.helpers.AppContext.APP_LOG_TAG;
-import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.persistAuthState;
 
 public class MainMenuActivity extends AppCompatActivity {
 
@@ -68,41 +58,6 @@ public class MainMenuActivity extends AppCompatActivity {
                 default:
                     break;
             }
-        }
-    }
-
-    /*
-     * AppAuth provides the AuthorizationResponse to this activity, via the provided RedirectUriReceiverActivity.
-     * From it we can ultimately obtain a TokenResponse which we can use to make calls to the API;
-     */
-    private void handleAuthorizationResponse(@NonNull Intent intent) {
-        // Obtain the AuthorizationResponse from the Intent
-        AuthorizationResponse response = AuthorizationResponse.fromIntent(intent);
-        AuthorizationException error = AuthorizationException.fromIntent(intent);
-        // The AuthState object created here is a convenient way to store details from the authorization session.
-        // We can update it with the results of new OAuth responses
-        // We can also persist it to store the authorization session between app starts.
-        final AuthState authState = new AuthState(response, error);
-
-        // Exchange authorization code for the refresh and access tokens, and update the AuthState instance
-        if (response != null) {
-            Log.i(APP_LOG_TAG, "Handled Authorization Response " + authState.jsonSerialize().toString());
-            AuthorizationService service = new AuthorizationService(this);
-            service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
-                @Override
-                public void onTokenRequestCompleted(@Nullable TokenResponse token, @Nullable AuthorizationException exc) {
-                    if (exc != null) {
-                        Log.w(APP_LOG_TAG, "Token Exchange failed", exc);
-                    } else {
-                        if (token != null) {
-                            authState.update(token, exc);
-                            persistAuthState(authState, MainMenuActivity.this);
-                            enablePostAuthorizationFlows();
-                            Log.i(APP_LOG_TAG, "Token Response [ Access Token: " + token.accessToken + ", ID Token: " + token.idToken + " ]");
-                        }
-                    }
-                }
-            });
         }
     }
 
