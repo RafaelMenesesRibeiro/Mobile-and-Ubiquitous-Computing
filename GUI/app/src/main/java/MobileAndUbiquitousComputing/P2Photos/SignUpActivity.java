@@ -165,7 +165,7 @@ public class SignUpActivity extends AppCompatActivity {
         }
 
         try {
-            LoginManager.login(this, username, password);
+            LoginManager.tryLogin(this, username, password);
         } catch (WrongCredentialsException wcex) {
             // Do nothing.
             // SHOULD NEVER BE HERE. AS THE CREDENTIALS WERE USED WITHOUT CHANGE FOR SIGNING UP.
