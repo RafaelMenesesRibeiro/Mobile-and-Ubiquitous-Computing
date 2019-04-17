@@ -31,11 +31,12 @@ import MobileAndUbiquitousComputing.P2Photos.dataobjects.PostRequestData;
 import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedLoginException;
-import MobileAndUbiquitousComputing.P2Photos.exceptions.WrongCredentialsException;
+import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException;
 import MobileAndUbiquitousComputing.P2Photos.helpers.AppContext;
 import MobileAndUbiquitousComputing.P2Photos.helpers.AuthorizationCodes;
 import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
+import MobileAndUbiquitousComputing.P2Photos.msgtypes.ErrorResponse;
 
 import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.AUTH_ENDPOINT;
 import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.TOKEN_ENDPOINT;
@@ -46,6 +47,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String SIGN_UP_TAG = "SIGN UP";
     private static final String APP_ID = "327056365677-stsv6tntebv1f2jj8agkcr84vrbs3llk.apps.googleusercontent.com";
     private static final Uri REDIRECT_URI = Uri.parse("https://127.0.0.1");
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,63 +92,89 @@ public class LoginActivity extends AppCompatActivity {
         // Do nothing. Prevents going back after logging out.
     }
 
+    /**********************************************************
+    * SIGN UP HELPERS
+    ***********************************************************/
+
     public void onSignUpPressed(View view) {
         EditText usernameEditText = findViewById(R.id.usernameInputBox);
         EditText passwordEditText = findViewById(R.id.passwordInputBox);
-
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
-
-        Intent intent = new Intent(this, SignUpActivity.class);
-        intent.putExtra("username", usernameValue);
-        intent.putExtra("password", passwordValue);
-
-        startActivity(intent);
+        trySignUp(usernameValue, passwordValue);
     }
+
+    private void trySignUp(String usernameValue, String passwordValue) {
+        try {
+            Log.i(SIGN_UP_TAG, "Starting Sign Up operation for user: " + usernameValue + "...");
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("username", usernameValue);
+            requestBody.put("password", passwordValue);
+
+            String url = getString(R.string.p2photo_host) + getString(R.string.signup_operation);
+            RequestData requestData = new PostRequestData(this, RequestData.RequestType.SIGNUP, url, requestBody);
+
+            ResponseData result = new QueryManager().execute(requestData).get();
+            int code = result.getServerCode();
+            if (code == HttpURLConnection.HTTP_OK) {
+                Log.i(SIGN_UP_TAG, "Sign Up successful");
+            } else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
+                ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
+                String reason = errorResponse.getReason();
+                if (reason.equals(getString(R.string.bad_user))) {
+                    Log.i(SIGN_UP_TAG, "Sign Up unsuccessful. Username does not abide the rules... ");
+                    Toast.makeText(getApplicationContext(), getString(R.string.bad_user), LENGTH_LONG).show();
+                } else if (reason.equals(getString(R.string.bad_pass))) {
+                    Log.i(SIGN_UP_TAG,"Sign Up unsuccessful the password does not abide the rules... ");
+                    Toast.makeText(getApplicationContext(), getString(R.string.bad_pass), LENGTH_LONG).show();
+                }
+            } else if (code == 422) {
+                Log.i(SIGN_UP_TAG, "Sign Up unsuccessful. The chosen username already exists.");
+                Toast.makeText(getApplicationContext(), "Chosen username already exists. Choose another...", LENGTH_LONG).show();
+            } else {
+                Log.i(SIGN_UP_TAG,"Sign Up unsuccessful. Server response code: " + code);
+                Toast.makeText(getApplicationContext(), "Unexpected error, try later...", LENGTH_LONG).show();
+            }
+        } catch (JSONException | ExecutionException | InterruptedException ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+    }
+
+    /**********************************************************
+     * LOGIN HELPERS
+     ***********************************************************/
 
     public void onLoginPressed(View view) {
         EditText usernameEditText = findViewById(R.id.usernameInputBox);
         EditText passwordEditText = findViewById(R.id.passwordInputBox);
-
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
-
-        try {
-            tryLogin(this, usernameValue, passwordValue);
-            Intent intent = new Intent(this, MainMenuActivity.class);
-            startActivity(intent);
-        } catch (WrongCredentialsException wc) {
-            passwordEditText.setText("");
-        } catch (FailedLoginException fl) {
-            Toast.makeText(this, "Login operation failed...", LENGTH_LONG).show();
-        }
-
+        tryLogin(usernameValue, passwordValue);
         validateGooglelAPIAuthorization();
     }
 
-    public static void tryLogin(Activity activity, String username, String password) throws FailedLoginException {
-        Log.i(LOGIN_TAG, "Starting tryLogin operation for username: " + username + "...");
-
+    public void tryLogin(String username, String password) throws FailedLoginException {
         try {
-            String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.login_operation);
+            Log.i(LOGIN_TAG, "Starting Login operation for user: " + username + "...");
 
             JSONObject requestBody = new JSONObject();
             requestBody.put("username", username);
             requestBody.put("password", password);
 
-            RequestData requestData = new PostRequestData(activity, RequestData.RequestType.LOGIN, url, requestBody);
+            String url = getString(R.string.p2photo_host) + getString(R.string.login_operation);
+            RequestData requestData = new PostRequestData(this, RequestData.RequestType.LOGIN, url, requestBody);
             ResponseData result = new QueryManager().execute(requestData).get();
 
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
                 Log.i(LOGIN_TAG, "Login operation succeded");
-                SessionManager.updateUserName(activity, username);
+                SessionManager.updateUserName(this, username);
             } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 Log.i(LOGIN_TAG, "Login operation failed. The username or password are incorrect.");
-                throw new WrongCredentialsException();
+                Toast.makeText(getApplicationContext(), "Incorrect credential combination", LENGTH_LONG).show();
             } else {
                 Log.i(LOGIN_TAG,"Login operation failed. Server error with response code: " + code);
-                throw new FailedLoginException();
             }
 
         } catch (JSONException | ExecutionException | InterruptedException ex) {
@@ -154,13 +182,15 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-
+    /**********************************************************
+     * GOOGLE API OAUTH HELPERS
+     ***********************************************************/
 
     /*
-    * Generate an authorization request with scopes the user should authorize this app to manage;
-    * Ideally, there is one instance of AuthorizationService per Activity;
-    * PendingIntent is used to handle the authorization request response
-    */
+     * Generate an authorization request with scopes the user should authorize this app to manage;
+     * Ideally, there is one instance of AuthorizationService per Activity;
+     * PendingIntent is used to handle the authorization request response
+     */
     private static void tryGetAuthState() {
         Context currentContext = AppContext.getAppContext();
         AuthorizationRequest request = newAuthorizationRequest();
@@ -170,10 +200,6 @@ public class LoginActivity extends AppCompatActivity {
         PendingIntent pendingIntent = PendingIntent.getActivity(currentContext, request.hashCode(), postAuthorizationIntent, 0);
         authorizationService.performAuthorizationRequest(request, pendingIntent);
     }
-
-    /**********************************************************
-    * HELPERS
-    ***********************************************************/
 
     /*
     * Describes an authorization request, including the application clientId for the OAuth and the respective scopes
@@ -213,7 +239,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     /**********************************************************
-     * UI Related code
+     * UI HELPERS
      ***********************************************************/
 
     private void ActivateButtons(EditText usernameInput, EditText passwordInput, Button loginButton, Button signupButton) {
