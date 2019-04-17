@@ -27,19 +27,19 @@ public class SessionManager {
     private static String sessionID;
     private static String userName = null;
 
-    public static String getSessionID(Activity activity) {
+    public static String getSessionID(@NonNull Activity activity) {
         if (sessionID != null) { return sessionID; }
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         return sharedPref.getString(SESSION_ID_KEY, null);
     }
 
-    public static String getUsername(Activity activity) {
+    public static String getUsername(@NonNull Activity activity) {
         if (userName != null) { return userName; }
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         return sharedPref.getString(USER_NAME_KEY, null);
     }
 
-    public static void updateSessionID(Activity activity, String newSessionID) {
+    public static void updateSessionID(@NonNull Activity activity, @NonNull String newSessionID) {
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(SESSION_ID_KEY, newSessionID);
@@ -47,7 +47,7 @@ public class SessionManager {
         sessionID = newSessionID;
     }
 
-    public static void updateUserName(Activity activity, String newUserName) {
+    public static void updateUserName(@NonNull Activity activity, @NonNull String newUserName) {
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(USER_NAME_KEY, newUserName);
@@ -55,11 +55,11 @@ public class SessionManager {
         userName = newUserName;
     }
 
-    public static void deleteSessionID(Activity activity) {
+    public static void deleteSessionID(@NonNull  Activity activity) {
         updateSessionID(activity, null);
     }
 
-    public static void deleteUserName(Activity activity) {
+    public static void deleteUserName(@NonNull  Activity activity) {
         updateUserName(activity, null);
     }
 
