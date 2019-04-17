@@ -7,7 +7,7 @@ import android.content.Context;
 @SuppressLint("Registered")
 public class AppContext extends Application {
     public static final String USED_INTENT = "USED_INTENT";
-    public static final String APP_LOG_TAG = "P2PHOTO MESSAGE";
+    public static final String APP_LOG_TAG = "P2PHOTO";
 
     @SuppressLint("StaticFieldLeak")
     private static volatile Context context;
