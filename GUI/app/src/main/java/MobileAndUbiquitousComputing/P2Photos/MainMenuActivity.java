@@ -1,8 +1,6 @@
 package MobileAndUbiquitousComputing.P2Photos;
 
-import android.app.PendingIntent;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,35 +9,25 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
-import net.openid.appauth.AuthorizationRequest;
 import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
-import net.openid.appauth.AuthorizationServiceConfiguration;
 import net.openid.appauth.TokenResponse;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
-import org.json.JSONObject;
-
 import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException;
 import MobileAndUbiquitousComputing.P2Photos.helpers.AppContext;
-import MobileAndUbiquitousComputing.P2Photos.helpers.AuthorizationCodes;
 import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
 
 import static MobileAndUbiquitousComputing.P2Photos.helpers.AppContext.APP_LOG_TAG;
-import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.AUTH_ENDPOINT;
-import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.TOKEN_ENDPOINT;
 import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.persistAuthState;
-import static MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager.restoreAuthState;
 
 public class MainMenuActivity extends AppCompatActivity {
 
@@ -57,50 +45,7 @@ public class MainMenuActivity extends AppCompatActivity {
     public static class AuthorizeListener implements Button.OnClickListener {
         @Override
         public void onClick(View view) {
-            // Declare the authorization and token endpoints of the OAuth server we wish to authorize with
-            AuthorizationServiceConfiguration serviceConfiguration =
-                    new AuthorizationServiceConfiguration(Uri.parse(AUTH_ENDPOINT), Uri.parse(TOKEN_ENDPOINT), null);
 
-            // Describes actual authorization request, including our OAuth APP clientId and the scopes we are requesting
-            String clientId = "327056365677-stsv6tntebv1f2jj8agkcr84vrbs3llk.apps.googleusercontent.com";
-            Uri redirectUri = Uri.parse("https://127.0.0.1");                   // loopback address
-            AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(
-                    serviceConfiguration,
-                    clientId,
-                    AuthorizationCodes.RESPONSE_TYPE_CODE,
-                    redirectUri
-            );
-            builder.setScopes("profile");                                       // Declare scope here. drive.files, etc.
-            AuthorizationRequest request = builder.build();
-
-            // Ideally, there is one instance of AuthorizationService per Activity
-            AuthorizationService authorizationService = new AuthorizationService(view.getContext());
-
-            // Create the PendingIntent to handle the authorization response
-            String action = "MobileAndUbiquitousComputing.P2Photos.HANDLE_AUTHORIZATION_RESPONSE";
-            Intent postAuthorizationIntent = new Intent(action);
-            PendingIntent pendingIntent = PendingIntent.getActivity(
-                    view.getContext(), request.hashCode(), postAuthorizationIntent, 0
-            );
-            // Perform authorization request
-            authorizationService.performAuthorizationRequest(request, pendingIntent);
-
-            /*
-                To add handling for the authorization response. We have to add hooks into the app in order to receive
-            the authorization response from the browser.
-
-                First we register RedirectUriReceiverActivity intent-filters in AndroidManifest.xml, inside the
-            <application> block. This registers the app to receive the OAuth2 authorization response intent from the
-            system browser on our behalf.
-
-                Then, add a new intent-filter to your <activity android:name=".MainActivity"> so AppAuth can pass the
-            authorization response to your main activity.
-
-                After updating the Android Manifest file we need to create methods to handle the received intents:
-                #onNewIntent
-                #checkIntent
-                #onStart
-            */
         }
     }
 
