@@ -64,7 +64,6 @@ public class SessionManager {
         updateUserName(activity, null);
     }
 
-    @SuppressLint("ApplySharedPref")
     public static  void persistAuthState(@NonNull AuthState authState, @NonNull Activity activity) {
         activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE).edit()
                 .putString(AUTH_STATE_KEY, authState.jsonSerialize().toString())
