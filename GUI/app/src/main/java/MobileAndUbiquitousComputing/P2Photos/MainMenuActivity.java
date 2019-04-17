@@ -2,11 +2,9 @@ package MobileAndUbiquitousComputing.P2Photos;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +13,6 @@ import java.util.concurrent.ExecutionException;
 import MobileAndUbiquitousComputing.P2Photos.dataobjects.RequestData;
 import MobileAndUbiquitousComputing.P2Photos.dataobjects.ResponseData;
 import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException;
-import MobileAndUbiquitousComputing.P2Photos.helpers.AppContext;
 import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
 
@@ -30,61 +27,6 @@ public class MainMenuActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
-    }
-
-    public static class AuthorizeListener implements Button.OnClickListener {
-        @Override
-        public void onClick(View view) {
-
-        }
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        checkIntent(intent);
-    }
-
-    private void checkIntent(@Nullable Intent intent) {
-        if (intent != null) {
-            String action = intent.getAction();
-            assert action != null;
-            switch (action) {
-                case "MobileAndUbiquitousComputing.P2Photos.HANDLE_AUTHORIZATION_RESPONSE":
-                    if (!intent.hasExtra(AppContext.USED_INTENT)) {
-                        handleAuthorizationResponse(intent);
-                        intent.putExtra(AppContext.USED_INTENT, true);
-                    }
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
-
-    private void enablePostAuthorizationFlows() {
-        // TODO
-        /*
-        mAuthState = restoreAuthState(MainMenuActivity.this);
-        if (mAuthState != null && mAuthState.isAuthorized()) {
-            if (mMakeApiCall.getVisibility() == View.GONE) {
-                mMakeApiCall.setVisibility(View.VISIBLE);
-                mMakeApiCall.setOnClickListener(new MakeApiCallListener(this, mAuthState, new AuthorizationService(this)));
-            }
-            if (mSignOut.getVisibility() == View.GONE) {
-                mSignOut.setVisibility(View.VISIBLE);
-                mSignOut.setOnClickListener(new SignOutListener(this));
-            }
-        } else {
-            mMakeApiCall.setVisibility(View.GONE);
-            mSignOut.setVisibility(View.GONE);
-        }
-        */
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        checkIntent(getIntent());
     }
 
     public void viewAlbumClicked(View view) {
