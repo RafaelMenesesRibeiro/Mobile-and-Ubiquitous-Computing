@@ -82,7 +82,7 @@ public class SessionManager {
     public static AuthState restoreAuthState(@NonNull Activity activity) {
         String jsonString =
                 activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE)
-                .getString(AUTH_STATE_KEY, null);
+                        .getString(AUTH_STATE_KEY, null);
 
         if (!TextUtils.isEmpty(jsonString)) {
             try {
@@ -94,6 +94,4 @@ public class SessionManager {
         }
         return null;
     }
-
-
 }
