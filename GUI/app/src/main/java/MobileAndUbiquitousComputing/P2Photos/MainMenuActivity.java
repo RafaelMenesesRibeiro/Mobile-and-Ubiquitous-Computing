@@ -80,7 +80,7 @@ public class MainMenuActivity extends AppCompatActivity {
             if (code == 200) {
                 Log.i("STATUS", "The logout operation was successful");
                 SessionManager.deleteSessionID(this);
-                SessionManager.deleteUserName(this);
+                SessionManager.deleteUsername(this);
             } else {
                 Log.i("STATUS", "The login operation was unsuccessful. Unknown error.");
                 throw new FailedOperationException();
