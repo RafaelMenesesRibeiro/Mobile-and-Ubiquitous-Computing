@@ -21,8 +21,7 @@ public class LoginManager {
     private static final String LOGIN_MGR_TAG = "LOGIN MGR";
 
     public static void login(Activity activity, String username, String password) throws FailedLoginException {
-        Log.i(LOGIN_MGR_TAG, "LoginManager: " + username);
-
+        Log.i(LOGIN_MGR_TAG, "Starting login operation for username: " + username + "...");
         String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.login_operation);
 
         try {
