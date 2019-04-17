@@ -1,15 +1,10 @@
 package MobileAndUbiquitousComputing.P2Photos;
 
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,38 +16,17 @@ import MobileAndUbiquitousComputing.P2Photos.exceptions.FailedOperationException
 import MobileAndUbiquitousComputing.P2Photos.helpers.QueryManager;
 import MobileAndUbiquitousComputing.P2Photos.helpers.SessionManager;
 
-import static com.google.android.gms.common.GooglePlayServicesUtil.getErrorDialog;
-
 public class MainMenuActivity extends AppCompatActivity {
-
-    private static final int GPS_REQUEST_CODE = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-
-        GoogleApiAvailability apiAvailabilityInstance = GoogleApiAvailability.getInstance();
-
-        int resultCode = apiAvailabilityInstance.isGooglePlayServicesAvailable(getApplicationContext());
-        if (!(resultCode == ConnectionResult.SUCCESS)) {
-            Dialog errorDialog = apiAvailabilityInstance.getErrorDialog(
-                    this, resultCode, GPS_REQUEST_CODE, new DialogInterface.OnCancelListener() {
-                        @Override
-                        public void onCancel(DialogInterface dialog) {
-                            finish();
-                        }
-                    });
-
-            if (errorDialog != null) { errorDialog.show(); }
-        }
     }
 
     @Override
     public void onBackPressed() {
-        // Do nothing.
-        // Prevents going back to the login screen, or the previously completed
-        // activity.
+
     }
 
     public void viewAlbumClicked(View view) {
@@ -71,7 +45,8 @@ public class MainMenuActivity extends AppCompatActivity {
     }
 
     public void AddPhotosClicked(View view) {
-        // TODO - Implement this. //
+        Intent intent = new Intent(this, AddPhotosActivity.class);
+        startActivity(intent);
     }
 
     public void AddUsersClicked(View view) {
@@ -105,7 +80,7 @@ public class MainMenuActivity extends AppCompatActivity {
             if (code == 200) {
                 Log.i("STATUS", "The logout operation was successful");
                 SessionManager.deleteSessionID(this);
-                SessionManager.deleteUserName(this);
+                SessionManager.deleteUsername(this);
             } else {
                 Log.i("STATUS", "The login operation was unsuccessful. Unknown error.");
                 throw new FailedOperationException();
