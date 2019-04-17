@@ -157,6 +157,7 @@ public class LoginActivity extends AppCompatActivity {
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
                 Log.i(SIGN_UP_TAG, "Sign Up successful");
+                Toast.makeText(getApplicationContext(), "Created account successfully", LENGTH_LONG).show();
                 return true;
             } else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
@@ -168,16 +169,16 @@ public class LoginActivity extends AppCompatActivity {
                     Log.i(SIGN_UP_TAG,"Sign Up unsuccessful the password does not abide the rules... ");
                     Toast.makeText(getApplicationContext(), getString(R.string.bad_pass), LENGTH_LONG).show();
                 }
-                return false;
             } else if (code == 422) {
                 Log.i(SIGN_UP_TAG, "Sign Up unsuccessful. The chosen username already exists.");
                 Toast.makeText(getApplicationContext(), "Chosen username already exists. Choose another...", LENGTH_LONG).show();
-                return false;
             } else {
                 Log.i(SIGN_UP_TAG,"Sign Up unsuccessful. Server response code: " + code);
                 Toast.makeText(getApplicationContext(), "Unexpected error, try later...", LENGTH_LONG).show();
-                return false;
             }
+            
+            return false;
+
         } catch (JSONException | ExecutionException | InterruptedException ex) {
             throw new FailedOperationException(ex.getMessage());
         }
@@ -192,11 +193,12 @@ public class LoginActivity extends AppCompatActivity {
         EditText passwordEditText = findViewById(R.id.passwordInputBox);
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
-        tryLogin(usernameValue, passwordValue);
-        tryAuthorizeDriveManagement();
+        if (tryLogin(usernameValue, passwordValue)) {
+            startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+        }
     }
 
-    public void tryLogin(String username, String password) throws FailedLoginException {
+    public boolean tryLogin(String username, String password) throws FailedLoginException {
         try {
             Log.i(LOGIN_TAG, "Starting Login operation for user: " + username + "...");
 
@@ -211,17 +213,24 @@ public class LoginActivity extends AppCompatActivity {
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
                 Log.i(LOGIN_TAG, "Login operation succeded");
-                SessionManager.updateUserName(this, username);
+                Toast.makeText(getApplicationContext(), "Welcome " + username, LENGTH_LONG).show();
+                SessionManager.updateUsername(this, username);
+                return true;
             } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 Log.i(LOGIN_TAG, "Login operation failed. The username or password are incorrect.");
                 Toast.makeText(getApplicationContext(), "Incorrect credential combination", LENGTH_LONG).show();
             } else {
                 Log.i(LOGIN_TAG,"Login operation failed. Server error with response code: " + code);
+                Toast.makeText(getApplicationContext(), "Unexpected error... Try again later", LENGTH_LONG).show();
             }
+
+            return false;
 
         } catch (JSONException | ExecutionException | InterruptedException ex) {
             throw new FailedLoginException(ex.getMessage());
         }
+
+        // tryAuthorizeDriveManagement();
     }
 
     /**********************************************************
@@ -304,32 +313,12 @@ public class LoginActivity extends AppCompatActivity {
                         if (token != null) {
                             authState.update(token, exc);
                             persistAuthState(authState, LoginActivity.this);
-                            enablePostAuthorizationFlows();
                             Log.i(AUTH_REQUEST_TAG, "Token Response [ Access Token: " + token.accessToken + ", ID Token: " + token.idToken + " ]");
                         }
                     }
                 }
             });
         }
-    }
-    private void enablePostAuthorizationFlows() {
-        // TODO
-        /*
-        mAuthState = restoreAuthState(MainMenuActivity.this);
-        if (mAuthState != null && mAuthState.isAuthorized()) {
-            if (mMakeApiCall.getVisibility() == View.GONE) {
-                mMakeApiCall.setVisibility(View.VISIBLE);
-                mMakeApiCall.setOnClickListener(new MakeApiCallListener(this, mAuthState, new AuthorizationService(this)));
-            }
-            if (mSignOut.getVisibility() == View.GONE) {
-                mSignOut.setVisibility(View.VISIBLE);
-                mSignOut.setOnClickListener(new SignOutListener(this));
-            }
-        } else {
-            mMakeApiCall.setVisibility(View.GONE);
-            mSignOut.setVisibility(View.GONE);
-        }
-        */
     }
 
     /**********************************************************
@@ -347,6 +336,5 @@ public class LoginActivity extends AppCompatActivity {
             loginButton.setTextColor(getResources().getColor(R.color.almostBlack));
         }
     }
-
 
 }
