@@ -4,9 +4,10 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
-        applicationId "MobileAndUbiquitousComputing.P2Photos"
         minSdkVersion 15
         targetSdkVersion 28
+        multiDexEnabled true
+        applicationId "MobileAndUbiquitousComputing.P2Photos"
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
