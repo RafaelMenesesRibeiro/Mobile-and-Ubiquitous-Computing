@@ -46,7 +46,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
             connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Accept", "application/json");
-            connection.setDoOutput(true); // TODO THIS SHOULD BE FALSE IN GET REQUESTS
+            connection.setDoOutput(true);
             connection.setDoInput(true);
             connection.setConnectTimeout(2000);
             RequestData.RequestType type = requestData.getRequestType();
