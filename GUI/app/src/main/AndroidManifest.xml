@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="MobileAndUbiquitousComputing.P2Photos">
+    package="cmov1819.p2photo">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -16,18 +16,19 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning"
         tools:targetApi="m">
 
-        <activity android:name="net.openid.appauth.RedirectUriReceiverActivity">
+        <activity android:name="net.openid.appauth.RedirectUriReceiverActivity"
+            tools:node="replace">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="com.google.codelabs.appauth"/>
+                <data android:scheme="cmov1819.p2photo"/>
             </intent-filter>
         </activity>
 
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.LoginActivity">
+        <activity android:name="cmov1819.p2photo.LoginActivity">
             <intent-filter>
-                <action android:name="MobileAndUbiquitousComputing.HANDLE_AUTHORIZATION_RESPONSE"/>
+                <action android:name="cmov1819.HANDLE_AUTHORIZATION_RESPONSE"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
             <intent-filter>
@@ -36,13 +37,13 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.MainMenuActivity"/>
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.NewAlbumMemberActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.NewAlbumActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.SearchUserActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.ShowUserAlbumsActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.ShowAlbumActivity"/>
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.AddPhotosActivity" />
+        <activity android:name="cmov1819.p2photo.MainMenuActivity"/>
+        <activity android:name="cmov1819.p2photo.NewAlbumMemberActivity" />
+        <activity android:name="cmov1819.p2photo.NewAlbumActivity" />
+        <activity android:name="cmov1819.p2photo.SearchUserActivity" />
+        <activity android:name="cmov1819.p2photo.ShowUserAlbumsActivity" />
+        <activity android:name="cmov1819.p2photo.ShowAlbumActivity"/>
+        <activity android:name="cmov1819.p2photo.AddPhotosActivity" />
     </application>
 
 </manifest>

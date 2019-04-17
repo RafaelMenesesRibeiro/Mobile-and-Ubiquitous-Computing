@@ -11,7 +11,7 @@
     <string name="view_album_details_endpoint">https://p2photo-production.herokuapp.com/viewAlbumDetails</string>
     <string name="view_album_endpoint">https://p2photo-production.herokuapp.com/viewAlbum</string>
     <!-- Labels -->
-    <string name="app_name">P2Photos</string>
+    <string name="app_name">p2photo</string>
     <string name="introduce_a_title_for_your_album">Introduce a title for your album</string>
     <string name="done">Done</string>
     <string name="create_album">Create Album</string>

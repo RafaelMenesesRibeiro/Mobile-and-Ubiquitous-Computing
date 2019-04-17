@@ -7,13 +7,15 @@ android {
         minSdkVersion 15
         targetSdkVersion 28
         multiDexEnabled true
-        applicationId "MobileAndUbiquitousComputing.P2Photos"
+        applicationId "cmov1819.p2photo"
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        /*
         manifestPlaceholders = [
-                appAuthRedirectScheme: 'https://127.0.0.1'
+            appAuthRedirectScheme: 'p2photo.cmov1819.LoginActivity'
         ]
+        */
     }
 
     buildTypes {
@@ -22,7 +24,7 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
-    
+
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/LICENSE'
