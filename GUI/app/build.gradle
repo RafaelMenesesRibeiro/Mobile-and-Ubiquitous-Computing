@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 28
+
     defaultConfig {
         applicationId "MobileAndUbiquitousComputing.P2Photos"
         minSdkVersion 15
@@ -11,9 +12,9 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         manifestPlaceholders = [
                 appAuthRedirectScheme: 'https://127.0.0.1'
-        ];
-
+        ]
     }
+
     buildTypes {
         release {
             minifyEnabled false
