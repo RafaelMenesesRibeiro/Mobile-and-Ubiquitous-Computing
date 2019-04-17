@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -49,6 +50,11 @@ public class LoginActivity extends AppCompatActivity {
     private static final Uri REDIRECT_URI = Uri.parse("https://127.0.0.1");
 
     @Override
+    public void onBackPressed() {
+        // Do nothing. Prevents going back after logging out.
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
@@ -88,9 +94,32 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onBackPressed() {
-        // Do nothing. Prevents going back after logging out.
+    protected void onStart() {
+        super.onStart();
+        checkIntent(getIntent());
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        checkIntent(intent);
+    }
+
+    private void checkIntent(@Nullable Intent intent) {
+        if (intent != null) {
+            String action = intent.getAction();
+            switch (action) {
+                case "MobileAndUbiquitousComputing.P2Photos.HANDLE_AUTHORIZATION_RESPONSE":
+                    if (!intent.hasExtra(AppContext.USED_INTENT)) {
+                        handleAuthorizationResponse(intent);
+                        intent.putExtra(AppContext.USED_INTENT, true);
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
 
     /**********************************************************
     * SIGN UP HELPERS
@@ -222,6 +251,26 @@ public class LoginActivity extends AppCompatActivity {
         return builder.build();
     }
 
+    private void enablePostAuthorizationFlows() {
+        // TODO
+        /*
+        mAuthState = restoreAuthState(MainMenuActivity.this);
+        if (mAuthState != null && mAuthState.isAuthorized()) {
+            if (mMakeApiCall.getVisibility() == View.GONE) {
+                mMakeApiCall.setVisibility(View.VISIBLE);
+                mMakeApiCall.setOnClickListener(new MakeApiCallListener(this, mAuthState, new AuthorizationService(this)));
+            }
+            if (mSignOut.getVisibility() == View.GONE) {
+                mSignOut.setVisibility(View.VISIBLE);
+                mSignOut.setOnClickListener(new SignOutListener(this));
+            }
+        } else {
+            mMakeApiCall.setVisibility(View.GONE);
+            mSignOut.setVisibility(View.GONE);
+        }
+        */
+    }
+
     private static void validateGooglelAPIAuthorization() {
         if (existsPersistedAuthState()) {
             tryRefreshAuthStateTokens();
@@ -253,5 +302,6 @@ public class LoginActivity extends AppCompatActivity {
             loginButton.setTextColor(getResources().getColor(R.color.almostBlack));
         }
     }
+
 
 }
