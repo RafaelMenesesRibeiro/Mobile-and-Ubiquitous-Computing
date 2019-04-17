@@ -1,6 +1,5 @@
 package MobileAndUbiquitousComputing.P2Photos.helpers;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
