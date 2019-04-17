@@ -7,12 +7,14 @@ import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
+import android.util.Log;
 
 import net.openid.appauth.AuthState;
 
 import org.json.JSONException;
 
 public class SessionManager {
+    private static final String SESSION_LOG_TAG = "P2Photo#SessionManager";
     private static final String AUTH_STATE_SHARED_PREF = "P2Photos.AuthStatePreference";
     private static final String AUTH_STATE_KEY = "authState";
 
@@ -21,6 +23,7 @@ public class SessionManager {
     private static final String USER_NAME_KEY = "userName";
 
     public static final String AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
+    public static final String USER_INFO_ENDPOINT = "https://www.googleapis.com/oauth2/v3/userinfo";
     public static final String TOKEN_ENDPOINT = "https://www.googleapis.com/oauth2/v4/token";
     private static String sessionID;
     private static String userName = null;
@@ -77,13 +80,16 @@ public class SessionManager {
 
     @Nullable
     public static AuthState restoreAuthState(@NonNull Activity activity) {
-        String jsonString =  activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE).getString(AUTH_STATE_KEY, null);
+        String jsonString =
+                activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE)
+                .getString(AUTH_STATE_KEY, null);
+
         if (!TextUtils.isEmpty(jsonString)) {
             try {
                 assert jsonString != null;
                 return AuthState.jsonDeserialize(jsonString);
             } catch (JSONException jsonException) {
-                // should never happen
+                Log.i(SESSION_LOG_TAG, "Except. when serializing AuthState from disk. This should not happen.");
             }
         }
         return null;
