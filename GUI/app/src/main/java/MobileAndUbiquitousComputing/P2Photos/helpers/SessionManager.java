@@ -19,13 +19,14 @@ public class SessionManager {
 
     private static final String SESSION_ID_SHARED_PREF = "P2Photos.SessionIDPreference";
     private static final String SESSION_ID_KEY = "sessionID";
-    private static final String USER_NAME_KEY = "userName";
+    private static final String USER_NAME_KEY = "username";
 
     public static final String AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
     public static final String USER_INFO_ENDPOINT = "https://www.googleapis.com/oauth2/v3/userinfo";
     public static final String TOKEN_ENDPOINT = "https://www.googleapis.com/oauth2/v4/token";
+
     private static String sessionID;
-    private static String userName = null;
+    private static String username = null;
 
     public static String getSessionID(@NonNull Activity activity) {
         if (sessionID != null) { return sessionID; }
@@ -34,7 +35,7 @@ public class SessionManager {
     }
 
     public static String getUsername(@NonNull Activity activity) {
-        if (userName != null) { return userName; }
+        if (username != null) { return username; }
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         return sharedPref.getString(USER_NAME_KEY, null);
     }
@@ -47,20 +48,20 @@ public class SessionManager {
         sessionID = newSessionID;
     }
 
-    public static void updateUserName(@NonNull Activity activity, @NonNull String newUserName) {
+    public static void updateUsername(@NonNull Activity activity, @NonNull String newUserName) {
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(USER_NAME_KEY, newUserName);
         editor.apply();
-        userName = newUserName;
+        username = newUserName;
     }
 
     public static void deleteSessionID(@NonNull  Activity activity) {
         updateSessionID(activity, null);
     }
 
-    public static void deleteUserName(@NonNull  Activity activity) {
-        updateUserName(activity, null);
+    public static void deleteUsername(@NonNull  Activity activity) {
+        updateUsername(activity, null);
     }
 
     public static  void persistAuthState(@NonNull AuthState authState, @NonNull Activity activity) {
@@ -78,9 +79,8 @@ public class SessionManager {
 
     @Nullable
     public static AuthState restoreAuthState(@NonNull Activity activity) {
-        String jsonString =
-                activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE)
-                        .getString(AUTH_STATE_KEY, null);
+        String jsonString = activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE)
+                                    .getString(AUTH_STATE_KEY, null);
 
         if (!TextUtils.isEmpty(jsonString)) {
             try {
