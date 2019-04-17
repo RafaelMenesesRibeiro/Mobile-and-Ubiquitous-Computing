@@ -26,15 +26,20 @@
         </activity>
         <activity android:name="MobileAndUbiquitousComputing.P2Photos.MainMenuActivity"/>
         <activity android:name="MobileAndUbiquitousComputing.P2Photos.NewAlbumMemberActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.SignUpActivity" />
-        <activity android:name="MobileAndUbiquitousComputing.P2Photos.LoginActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.SignUpActivity">
             <intent-filter>
                 <action android:name="MobileAndUbiquitousComputing.HANDLE_AUTHORIZATION_RESPONSE"/>
                 <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+        <activity android:name="MobileAndUbiquitousComputing.P2Photos.LoginActivity">
+            <intent-filter>
+                <action android:name="MobileAndUbiquitousComputing.HANDLE_AUTHORIZATION_RESPONSE"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name="MobileAndUbiquitousComputing.P2Photos.NewAlbumActivity" />
