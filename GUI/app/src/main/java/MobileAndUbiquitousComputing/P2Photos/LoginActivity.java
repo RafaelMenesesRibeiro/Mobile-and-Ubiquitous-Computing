@@ -176,7 +176,7 @@ public class LoginActivity extends AppCompatActivity {
                 Log.i(SIGN_UP_TAG,"Sign Up unsuccessful. Server response code: " + code);
                 Toast.makeText(getApplicationContext(), "Unexpected error, try later...", LENGTH_LONG).show();
             }
-            
+
             return false;
 
         } catch (JSONException | ExecutionException | InterruptedException ex) {
