@@ -41,13 +41,6 @@ repositories {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    testImplementation 'junit:junit:4.12'
-    // GoogleClientAPI method for accessing deprecated GoogleClientDriveAPI using PlayServices
-    // implementation 'com.google.apis:google-api-services-drive:v3-rev157-1.25.0'
-    // implementation 'com.google.oauth-client:google-oauth-client-jetty:1.28.0'
-    // implementation 'com.google.android.gms:play-services-identity:16.0.0'
-    // implementation 'com.google.android.gms:play-services-drive:16.1.0'
-
     // Accessing Google Drive using Google REST API
     implementation 'com.google.api-client:google-api-client:1.28.0'
     implementation 'com.google.oauth-client:google-oauth-client-jetty:1.28.0'
@@ -56,7 +49,6 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.5.2'
     //noinspection GradleDependency
     implementation 'net.openid:appauth:0.5.1'
-
     //noinspection GradleCompatible
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support:design:28.0.0'
@@ -66,7 +58,7 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.6'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.7.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
-
+    testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 }
