@@ -44,6 +44,7 @@ import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.helpers.SessionManager.AUTH_ENDPOINT;
 import static cmov1819.p2photo.helpers.SessionManager.TOKEN_ENDPOINT;
 import static cmov1819.p2photo.helpers.SessionManager.persistAuthState;
+import static cmov1819.p2photo.helpers.SessionManager.refreshAuthState;
 import static cmov1819.p2photo.helpers.SessionManager.restoreAuthState;
 import static cmov1819.p2photo.helpers.SessionManager.updateUsername;
 
@@ -249,15 +250,11 @@ public class LoginActivity extends AppCompatActivity {
             // responses to DRIVE calls.
             newAuthState();
         } else if (authState.getNeedsTokenRefresh()){
-            refreshAuthStateToken(authState);
+            refreshAuthState(authState, this);
             startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
         } else {
             startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
         }
-    }
-
-    private void refreshAuthStateToken(final AuthState authState) {
-        String refreshToken = authState.getRefreshToken();
     }
 
     /*
