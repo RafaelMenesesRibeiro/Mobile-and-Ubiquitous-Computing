@@ -104,7 +104,7 @@ public class LoginActivity extends AppCompatActivity {
         Log.i(AUTH_REQUEST_TAG, "LoginActivity#checkIntent() - >>> Checking intent...");
         if (intent != null) {
             String action = intent.getAction();
-            Log.i(AUTH_REQUEST_TAG, "Found intent, with action action: " + action + "...");
+            Log.i(AUTH_REQUEST_TAG, "Found action: " + action);
             switch (action) {
                 case AUTH_RESPONSE_ACTION:
                     // If this intent hasn't been processed yet, process it.
