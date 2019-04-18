@@ -1,7 +1,6 @@
 package cmov1819.p2photo;
 
 import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,7 +37,6 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.AppContext;
 import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.helpers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
@@ -47,6 +45,7 @@ import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.helpers.SessionManager.AUTH_ENDPOINT;
 import static cmov1819.p2photo.helpers.SessionManager.TOKEN_ENDPOINT;
 import static cmov1819.p2photo.helpers.SessionManager.persistAuthState;
+import static cmov1819.p2photo.helpers.SessionManager.restoreAuthState;
 
 public class LoginActivity extends AppCompatActivity {
     private static final String USED_INTENT = "used";
@@ -199,7 +198,11 @@ public class LoginActivity extends AppCompatActivity {
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
         if (tryLogin(usernameValue, passwordValue)) {
-            startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+            if (!authStateExists()) {
+                tryGetAuthState();
+            } else {
+                startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+            }
         }
     }
 
@@ -228,34 +231,18 @@ public class LoginActivity extends AppCompatActivity {
                 Log.i(LOGIN_TAG,"Login operation failed. Server error with response code: " + code);
                 Toast.makeText(getApplicationContext(), "Unexpected error... Try again later", LENGTH_LONG).show();
             }
-
             return false;
-
         } catch (JSONException | ExecutionException | InterruptedException ex) {
             throw new FailedLoginException(ex.getMessage());
         }
-
-        // tryAuthorizeDriveManagement();
     }
 
     /**********************************************************
      * GOOGLE API OAUTH HELPERS
      ***********************************************************/
 
-    private void tryAuthorizeDriveManagement() {
-        if (existsPersistedAuthState()) {
-            tryRefreshAuthStateTokens();
-        } else {
-            tryGetAuthState();
-        }
-    }
-
-    private boolean existsPersistedAuthState() {
-        return false;
-    }
-
-    private void tryRefreshAuthStateTokens() {
-        // TODO
+    private boolean authStateExists() {
+        return restoreAuthState(this) != null;
     }
 
     /*
@@ -331,9 +318,9 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
                 } else {
                     if (token != null) {
+                        Log.i(AUTH_REQUEST_TAG, "Token Response [ Access Token: " + token.accessToken + ", ID Token: " + token.idToken + " ]");
                         authState.update(token, exc);
                         persistAuthState(authState, LoginActivity.this);
-                        Log.i(AUTH_REQUEST_TAG, "Token Response [ Access Token: " + token.accessToken + ", ID Token: " + token.idToken + " ]");
                     } else {
                         Log.w(AUTH_REQUEST_TAG, "Received token is null");
                         String msg = "Could not exchange auth code for an auth token, some features might be unavailable";
