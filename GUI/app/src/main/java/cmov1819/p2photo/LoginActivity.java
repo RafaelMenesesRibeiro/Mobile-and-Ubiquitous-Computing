@@ -1,10 +1,7 @@
 package cmov1819.p2photo;
 
-import android.app.PendingIntent;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -15,21 +12,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
-import net.openid.appauth.AuthorizationRequest;
 import net.openid.appauth.AuthorizationResponse;
-import net.openid.appauth.AuthorizationService;
-import net.openid.appauth.AuthorizationServiceConfiguration;
-import net.openid.appauth.ResponseTypeValues;
-import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -37,15 +26,11 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.AuthStateManager;
 import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
-import static cmov1819.p2photo.helpers.AuthStateManager.AUTH_ENDPOINT;
-import static cmov1819.p2photo.helpers.AuthStateManager.TOKEN_ENDPOINT;
-import static cmov1819.p2photo.helpers.AuthStateManager.persistAuthState;
-import static cmov1819.p2photo.helpers.AuthStateManager.refreshAuthState;
-import static cmov1819.p2photo.helpers.AuthStateManager.restoreAuthState;
 import static cmov1819.p2photo.helpers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
@@ -53,8 +38,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String LOGIN_TAG = "LOGIN";
     private static final String SIGN_UP_TAG = "SIGN UP";
     private static final String AUTH_REQUEST_TAG = "OAUTH";
-    private static final String APP_ID = "327056365677-stsv6tntebv1f2jj8agkcr84vrbs3llk.apps.googleusercontent.com";
-    private static final Uri REDIRECT_URI = Uri.parse("https://127.0.0.1");
+    private static final String AUTH_RESPONSE_ACTION = "cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE";
 
     @Override
     public void onBackPressed() {
@@ -117,10 +101,12 @@ public class LoginActivity extends AppCompatActivity {
             String action = intent.getAction();
             Log.i(AUTH_REQUEST_TAG, "Found intent, with action action: " + action + "...");
             switch (action) {
-                case "cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE":
+                case AUTH_RESPONSE_ACTION:
                     // If this intent hasn't been processed yet, process it.
                     if (!intent.hasExtra(USED_INTENT)) {
-                        handleAuthorizationResponse(intent);
+                        AuthorizationResponse response = AuthorizationResponse.fromIntent(intent);
+                        AuthorizationException error = AuthorizationException.fromIntent(intent);
+                        AuthStateManager.getInstance().handleAuthorizationResponse(response, error);
                         intent.putExtra(USED_INTENT, true);
                     }
                     break;
@@ -214,15 +200,20 @@ public class LoginActivity extends AppCompatActivity {
             ResponseData result = new QueryManager().execute(requestData).get();
 
             int code = result.getServerCode();
+
             if (code == HttpURLConnection.HTTP_OK) {
+                (findViewById(R.id.usernameInputBox)).setVisibility(View.INVISIBLE);
+                (findViewById(R.id.passwordInputBox)).setVisibility(View.INVISIBLE);
                 Log.i(LOGIN_TAG, "Login operation succeded");
                 Toast.makeText(getApplicationContext(), "Welcome " + username, LENGTH_LONG).show();
                 updateUsername(this, username);
-                verifyAuthState();
-            } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                tryEnablingPostAuthorizationFlows();
+            }
+            else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 Log.i(LOGIN_TAG, "Login operation failed. The username or password are incorrect.");
                 Toast.makeText(getApplicationContext(), "Incorrect credential combination", LENGTH_LONG).show();
-            } else {
+            }
+            else {
                 Log.i(LOGIN_TAG,"Login operation failed. Server error with response code: " + code);
                 Toast.makeText(getApplicationContext(), "Unexpected error... Try again later", LENGTH_LONG).show();
             }
@@ -240,104 +231,14 @@ public class LoginActivity extends AppCompatActivity {
      * Ideally, there is one instance of AuthorizationService per Activity;
      * PendingIntent is used to handle the authorization request response
      */
-    private void verifyAuthState() {
-        final AuthState authState = restoreAuthState(this);
-
-        if (authState == null || !authState.isAuthorized()) {
-            // authState does not exist or doesn't have a valid Token or a valid Refresh Token therefore we create a
-            // new one... Note that having any of them  doesn't mean the authState is valid and won't be rejected by
-            // APIs during program execution. Further handling might be required down the line, during request
-            // responses to DRIVE calls.
-            newAuthState();
-        } else if (authState.getNeedsTokenRefresh()){
-            refreshAuthState(authState, this);
-            startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
-        } else {
+    private void tryEnablingPostAuthorizationFlows() {
+        AuthStateManager authStateManager = AuthStateManager.getInstance();
+        if (authStateManager.hasValidAuthState()) {
             startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
         }
-    }
-
-    /*
-    * This helper method creates a new authState by persisting it to SharedPreferences instead of actually returning
-    * an object; Therefore, accesses to the authState are than passed by deserializing the object from disk.
-    */
-    private void newAuthState() {
-        AuthorizationRequest authRequest = newAuthorizationRequest();
-        AuthorizationService authorizationService = new AuthorizationService(this);
-        Intent postAuthorizationIntent = new Intent("cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE");
-        PendingIntent pendingIntent = PendingIntent.getActivity(
-                this, authRequest.hashCode(), postAuthorizationIntent, 0
-        );
-        authorizationService.performAuthorizationRequest(authRequest, pendingIntent);
-    }
-
-    /*
-     * Describes an authorization request, including the application clientId for the OAuth and the respective scopes
-     */
-    private AuthorizationRequest newAuthorizationRequest() {
-        AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(
-                new AuthorizationServiceConfiguration(Uri.parse(AUTH_ENDPOINT), Uri.parse(TOKEN_ENDPOINT), null),
-                APP_ID,
-                ResponseTypeValues.CODE,
-                REDIRECT_URI
-        );
-        builder.setScopes(new ArrayList<>(Arrays.asList(
-                "email", "profile", "openid",
-                "https://www.googleapis.com/auth/drive.photos.readonly",
-                "https://www.googleapis.com/auth/drive.metadata.readonly",
-                "https://www.googleapis.com/auth/drive.readonly",
-                "https://www.googleapis.com/auth/drive.file",
-                "https://www.googleapis.com/auth/drive.appdata"
-        )));
-        return builder.build();
-    }
-
-    /*
-     * AppAuth provides the AuthorizationResponse to this activity, via the provided RedirectUriReceiverActivity.
-     * From it we can ultimately obtain a TokenResponse which we can use to make calls to the API;
-     * The AuthState object that is created from the response can be used to store details from the auth session to
-     * reuse it between application runs and it may be changed overtime as new OAuth results are received.
-     */
-    private void handleAuthorizationResponse(@NonNull Intent intent) {
-        // The authorization response is provided to this activity via Intent extra data, extract it with fromIntent()
-        AuthorizationResponse response = AuthorizationResponse.fromIntent(intent);
-        AuthorizationException error = AuthorizationException.fromIntent(intent);
-        // Provided the response for an AuthState instance for easy persistence and further processing
-        final AuthState authState = new AuthState(response, error);
-        // Exchange authorization code for the refresh and access tokens, and update the AuthState instance
-        if (response != null) {
-            Log.i(AUTH_REQUEST_TAG, "Handled authorization response: " + authState.jsonSerialize().toString());
-            tryExchangeAuthCodeForAuthTokens(response, authState);
-        } else {
-            Log.i(AUTH_REQUEST_TAG, "Authorization failed with error: " + error.getMessage());
-            String msg = "You must authorize this app to manage some google drive files to use";
-            Toast.makeText(this, msg , LENGTH_LONG).show();
+        else {
+            authStateManager.newAuthState(this, AUTH_RESPONSE_ACTION);
         }
-    }
-
-    private void tryExchangeAuthCodeForAuthTokens(AuthorizationResponse response, final AuthState authState) {
-        Log.i(AUTH_REQUEST_TAG, "Initiating exchange protocol...");
-        AuthorizationService authService = new AuthorizationService(this);
-        authService.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
-            @Override
-            public void onTokenRequestCompleted(@Nullable TokenResponse token, @Nullable AuthorizationException exc) {
-                if (exc != null) {
-                    Log.w(AUTH_REQUEST_TAG, "Token exchange authorization failed", exc);
-                    String msg = "Could not exchange auth code for an auth token, some features might be unavailable";
-                    Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
-                } else {
-                    if (token != null) {
-                        Log.i(AUTH_REQUEST_TAG, "Token Response [ Access Token: " + token.accessToken + ", ID Token: " + token.idToken + " ]");
-                        authState.update(token, exc);
-                        persistAuthState(authState, LoginActivity.this);
-                    } else {
-                        Log.w(AUTH_REQUEST_TAG, "Received token is null");
-                        String msg = "Could not exchange auth code for an auth token, some features might be unavailable";
-                        Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
-                    }
-                }
-            }
-        });
     }
 
     /**********************************************************
