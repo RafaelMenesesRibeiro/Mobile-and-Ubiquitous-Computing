@@ -176,7 +176,7 @@ public class AuthStateManager {
     public AuthState getAuthState() {
         return authState;
     }
-    
+
     public boolean hasValidAuthState() {
         return authState == null && !authState.isAuthorized();
     }
