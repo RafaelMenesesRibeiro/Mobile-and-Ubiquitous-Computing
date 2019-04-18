@@ -41,6 +41,8 @@ public class LoginActivity extends AppCompatActivity {
     private static final String AUTH_REQUEST_TAG = "OAUTH";
     private static final String AUTH_RESPONSE_ACTION = "cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE";
 
+    private AuthStateManager authStateManager;
+
     @Override
     public void onBackPressed() {
         // Do nothing. Prevents going back after logging out.
@@ -50,7 +52,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
-
+        this.authStateManager = AuthStateManager.getInstance(this);
         final Button loginButton = findViewById(R.id.LoginButton);
         final Button signUpButton = findViewById(R.id.SignUpBottom);
         final EditText usernameInput = findViewById(R.id.usernameInputBox);
@@ -107,7 +109,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (!intent.hasExtra(USED_INTENT)) {
                         AuthorizationResponse response = AuthorizationResponse.fromIntent(intent);
                         AuthorizationException error = AuthorizationException.fromIntent(intent);
-                        AuthStateManager.getInstance().handleAuthorizationResponse(response, error);
+                        authStateManager.handleAuthorizationResponse(response, error);
                         intent.putExtra(USED_INTENT, true);
                     }
                     break;
@@ -128,9 +130,8 @@ public class LoginActivity extends AppCompatActivity {
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
         if (trySignUp(usernameValue, passwordValue)) {
-            usernameEditText.setVisibility(View.INVISIBLE);
-            passwordEditText.setVisibility(View.INVISIBLE);
-            tryLogin(usernameValue, passwordValue);
+            disableUserTextInputs(usernameEditText, passwordEditText);
+            findViewById(R.id.LoginButton).performClick();
         }
     }
 
@@ -186,6 +187,8 @@ public class LoginActivity extends AppCompatActivity {
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
         tryLogin(usernameValue, passwordValue);
+        enableUserTextInputs(usernameEditText, passwordEditText);
+        tryEnablingPostAuthorizationFlows();
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {
@@ -208,7 +211,6 @@ public class LoginActivity extends AppCompatActivity {
                 Log.i(LOGIN_TAG, "Login operation succeded");
                 Toast.makeText(getApplicationContext(), "Welcome " + username, LENGTH_LONG).show();
                 updateUsername(this, username);
-                tryEnablingPostAuthorizationFlows();
             }
             else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 Log.i(LOGIN_TAG, "Login operation failed. The username or password are incorrect.");
@@ -233,19 +235,18 @@ public class LoginActivity extends AppCompatActivity {
      * PendingIntent is used to handle the authorization request response
      */
     private void tryEnablingPostAuthorizationFlows() {
-        AuthStateManager authStateManager = AuthStateManager.getInstance();
-        if (authStateManager.hasValidAuthState()) {
-            startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
-        }
-        else {
-            Intent postAuthIntent = new Intent(AUTH_RESPONSE_ACTION);
-            PendingIntent pendingIntent = PendingIntent.getActivity(
-                    this, authStateManager.getAuthorizationRequestCode(), postAuthIntent, 0
-            );
-            authStateManager.getAuthorizationService().performAuthorizationRequest(
-                    authStateManager.getAuthorizationRequest(), pendingIntent
-            );
-        }
+            if (authStateManager.hasValidAuthState()) {
+                startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+            }
+            else {
+                Intent postAuthIntent = new Intent(AUTH_RESPONSE_ACTION);
+                PendingIntent pendingIntent = PendingIntent.getActivity(
+                        this, authStateManager.getAuthorizationRequestCode(), postAuthIntent, 0
+                );
+                authStateManager.getAuthorizationService().performAuthorizationRequest(
+                        authStateManager.getAuthorizationRequest(), pendingIntent
+                );
+            }
     }
 
     /**********************************************************
@@ -262,6 +263,20 @@ public class LoginActivity extends AppCompatActivity {
             loginButton.setBackgroundColor(getResources().getColor(R.color.colorButtonInactive));
             loginButton.setTextColor(getResources().getColor(R.color.almostBlack));
         }
+    }
+
+    private void disableUserTextInputs(EditText usernameEditText, EditText passwordEditText) {
+        usernameEditText.setFocusable(false);
+        usernameEditText.setClickable(false);
+        passwordEditText.setFocusable(false);
+        passwordEditText.setClickable(false);
+    }
+
+    private void enableUserTextInputs(EditText usernameEditText, EditText passwordEditText) {
+        usernameEditText.setFocusable(true);
+        usernameEditText.setClickable(true);
+        passwordEditText.setFocusable(true);
+        passwordEditText.setClickable(true);
     }
 
 }

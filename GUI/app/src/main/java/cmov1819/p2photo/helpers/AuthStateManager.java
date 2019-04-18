@@ -53,9 +53,9 @@ public class AuthStateManager {
      * SINGLETON METHODS
      *********************************************************/
 
-    private AuthStateManager() {
+    private AuthStateManager(Context context) {
         this.sharedPreferences = getAppContext().getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE);
-        this.authorizationService = new AuthorizationService(getAppContext());
+        this.authorizationService = new AuthorizationService(context);
         this.authorizationServiceConfiguration = new AuthorizationServiceConfiguration(
                 // authorizationServiceConfiguration must be instanciated before authorizationRequest
                 Uri.parse(AUTHORIZATION_ENDPOINT),
@@ -67,8 +67,8 @@ public class AuthStateManager {
         this.authState = restoreAuthState();
     }
 
-    public static AuthStateManager getInstance() {
-        if (instance == null) { instance = new AuthStateManager(); }
+    public static AuthStateManager getInstance(Context context) {
+        if (instance == null) { instance = new AuthStateManager(context); }
         return instance;
     }
 
