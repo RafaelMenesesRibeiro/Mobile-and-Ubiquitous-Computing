@@ -29,18 +29,19 @@ import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.helpers.AppContext.getAppContext;
 
 public class AuthStateManager {
-    private static final String AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
-    private static final String TOKEN_ENDPOINT = "https://www.googleapis.com/oauth2/v4/token";
-
-    private static final String AUTH_MGR_TAG = "AUTH MANAGER";
-    private static final String AUTH_STATE_SHARED_PREF = "p2photo.AuthStatePreference";
-    private static final String AUTH_STATE_KEY = "authState";
-
     private static AuthStateManager instance;
 
-    private final String APP_ID = "327056365677-stsv6tntebv1f2jj8agkcr84vrbs3llk.apps.googleusercontent.com";
+    private final String AUTH_MGR_TAG = "AUTH MANAGER";
+
+    private final String AUTH_STATE_SHARED_PREF = "p2photo.AuthStatePreference";
+    private final String AUTH_STATE_KEY = "authState";
+
+    private final String AUTHORIZATION_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
+    private final String TOKEN_ENDPOINT = "https://www.googleapis.com/oauth2/v4/token";
+
+    private final String CLIENT_ID = "327056365677-stsv6tntebv1f2jj8agkcr84vrbs3llk.apps.googleusercontent.com";
     private final Uri REDIRECT_URI = Uri.parse("https://127.0.0.1");
-    private final int requestCode;
+    private final int authorizationRequestCode;
 
     private SharedPreferences sharedPreferences;
     private AuthorizationServiceConfiguration authorizationServiceConfiguration;
@@ -57,12 +58,13 @@ public class AuthStateManager {
         this.authorizationService = new AuthorizationService(context);
         this.authorizationServiceConfiguration = new AuthorizationServiceConfiguration(
                 // authorizationServiceConfiguration must be instanciated before authorizationRequest
-                Uri.parse(AUTH_ENDPOINT),
+                Uri.parse(AUTHORIZATION_ENDPOINT),
                 Uri.parse(TOKEN_ENDPOINT),
                 null
         );
         this.authorizationRequest = newAuthorizationRequest();
-        this.requestCode = this.authorizationRequest.hashCode();
+        this.authorizationRequestCode = this.authorizationRequest.hashCode();
+        this.authState = restoreAuthState();
     }
 
     public static AuthStateManager getInstance(Context context) {
@@ -126,9 +128,9 @@ public class AuthStateManager {
      **********************************************************/
 
     @Nullable
-    public AuthState restoreAuthState() {
-        String jsonString = this.sharedPreferences.getString(AUTH_STATE_KEY, null);
-        if (!TextUtils.isEmpty(jsonString)) {
+    public synchronized AuthState restoreAuthState() {
+        String jsonString = sharedPreferences.getString(AUTH_STATE_KEY, null);
+        if (jsonString != null) {
             try {
                 return AuthState.jsonDeserialize(jsonString);
             } catch (JSONException jsonException) {
@@ -139,15 +141,15 @@ public class AuthStateManager {
         return null;
     }
 
-    public void persistAuthState() {
-        this.sharedPreferences.edit().putString(AUTH_STATE_KEY, this.authState.jsonSerialize().toString()).apply();
+    public synchronized void persistAuthState() {
+        sharedPreferences.edit().putString(AUTH_STATE_KEY, authState.jsonSerialize().toString()).apply();
     }
 
-    public void clearAuthState() {
-        this.sharedPreferences.edit().remove(AUTH_STATE_KEY).apply();
+    public synchronized void clearAuthState() {
+        sharedPreferences.edit().remove(AUTH_STATE_KEY).apply();
     }
 
-    public void refreshAuthState() {
+    public synchronized void refreshAuthState() {
         /*
         ClientSecretPost clientSecretPost = new ClientSecretPost(authManager.getAuth().getClientSecret());
         final TokenRequest request = authState.createTokenRefreshRequest();
@@ -168,15 +170,15 @@ public class AuthStateManager {
     }
 
     /**********************************************************
-     *  AUTHSTATE VALIDATORS AND GETTERS
+     *  AUTHSTATE VALIDATORS AND OPERATORS
      **********************************************************/
 
     public AuthState getAuthState() {
         return authState;
     }
-
+    
     public boolean hasValidAuthState() {
-        return this.authState == null && !this.authState.isAuthorized();
+        return authState == null && !authState.isAuthorized();
     }
 
     /**********************************************************
@@ -187,7 +189,7 @@ public class AuthStateManager {
     private AuthorizationRequest newAuthorizationRequest() {
         AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(
                 this.authorizationServiceConfiguration,
-                this.APP_ID,
+                this.CLIENT_ID,
                 ResponseTypeValues.CODE,
                 this.REDIRECT_URI
         );
@@ -208,7 +210,7 @@ public class AuthStateManager {
      */
     public void newAuthState(Context context, String action) {
         Intent postAuthIntent = new Intent(action);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, this.requestCode, postAuthIntent, 0);
-        this.authorizationService.performAuthorizationRequest(this.authorizationRequest, pendingIntent);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, authorizationRequestCode, postAuthIntent, 0);
+        authorizationService.performAuthorizationRequest(authorizationRequest, pendingIntent);
     }
 }
