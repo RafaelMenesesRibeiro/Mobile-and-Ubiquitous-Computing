@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationResponse;
+import net.openid.appauth.AuthorizationService;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -104,15 +105,12 @@ public class LoginActivity extends AppCompatActivity {
         Log.i(AUTH_REQUEST_TAG, "LoginActivity#checkIntent() - >>> Checking intent...");
         if (intent != null) {
             String action = intent.getAction();
-            Toast.makeText(this, action, LENGTH_LONG).show();
             Log.i(AUTH_REQUEST_TAG, "Found action: " + action);
             switch (action) {
                 case AUTH_RESPONSE_ACTION:
                     // If this intent hasn't been processed yet, process it.
                     if (!intent.hasExtra(USED_INTENT)) {
-                        AuthorizationResponse response = AuthorizationResponse.fromIntent(intent);
-                        AuthorizationException error = AuthorizationException.fromIntent(intent);
-                        authStateManager.handleAuthorizationResponse(this, response, error);
+                        authStateManager.handleAuthorizationResponse(this, intent);
                         intent.putExtra(USED_INTENT, true);
                     }
                     break;
@@ -245,14 +243,13 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
         }
         else {
-            Log.i(LOGIN_TAG, "Invalid authState... Performing Authorization Request");
+            Log.i(LOGIN_TAG, "Invalid authState. Requesting authorization with action: " + AUTH_RESPONSE_ACTION);
             Intent postAuthorizationIntent = new Intent(AUTH_RESPONSE_ACTION);
             PendingIntent pendingIntent = PendingIntent.getActivity(
                     view.getContext(), authStateManager.getAuthorizationRequestCode(), postAuthorizationIntent, 0
             );
-            authStateManager.getAuthorizationService().performAuthorizationRequest(
-                    authStateManager.getAuthorizationRequest(), pendingIntent
-            );
+            AuthorizationService authorizationService = new AuthorizationService(view.getContext());
+            authorizationService.performAuthorizationRequest(authStateManager.getAuthorizationRequest(), pendingIntent);
         }
     }
 

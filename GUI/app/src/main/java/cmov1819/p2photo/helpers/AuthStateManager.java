@@ -1,6 +1,7 @@
 package cmov1819.p2photo.helpers;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -41,7 +42,6 @@ public class AuthStateManager {
 
     private SharedPreferences sharedPreferences;
     private AuthorizationServiceConfiguration authorizationServiceConfiguration;
-    private AuthorizationService authorizationService;
     private AuthorizationRequest authorizationRequest;
     private AuthState authState;
 
@@ -51,7 +51,6 @@ public class AuthStateManager {
 
     private AuthStateManager(Context context) {
         this.sharedPreferences = context.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE);
-        this.authorizationService = new AuthorizationService(context);
         this.authorizationServiceConfiguration = new AuthorizationServiceConfiguration(
                 // authorizationServiceConfiguration must be instanciated before authorizationRequest
                 Uri.parse(AUTHORIZATION_ENDPOINT),
@@ -78,14 +77,14 @@ public class AuthStateManager {
     * The AuthState object that is created from the response can be used to store details from the auth session to
     * reuse it between application runs and it may be changed overtime as new OAuth results are received.
     */
-    public void handleAuthorizationResponse(final Context context,
-                                            @NonNull AuthorizationResponse response,
-                                            AuthorizationException error) {
+    public void handleAuthorizationResponse(final Context context, Intent intent) {
+        AuthorizationResponse response = AuthorizationResponse.fromIntent(intent);
+        AuthorizationException error = AuthorizationException.fromIntent(intent);
         this.authState = new AuthState(response, error);
-        // Exchange authorization code for the refresh and access tokens, and update the AuthState instance
         if (response != null) {
             Log.i(AUTH_MGR_TAG, "Handled authorization response: " + authState.jsonSerialize().toString());
-            tryExchangeAuthCodeForAuthTokens(context, response);
+            AuthorizationService service = new AuthorizationService(context);
+            tryExchangeAuthCodeForAuthTokens(context, service, response);
         } else {
             Log.i(AUTH_MGR_TAG, "Authorization failed with error: " + error.getMessage());
             String msg = "You must authorize this app to manage some google drive files to use";
@@ -93,9 +92,12 @@ public class AuthStateManager {
         }
     }
 
-    private void tryExchangeAuthCodeForAuthTokens(final Context context, AuthorizationResponse response) {
+    private void tryExchangeAuthCodeForAuthTokens(final Context context,
+                                                  AuthorizationService service,
+                                                  AuthorizationResponse response) {
+        
         Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
-        this.authorizationService.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
+        service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
             @Override
             public void onTokenRequestCompleted(@Nullable TokenResponse token, @Nullable AuthorizationException exc) {
                 if (exc != null) {
