@@ -38,7 +38,6 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.QueryManager;
-import cmov1819.p2photo.helpers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
@@ -46,6 +45,7 @@ import static cmov1819.p2photo.helpers.SessionManager.AUTH_ENDPOINT;
 import static cmov1819.p2photo.helpers.SessionManager.TOKEN_ENDPOINT;
 import static cmov1819.p2photo.helpers.SessionManager.persistAuthState;
 import static cmov1819.p2photo.helpers.SessionManager.restoreAuthState;
+import static cmov1819.p2photo.helpers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
     private static final String USED_INTENT = "used";
@@ -197,16 +197,10 @@ public class LoginActivity extends AppCompatActivity {
         EditText passwordEditText = findViewById(R.id.passwordInputBox);
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
-        if (tryLogin(usernameValue, passwordValue)) {
-            if (!authStateExists()) {
-                tryGetAuthState();
-            } else {
-                startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
-            }
-        }
+        tryLogin(usernameValue, passwordValue);
     }
 
-    public boolean tryLogin(String username, String password) throws FailedLoginException {
+    public void tryLogin(String username, String password) throws FailedLoginException {
         try {
             Log.i(LOGIN_TAG, "Starting Login operation for user: " + username + "...");
 
@@ -222,8 +216,8 @@ public class LoginActivity extends AppCompatActivity {
             if (code == HttpURLConnection.HTTP_OK) {
                 Log.i(LOGIN_TAG, "Login operation succeded");
                 Toast.makeText(getApplicationContext(), "Welcome " + username, LENGTH_LONG).show();
-                SessionManager.updateUsername(this, username);
-                return true;
+                updateUsername(this, username);
+                verifyAuthState();
             } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 Log.i(LOGIN_TAG, "Login operation failed. The username or password are incorrect.");
                 Toast.makeText(getApplicationContext(), "Incorrect credential combination", LENGTH_LONG).show();
@@ -231,7 +225,6 @@ public class LoginActivity extends AppCompatActivity {
                 Log.i(LOGIN_TAG,"Login operation failed. Server error with response code: " + code);
                 Toast.makeText(getApplicationContext(), "Unexpected error... Try again later", LENGTH_LONG).show();
             }
-            return false;
         } catch (JSONException | ExecutionException | InterruptedException ex) {
             throw new FailedLoginException(ex.getMessage());
         }
@@ -241,20 +234,39 @@ public class LoginActivity extends AppCompatActivity {
      * GOOGLE API OAUTH HELPERS
      ***********************************************************/
 
-    private boolean authStateExists() {
-        return restoreAuthState(this) != null;
-    }
-
     /*
      * Generate an authorization request with scopes the user should authorize this app to manage;
      * Ideally, there is one instance of AuthorizationService per Activity;
      * PendingIntent is used to handle the authorization request response
      */
-    private void tryGetAuthState() {
+    private void verifyAuthState() {
+        final AuthState authState = restoreAuthState(this);
+
+        if (authState == null || !authState.isAuthorized()) {
+            // authState does not exist or doesn't have a valid Token or a valid Refresh Token therefore we create a
+            // new one... Note that having any of them  doesn't mean the authState is valid and won't be rejected by
+            // APIs during program execution. Further handling might be required down the line, during request
+            // responses to DRIVE calls.
+            newAuthState();
+        } else if (authState.getNeedsTokenRefresh()){
+            refreshAuthStateToken(authState);
+            startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+        } else {
+            startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+        }
+    }
+
+    private void refreshAuthStateToken(final AuthState authState) {
+        String refreshToken = authState.getRefreshToken();
+    }
+
+    /*
+    * This helper method creates a new authState by persisting it to SharedPreferences instead of actually returning
+    * an object; Therefore, accesses to the authState are than passed by deserializing the object from disk.
+    */
+    private void newAuthState() {
         AuthorizationRequest authRequest = newAuthorizationRequest();
-
         AuthorizationService authorizationService = new AuthorizationService(this);
-
         Intent postAuthorizationIntent = new Intent("cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE");
         PendingIntent pendingIntent = PendingIntent.getActivity(
                 this, authRequest.hashCode(), postAuthorizationIntent, 0
