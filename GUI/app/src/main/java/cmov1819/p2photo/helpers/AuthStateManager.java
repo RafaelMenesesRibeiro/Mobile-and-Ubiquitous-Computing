@@ -45,8 +45,17 @@ public class AuthStateManager {
     * SINGLETON METHODS
     *********************************************************/
 
-    public static AuthStateManager getInstance() {
-        return instance;
+    private AuthStateManager(Context context){
+        this.sharedPreferences = context.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE);
+        this.authorizationService = new AuthorizationService(context);
+        this.authorizationServiceConfiguration = new AuthorizationServiceConfiguration(
+                // authorizationServiceConfiguration must be instanciated before authorizationRequest
+                Uri.parse(AUTH_ENDPOINT),
+                Uri.parse(TOKEN_ENDPOINT),
+                null
+        );
+        this.authorizationRequest = newAuthorizationRequest();
+        this.requestCode = this.authorizationRequest.hashCode();
     }
 
     public static AuthStateManager getInstance(Context context) {
@@ -54,22 +63,10 @@ public class AuthStateManager {
         return instance;
     }
 
-    private AuthStateManager(Context context){
-        this.sharedPreferences = context.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE);
-        this.authorizationService = new AuthorizationService(context);
-        this.authorizationServiceConfiguration = new AuthorizationServiceConfiguration(
-                // authorizationServiceConfiguration must be instanciated before authorizationRequest
-                Uri.parse(AUTH_ENDPOINT),
-                Uri.parse(TOKEN_ENDPOINT), 
-                null
-        );
-        this.authorizationRequest = newAuthorizationRequest();
-        this.requestCode = this.authorizationRequest.hashCode();
+    public static AuthStateManager getInstance() {
+        return instance;
     }
 
-    /*
-     * Describes an authorization request, including the application clientId for the OAuth and the respective scopes
-     */
     private AuthorizationRequest newAuthorizationRequest() {
         AuthorizationRequest.Builder builder = new AuthorizationRequest.Builder(
                 this.authorizationServiceConfiguration,
