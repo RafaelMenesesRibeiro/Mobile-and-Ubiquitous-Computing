@@ -84,12 +84,13 @@ public class SessionManager {
 
         if (!TextUtils.isEmpty(jsonString)) {
             try {
-                assert jsonString != null;
                 return AuthState.jsonDeserialize(jsonString);
             } catch (JSONException jsonException) {
                 Log.i(SESSION_LOG_TAG, "Except. when serializing AuthState from disk. This should not happen.");
+                return null;
             }
         }
+
         return null;
     }
 }
