@@ -90,16 +90,18 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        Log.i(LOGIN_TAG, "LoginActivity#onStart()");
         checkIntent(getIntent());
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
+        Log.i(LOGIN_TAG, "LoginActivity#onNewIntent(intent)");
         checkIntent(intent);
     }
 
     private void checkIntent(@Nullable Intent intent) {
-        Log.i(AUTH_REQUEST_TAG, "Checking intent...");
+        Log.i(AUTH_REQUEST_TAG, "LoginActivity#checkIntent() - >>> Checking intent...");
         if (intent != null) {
             String action = intent.getAction();
             Log.i(AUTH_REQUEST_TAG, "Found intent, with action action: " + action + "...");
@@ -235,18 +237,21 @@ public class LoginActivity extends AppCompatActivity {
      * PendingIntent is used to handle the authorization request response
      */
     private void tryEnablingPostAuthorizationFlows() {
-            if (authStateManager.hasValidAuthState()) {
-                startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
-            }
-            else {
-                Intent postAuthIntent = new Intent(AUTH_RESPONSE_ACTION);
-                PendingIntent pendingIntent = PendingIntent.getActivity(
-                        this, authStateManager.getAuthorizationRequestCode(), postAuthIntent, 0
-                );
-                authStateManager.getAuthorizationService().performAuthorizationRequest(
-                        authStateManager.getAuthorizationRequest(), pendingIntent
-                );
-            }
+        Log.i(LOGIN_TAG, "Trying to enable post authorization flows...");
+        if (authStateManager.hasValidAuthState()) {
+            Log.i(LOGIN_TAG, "Valid authState already existis, starting new MainMenuActivity...");
+            startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+        }
+        else {
+            Log.i(LOGIN_TAG, "Invalid authState... Performing Authorization Request");
+            Intent postAuthIntent = new Intent(AUTH_RESPONSE_ACTION);
+            PendingIntent pendingIntent = PendingIntent.getActivity(
+                    this, authStateManager.getAuthorizationRequestCode(), postAuthIntent, 0
+            );
+            authStateManager.getAuthorizationService().performAuthorizationRequest(
+                    authStateManager.getAuthorizationRequest(), pendingIntent
+            );
+        }
     }
 
     /**********************************************************
