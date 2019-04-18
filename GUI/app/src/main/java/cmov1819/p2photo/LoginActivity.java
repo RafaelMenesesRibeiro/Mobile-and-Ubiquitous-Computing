@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import net.openid.appauth.AuthorizationRequest;
 import net.openid.appauth.AuthorizationService;
 
 import org.json.JSONException;
@@ -36,11 +37,8 @@ import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.helpers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
-    private static final String USED_INTENT = "used";
     private static final String LOGIN_TAG = "LOGIN";
     private static final String SIGN_UP_TAG = "SIGN UP";
-    private static final String AUTH_REQUEST_TAG = "OAUTH";
-    private static final String AUTH_RESPONSE_ACTION = "cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE";
 
     private AuthStateManager authStateManager;
 
@@ -88,40 +86,6 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) { /* Do nothing. */ }
         });
-    }
-
-    @Override
-    protected void onResume(){
-        super.onResume();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.i(LOGIN_TAG, "LoginActivity#onStart()");
-        checkIntent(getIntent());
-    }
-
-    @Override
-    protected void onNewIntent(Intent intent) {
-        Log.i(LOGIN_TAG, "LoginActivity#onNewIntent(intent)");
-        checkIntent(intent);
-    }
-
-    private void checkIntent(Intent intent) {
-        Log.i(AUTH_REQUEST_TAG, "LoginActivity#checkIntent() - >>> Checking intent...");
-        if (intent != null) {
-            String action = intent.getAction();
-            Log.i(AUTH_REQUEST_TAG, "Found action: " + action);
-            if ("cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE".equals(action)) {
-                if (!intent.hasExtra(USED_INTENT)) {
-                    authStateManager.handleAuthorizationResponse(this, intent);
-                    intent.putExtra(USED_INTENT, true);
-                }
-            }
-        } else {
-            Log.i(AUTH_REQUEST_TAG, "Null intent... pass");
-        }
     }
 
     /**********************************************************
@@ -233,25 +197,21 @@ public class LoginActivity extends AppCompatActivity {
      * GOOGLE API OAUTH HELPERS
      ***********************************************************/
 
-    /*
-     * Generate an authorization request with scopes the user should authorize this app to manage;
-     * Ideally, there is one instance of AuthorizationService per Activity;
-     * PendingIntent is used to handle the authorization request response
-     */
     private void tryEnablingPostAuthorizationFlows(View view) {
         Log.i(LOGIN_TAG, "Trying to enable post authorization flows...");
         if (authStateManager.hasValidAuthState()) {
-            Log.i(LOGIN_TAG, "Valid authState already existis, starting new MainMenuActivity...");
+            Log.i(LOGIN_TAG, "Valid authentication state >>> starting new MainMenuActivity...");
             startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
         }
         else {
-            Log.i(LOGIN_TAG, "Invalid authState. Requesting authorization with action: " + AUTH_RESPONSE_ACTION);
-            Intent postAuthorizationIntent = new Intent("cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE");
+            Log.i(LOGIN_TAG, "Invalid authentication state >>> starting AuthenticationActivity...");
+            AuthorizationRequest authorizationRequest = authStateManager.getAuthorizationRequest();
+            Intent authenticationIntent = new Intent(this, AuthenticationActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(
-                    view.getContext(), authStateManager.getAuthorizationRequestCode(), postAuthorizationIntent, 0
+                    view.getContext(), authorizationRequest.hashCode(), authenticationIntent, 0
             );
             AuthorizationService authorizationService = new AuthorizationService(view.getContext());
-            authorizationService.performAuthorizationRequest(authStateManager.getAuthorizationRequest(), pendingIntent);
+            authorizationService.performAuthorizationRequest(authorizationRequest, pendingIntent);
         }
     }
 
@@ -284,9 +244,5 @@ public class LoginActivity extends AppCompatActivity {
         passwordEditText.setFocusable(true);
         passwordEditText.setClickable(true);
     }
-
-    /**********************************************************
-     * OTHER HELPERS
-     ***********************************************************/
 
 }

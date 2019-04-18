@@ -71,12 +71,7 @@ public class AuthStateManager {
      *  AUTHSTATE REQUEST AND RESPONSE HANDLING
      **********************************************************/
 
-    /*
-    * AppAuth provides the AuthorizationResponse to this activity, via the provided RedirectUriReceiverActivity.
-    * From it we can ultimately obtain a TokenResponse which we can use to make calls to the API;
-    * The AuthState object that is created from the response can be used to store details from the auth session to
-    * reuse it between application runs and it may be changed overtime as new OAuth results are received.
-    */
+    @Deprecated
     public void handleAuthorizationResponse(final Context context, Intent intent) {
         AuthorizationResponse response = AuthorizationResponse.fromIntent(intent);
         AuthorizationException error = AuthorizationException.fromIntent(intent);
@@ -92,6 +87,7 @@ public class AuthStateManager {
         }
     }
 
+    @Deprecated
     private void tryExchangeAuthCodeForAuthTokens(final Context context,
                                                   AuthorizationService service,
                                                   AuthorizationResponse response) {
@@ -173,16 +169,16 @@ public class AuthStateManager {
         return authorizationServiceConfiguration;
     }
 
-    public int getAuthorizationRequestCode() {
-        return authorizationRequestCode;
-    }
-
     public AuthorizationRequest getAuthorizationRequest() {
         return authorizationRequest;
     }
 
     public AuthState getAuthState() {
         return authState;
+    }
+
+    public void setAuthState(AuthState authState) {
+        this.authState = authState;
     }
 
     public boolean hasValidAuthState() {
