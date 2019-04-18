@@ -13,7 +13,9 @@ import net.openid.appauth.AuthState;
 import org.json.JSONException;
 
 public class SessionManager {
-    private static final String SESSION_LOG_TAG = "P2Photo#SessionManager";
+    private static final String SESSION_LOG_TAG = "SESSION";
+
+    private static final String AUTH_TAG = "AUTH";
     private static final String AUTH_STATE_SHARED_PREF = "p2photo.AuthStatePreference";
     private static final String AUTH_STATE_KEY = "authState";
 
