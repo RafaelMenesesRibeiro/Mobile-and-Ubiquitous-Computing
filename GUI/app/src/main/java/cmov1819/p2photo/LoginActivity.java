@@ -1,9 +1,11 @@
 package cmov1819.p2photo;
 
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -13,8 +15,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import net.openid.appauth.AuthorizationException;
-import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 
 import org.json.JSONException;
@@ -43,6 +43,8 @@ public class LoginActivity extends AppCompatActivity {
     private static final String AUTH_RESPONSE_ACTION = "cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE";
 
     private AuthStateManager authStateManager;
+
+    BroadcastReceiver restrictionsReceiver;
 
     @Override
     public void onBackPressed() {
@@ -89,6 +91,11 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume(){
+        super.onResume();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         Log.i(LOGIN_TAG, "LoginActivity#onStart()");
@@ -101,21 +108,16 @@ public class LoginActivity extends AppCompatActivity {
         checkIntent(intent);
     }
 
-    private void checkIntent(@Nullable Intent intent) {
+    private void checkIntent(Intent intent) {
         Log.i(AUTH_REQUEST_TAG, "LoginActivity#checkIntent() - >>> Checking intent...");
         if (intent != null) {
             String action = intent.getAction();
             Log.i(AUTH_REQUEST_TAG, "Found action: " + action);
-            switch (action) {
-                case AUTH_RESPONSE_ACTION:
-                    // If this intent hasn't been processed yet, process it.
-                    if (!intent.hasExtra(USED_INTENT)) {
-                        authStateManager.handleAuthorizationResponse(this, intent);
-                        intent.putExtra(USED_INTENT, true);
-                    }
-                    break;
-                default:
-                    break;
+            if ("cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE".equals(action)) {
+                if (!intent.hasExtra(USED_INTENT)) {
+                    authStateManager.handleAuthorizationResponse(this, intent);
+                    intent.putExtra(USED_INTENT, true);
+                }
             }
         } else {
             Log.i(AUTH_REQUEST_TAG, "Null intent... pass");
@@ -244,7 +246,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         else {
             Log.i(LOGIN_TAG, "Invalid authState. Requesting authorization with action: " + AUTH_RESPONSE_ACTION);
-            Intent postAuthorizationIntent = new Intent(AUTH_RESPONSE_ACTION);
+            Intent postAuthorizationIntent = new Intent("cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE");
             PendingIntent pendingIntent = PendingIntent.getActivity(
                     view.getContext(), authStateManager.getAuthorizationRequestCode(), postAuthorizationIntent, 0
             );
@@ -282,5 +284,9 @@ public class LoginActivity extends AppCompatActivity {
         passwordEditText.setFocusable(true);
         passwordEditText.setClickable(true);
     }
+
+    /**********************************************************
+     * OTHER HELPERS
+     ***********************************************************/
 
 }
