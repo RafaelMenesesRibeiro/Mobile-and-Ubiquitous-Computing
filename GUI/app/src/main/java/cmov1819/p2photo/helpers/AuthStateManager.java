@@ -85,7 +85,7 @@ public class AuthStateManager {
     * reuse it between application runs and it may be changed overtime as new OAuth results are received.
     */
     public void handleAuthorizationResponse(@NonNull AuthorizationResponse response, AuthorizationException error) {
-        final AuthState authState = new AuthState(response, error);
+        this.authState = new AuthState(response, error);
         // Exchange authorization code for the refresh and access tokens, and update the AuthState instance
         if (response != null) {
             Log.i(AUTH_MGR_TAG, "Handled authorization response: " + authState.jsonSerialize().toString());
@@ -120,6 +120,7 @@ public class AuthStateManager {
             }
         });
     }
+
     /**********************************************************
      *  AUTHSTATE PERSISTENCE
      **********************************************************/
@@ -167,8 +168,12 @@ public class AuthStateManager {
     }
 
     /**********************************************************
-     *  AUTHSTATE VALIDATORS
+     *  AUTHSTATE VALIDATORS AND GETTERS
      **********************************************************/
+
+    public AuthState getAuthState() {
+        return authState;
+    }
 
     public boolean hasValidAuthState() {
         return this.authState == null && !this.authState.isAuthorized();
