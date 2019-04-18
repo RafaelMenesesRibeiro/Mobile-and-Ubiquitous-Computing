@@ -1,5 +1,6 @@
 package cmov1819.p2photo;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -237,7 +238,13 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
         }
         else {
-            authStateManager.newAuthState(this, AUTH_RESPONSE_ACTION);
+            Intent postAuthIntent = new Intent(AUTH_RESPONSE_ACTION);
+            PendingIntent pendingIntent = PendingIntent.getActivity(
+                    this, authStateManager.getAuthorizationRequestCode(), postAuthIntent, 0
+            );
+            authStateManager.getAuthorizationService().performAuthorizationRequest(
+                    authStateManager.getAuthorizationRequest(), pendingIntent
+            );
         }
     }
 

@@ -53,9 +53,9 @@ public class AuthStateManager {
      * SINGLETON METHODS
      *********************************************************/
 
-    private AuthStateManager(Context context) {
-        this.sharedPreferences = context.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE);
-        this.authorizationService = new AuthorizationService(context);
+    private AuthStateManager() {
+        this.sharedPreferences = getAppContext().getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE);
+        this.authorizationService = new AuthorizationService(getAppContext());
         this.authorizationServiceConfiguration = new AuthorizationServiceConfiguration(
                 // authorizationServiceConfiguration must be instanciated before authorizationRequest
                 Uri.parse(AUTHORIZATION_ENDPOINT),
@@ -67,12 +67,8 @@ public class AuthStateManager {
         this.authState = restoreAuthState();
     }
 
-    public static AuthStateManager getInstance(Context context) {
-        if (instance == null) { instance = new AuthStateManager(context); }
-        return instance;
-    }
-
     public static AuthStateManager getInstance() {
+        if (instance == null) { instance = new AuthStateManager(); }
         return instance;
     }
 
@@ -170,15 +166,34 @@ public class AuthStateManager {
     }
 
     /**********************************************************
-     *  AUTHSTATE VALIDATORS AND OPERATORS
+     *  AUTHSTATE VALIDATORS, GETTERS AND SETTERS
      **********************************************************/
+
+    public AuthorizationService getAuthorizationService() {
+        return authorizationService;
+    }
+
+    public AuthorizationServiceConfiguration getAuthorizationServiceConfiguration() {
+        return authorizationServiceConfiguration;
+    }
+
+    public int getAuthorizationRequestCode() {
+        return authorizationRequestCode;
+    }
+
+    public AuthorizationRequest getAuthorizationRequest() {
+        return authorizationRequest;
+    }
 
     public AuthState getAuthState() {
         return authState;
     }
 
     public boolean hasValidAuthState() {
-        return authState == null && !authState.isAuthorized();
+        if (authState == null) {
+            return false;
+        }
+        return authState.isAuthorized();
     }
 
     /**********************************************************
@@ -202,15 +217,5 @@ public class AuthStateManager {
                 "https://www.googleapis.com/auth/drive.appdata"
         )));
         return builder.build();
-    }
-
-    /*
-     * Context of calling activity and the action the pending intent will trigger once completed, see AndroidManifest
-     * intent-filters for more a better understanding of action string.
-     */
-    public void newAuthState(Context context, String action) {
-        Intent postAuthIntent = new Intent(action);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, authorizationRequestCode, postAuthIntent, 0);
-        authorizationService.performAuthorizationRequest(authorizationRequest, pendingIntent);
     }
 }
