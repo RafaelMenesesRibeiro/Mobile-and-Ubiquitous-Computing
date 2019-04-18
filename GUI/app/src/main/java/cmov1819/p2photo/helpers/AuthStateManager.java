@@ -95,7 +95,7 @@ public class AuthStateManager {
     private void tryExchangeAuthCodeForAuthTokens(final Context context,
                                                   AuthorizationService service,
                                                   AuthorizationResponse response) {
-        
+
         Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
         service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
             @Override
@@ -168,10 +168,6 @@ public class AuthStateManager {
     /**********************************************************
      *  AUTHSTATE VALIDATORS, GETTERS AND SETTERS
      **********************************************************/
-
-    public AuthorizationService getAuthorizationService() {
-        return authorizationService;
-    }
 
     public AuthorizationServiceConfiguration getAuthorizationServiceConfiguration() {
         return authorizationServiceConfiguration;
