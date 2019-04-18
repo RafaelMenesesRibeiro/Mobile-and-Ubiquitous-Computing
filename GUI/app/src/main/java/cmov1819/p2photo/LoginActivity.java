@@ -41,11 +41,11 @@ import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
-import static cmov1819.p2photo.helpers.SessionManager.AUTH_ENDPOINT;
-import static cmov1819.p2photo.helpers.SessionManager.TOKEN_ENDPOINT;
-import static cmov1819.p2photo.helpers.SessionManager.persistAuthState;
-import static cmov1819.p2photo.helpers.SessionManager.refreshAuthState;
-import static cmov1819.p2photo.helpers.SessionManager.restoreAuthState;
+import static cmov1819.p2photo.helpers.AuthStateManager.AUTH_ENDPOINT;
+import static cmov1819.p2photo.helpers.AuthStateManager.TOKEN_ENDPOINT;
+import static cmov1819.p2photo.helpers.AuthStateManager.persistAuthState;
+import static cmov1819.p2photo.helpers.AuthStateManager.refreshAuthState;
+import static cmov1819.p2photo.helpers.AuthStateManager.restoreAuthState;
 import static cmov1819.p2photo.helpers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
