@@ -213,6 +213,7 @@ public class LoginActivity extends AppCompatActivity {
             AuthorizationService authorizationService = new AuthorizationService(view.getContext());
             authorizationService.performAuthorizationRequest(authorizationRequest, pendingIntent);
         }
+        finish();
     }
 
     /**********************************************************
