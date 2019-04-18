@@ -4,18 +4,13 @@ android {
     compileSdkVersion 28
 
     defaultConfig {
+        applicationId "cmov1819.p2photo"
         minSdkVersion 15
         targetSdkVersion 28
-        multiDexEnabled true
-        applicationId "cmov1819.p2photo"
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        /*
-        manifestPlaceholders = [
-            appAuthRedirectScheme: 'p2photo.cmov1819.LoginActivity'
-        ]
-        */
     }
 
     buildTypes {

@@ -111,15 +111,16 @@ public class LoginActivity extends AppCompatActivity {
                     if (!intent.hasExtra(USED_INTENT)) {
                         AuthorizationResponse response = AuthorizationResponse.fromIntent(intent);
                         AuthorizationException error = AuthorizationException.fromIntent(intent);
-                        authStateManager.handleAuthorizationResponse(response, error);
+                        authStateManager.handleAuthorizationResponse(this, response, error);
                         intent.putExtra(USED_INTENT, true);
                     }
                     break;
                 default:
                     break;
             }
+        } else {
+            Log.i(AUTH_REQUEST_TAG, "Null intent... Continueing");
         }
-        Log.i(AUTH_REQUEST_TAG, "Null intent... Continueing");
     }
 
     /**********************************************************

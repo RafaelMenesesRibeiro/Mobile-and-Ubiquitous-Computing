@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static android.widget.Toast.LENGTH_LONG;
-import static cmov1819.p2photo.MainApplication.getAppContext;
 
 public class AuthStateManager {
     private static AuthStateManager instance;
@@ -37,7 +36,7 @@ public class AuthStateManager {
     private final String TOKEN_ENDPOINT = "https://www.googleapis.com/oauth2/v4/token";
 
     private final String CLIENT_ID = "327056365677-stsv6tntebv1f2jj8agkcr84vrbs3llk.apps.googleusercontent.com";
-    private final Uri REDIRECT_URI = Uri.parse("https://127.0.0.1");
+    private final Uri REDIRECT_URI = Uri.parse("cmov1819.p2photo:/oauth2callback");
     private final int authorizationRequestCode;
 
     private SharedPreferences sharedPreferences;
@@ -51,7 +50,7 @@ public class AuthStateManager {
      *********************************************************/
 
     private AuthStateManager(Context context) {
-        this.sharedPreferences = getAppContext().getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE);
+        this.sharedPreferences = context.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE);
         this.authorizationService = new AuthorizationService(context);
         this.authorizationServiceConfiguration = new AuthorizationServiceConfiguration(
                 // authorizationServiceConfiguration must be instanciated before authorizationRequest
@@ -64,7 +63,7 @@ public class AuthStateManager {
         this.authState = restoreAuthState();
     }
 
-    public static AuthStateManager getInstance(Context context) {
+    public static AuthStateManager getInstance(final Context context) {
         if (instance == null) { instance = new AuthStateManager(context); }
         return instance;
     }
@@ -79,20 +78,22 @@ public class AuthStateManager {
     * The AuthState object that is created from the response can be used to store details from the auth session to
     * reuse it between application runs and it may be changed overtime as new OAuth results are received.
     */
-    public void handleAuthorizationResponse(@NonNull AuthorizationResponse response, AuthorizationException error) {
+    public void handleAuthorizationResponse(final Context context,
+                                            @NonNull AuthorizationResponse response,
+                                            AuthorizationException error) {
         this.authState = new AuthState(response, error);
         // Exchange authorization code for the refresh and access tokens, and update the AuthState instance
         if (response != null) {
             Log.i(AUTH_MGR_TAG, "Handled authorization response: " + authState.jsonSerialize().toString());
-            tryExchangeAuthCodeForAuthTokens(response);
+            tryExchangeAuthCodeForAuthTokens(context, response);
         } else {
             Log.i(AUTH_MGR_TAG, "Authorization failed with error: " + error.getMessage());
             String msg = "You must authorize this app to manage some google drive files to use";
-            Toast.makeText(getAppContext(), msg , LENGTH_LONG).show();
+            Toast.makeText(context, msg , LENGTH_LONG).show();
         }
     }
 
-    private void tryExchangeAuthCodeForAuthTokens(AuthorizationResponse response) {
+    private void tryExchangeAuthCodeForAuthTokens(final Context context, AuthorizationResponse response) {
         Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
         this.authorizationService.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
             @Override
@@ -100,7 +101,7 @@ public class AuthStateManager {
                 if (exc != null) {
                     Log.w(AUTH_MGR_TAG, "Token exchange authorization failed", exc);
                     String msg = "Could not exchange auth code for an auth token, some features might be unavailable";
-                    Toast.makeText(getAppContext(), msg, LENGTH_LONG).show();
+                    Toast.makeText(context, msg, LENGTH_LONG).show();
                 } else {
                     if (token != null) {
                         Log.i(AUTH_MGR_TAG, "Token Response [ Access Token: " + token.accessToken + ", ID Token: " + token.idToken + " ]");
@@ -109,7 +110,7 @@ public class AuthStateManager {
                     } else {
                         Log.w(AUTH_MGR_TAG, "Received token is null");
                         String msg = "Could not exchange auth code for an auth token, some features might be unavailable";
-                        Toast.makeText(getAppContext(), msg, LENGTH_LONG).show();
+                        Toast.makeText(context, msg, LENGTH_LONG).show();
                     }
                 }
             }
