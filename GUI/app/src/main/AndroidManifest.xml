@@ -16,16 +16,6 @@
         tools:ignore="AllowBackup,GoogleAppIndexingWarning"
         tools:targetApi="m">
 
-        <activity android:name="net.openid.appauth.RedirectUriReceiverActivity"
-            tools:node="replace">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="cmov1819.p2photo"/>
-            </intent-filter>
-        </activity>
-
         <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,6 +24,16 @@
             <intent-filter>
                 <action android:name="cmov1819.p2photo.HANDLE_AUTHORIZATION_RESPONSE"/>
                 <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+        </activity>
+
+        <activity android:name="net.openid.appauth.RedirectUriReceiverActivity"
+            tools:node="replace">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="cmov1819.p2photo"/>
             </intent-filter>
         </activity>
 
