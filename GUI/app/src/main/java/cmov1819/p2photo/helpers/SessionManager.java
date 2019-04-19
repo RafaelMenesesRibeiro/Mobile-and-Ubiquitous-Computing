@@ -9,24 +9,26 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import net.openid.appauth.AuthState;
+import net.openid.appauth.AuthorizationException;
+import net.openid.appauth.AuthorizationService;
+import net.openid.appauth.TokenRequest;
+import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
 
 public class SessionManager {
-    private static final String SESSION_LOG_TAG = "P2Photo#SessionManager";
-    private static final String AUTH_STATE_SHARED_PREF = "p2photo.AuthStatePreference";
-    private static final String AUTH_STATE_KEY = "authState";
+    private static final String SESSION_LOG_TAG = "SESSION";
 
     private static final String SESSION_ID_SHARED_PREF = "p2photo.SessionIDPreference";
     private static final String SESSION_ID_KEY = "sessionID";
     private static final String USER_NAME_KEY = "username";
 
-    public static final String AUTH_ENDPOINT = "https://accounts.google.com/o/oauth2/v2/auth";
-    public static final String USER_INFO_ENDPOINT = "https://www.googleapis.com/oauth2/v3/userinfo";
-    public static final String TOKEN_ENDPOINT = "https://www.googleapis.com/oauth2/v4/token";
-
     private static String sessionID;
     private static String username = null;
+
+    /**********************************************************
+     * COOKIE METHODS
+     ***********************************************************/
 
     public static String getSessionID(@NonNull Activity activity) {
         if (sessionID != null) { return sessionID; }
@@ -64,32 +66,4 @@ public class SessionManager {
         updateUsername(activity, null);
     }
 
-    public static  void persistAuthState(@NonNull AuthState authState, @NonNull Activity activity) {
-        activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE).edit()
-                .putString(AUTH_STATE_KEY, authState.jsonSerialize().toString())
-                .apply();
-    }
-
-    public static  void clearAuthState(@NonNull Activity activity) {
-        activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE)
-                .edit()
-                .remove(AUTH_STATE_KEY)
-                .apply();
-    }
-
-    @Nullable
-    public static AuthState restoreAuthState(@NonNull Activity activity) {
-        String jsonString = activity.getSharedPreferences(AUTH_STATE_SHARED_PREF, Context.MODE_PRIVATE)
-                                    .getString(AUTH_STATE_KEY, null);
-
-        if (!TextUtils.isEmpty(jsonString)) {
-            try {
-                assert jsonString != null;
-                return AuthState.jsonDeserialize(jsonString);
-            } catch (JSONException jsonException) {
-                Log.i(SESSION_LOG_TAG, "Except. when serializing AuthState from disk. This should not happen.");
-            }
-        }
-        return null;
-    }
 }
