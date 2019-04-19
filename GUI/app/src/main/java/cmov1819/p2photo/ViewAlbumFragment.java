@@ -14,6 +14,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import static android.widget.Toast.LENGTH_LONG;
+import static android.widget.Toast.LENGTH_SHORT;
 
 public class ViewAlbumFragment extends Fragment {
     private final Integer imageIdsArray[] = {
@@ -57,8 +58,13 @@ public class ViewAlbumFragment extends Fragment {
 
     private void populate(View view) throws NullPointerException {
         // TODO - @FranciscoBarros //
-        String catalogTitle = getActivity().getIntent().getStringExtra("title");
-        ArrayList<String> slicesURLList = getActivity().getIntent().getStringArrayListExtra("slices");
+        String catalogTitle = getArguments().getString("title");
+        ArrayList<String> slicesURLList = getArguments().getStringArrayList("slices");
+
+        if (catalogTitle.equals("NO_ALBUM_SELECTED_ERROR?")) {
+            // TODO - Implement. //
+            Toast.makeText(getContext(), "NO ALBUM SELECTED", LENGTH_SHORT).show();
+        }
 
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
@@ -75,7 +81,7 @@ public class ViewAlbumFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // TODO - Implement this. //
-                Toast.makeText(ShowAlbumActivity.this, "IMAGE WAS CLICKED: " + position,
+                Toast.makeText(ViewAlbumFragment.this, "IMAGE WAS CLICKED: " + position,
                         Toast.LENGTH_SHORT).show();
             }
         });*/
