@@ -17,7 +17,12 @@
         <item
             android:id="@+id/nav_add_photos"
             android:icon="@drawable/ic_info_black_24dp"
-            android:title="@string/add_photos" />
+            android:title="@string/add_photo" />
+
+        <item
+            android:id="@+id/nav_new_album_member"
+            android:icon="@drawable/ic_info_black_24dp"
+            android:title="@string/add_member_operation" />
     </group>
 
 
