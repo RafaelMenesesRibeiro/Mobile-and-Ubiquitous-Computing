@@ -32,11 +32,14 @@
     <string name="input_album_name">Input new album name</string>
     <!-- New Album Member Functionality -->
     <string name="add_album_member">Add Album Member</string>
+    <string name="input_album_ID">Input the album ID</string>
+    <string name="input_member_username">Input the username to add</string>
 
     <!-- Button Labels-->
     <string name="done">Done</string>
     <string name="button_search">Search</string>
     <string name="button_create">Create</string>
+    <string name="button_add">Add</string>
 
     <!-- Server response error reasons -->
     <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>
