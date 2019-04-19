@@ -31,15 +31,7 @@ public class SearchUserFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_search_user, container, false);
-        Button done = view.findViewById(R.id.AlbumDone);
-        done.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SearchUser(view);
-            }
-        });
-        return view;
+        return inflater.inflate(R.layout.fragment_search_user, container, false);
     }
 
     public void SearchUser(View view) throws BadInputException {
