@@ -53,6 +53,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.nav_create_album:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewAlbumFragment()).commit();
                 break;
             case R.id.nav_find_user:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
@@ -75,11 +76,6 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
     public void viewAlbumClicked(View view) {
         Intent intent = new Intent(this, ShowAlbumActivity.class);
-        startActivity(intent);
-    }
-
-    public void createAlbumClicked(View view) {
-        Intent intent = new Intent(this, NewAlbumActivity.class);
         startActivity(intent);
     }
 
