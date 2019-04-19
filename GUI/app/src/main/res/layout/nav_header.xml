@@ -13,12 +13,4 @@
         android:src="@mipmap/ic_launcher_round"
         />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:text="Coding in Flow"
-        android:textAppearance="@style/AlertDialog.AppCompat"
-        />
-
 </LinearLayout>
