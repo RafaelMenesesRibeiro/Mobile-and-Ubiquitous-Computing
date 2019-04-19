@@ -46,13 +46,11 @@
         android:layout_marginBottom="30dp"
         android:layout_toStartOf="@+id/done"
         android:layout_toLeftOf="@+id/done"
-        android:onClick="choosePhotoClicked"
         android:text="@string/choose_photo" />
 
     <Button
         android:id="@+id/done"
         style="P2PButton"
-        android:onClick="addPhotosClicked"
         android:layout_width="wrap_content"
         android:layout_height="46dp"
         android:layout_marginEnd="30dp"
