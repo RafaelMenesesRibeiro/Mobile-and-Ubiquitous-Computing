@@ -28,6 +28,11 @@
             android:id="@+id/nav_view_album"
             android:icon="@drawable/ic_info_black_24dp"
             android:title="@string/view_album" />
+
+        <item
+            android:id="@+id/nav_view_user_albums"
+            android:icon="@drawable/ic_info_black_24dp"
+            android:title="@string/view_user_albums" />
     </group>
 
 
