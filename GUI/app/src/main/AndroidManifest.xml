@@ -42,7 +42,6 @@
         <activity android:name="cmov1819.p2photo.NewAlbumActivity" />
         <activity android:name="cmov1819.p2photo.ShowUserAlbumsActivity" />
         <activity android:name="cmov1819.p2photo.ShowAlbumActivity"/>
-        <activity android:name="cmov1819.p2photo.AddPhotosActivity" />
     </application>
 
 </manifest>
