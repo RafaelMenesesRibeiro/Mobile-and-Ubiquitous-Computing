@@ -16,7 +16,7 @@
 
     <!-- Labels -->
     <string name="app_name">p2photo</string>
-    <string name="view_album">View Album</string>
+
     <string name="placeholder_for_album_name">placeholder-for-album-name</string>
     <string name="add_user">Add User</string>
     <string name="user_albums">User albums</string>
@@ -34,6 +34,8 @@
     <string name="add_album_member">Add Album Member</string>
     <string name="input_album_ID">Input the album ID</string>
     <string name="input_member_username">Input the username to add</string>
+    <!-- View Album Functionality -->
+    <string name="view_album">View Album</string>
 
     <!-- Button Labels-->
     <string name="done">Done</string>
