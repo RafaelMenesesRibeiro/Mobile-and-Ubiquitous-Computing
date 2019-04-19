@@ -83,11 +83,6 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         startActivity(intent);
     }
 
-    public void FindUserClicked(View view) {
-        Intent intent = new Intent(this, SearchUserActivity.class);
-        startActivity(intent);
-    }
-
     public void AddPhotosClicked(View view) {
         Intent intent = new Intent(this, AddPhotosActivity.class);
         startActivity(intent);

@@ -40,7 +40,6 @@
         <activity android:name="cmov1819.p2photo.MainMenuActivity"/>
         <activity android:name="cmov1819.p2photo.NewAlbumMemberActivity" />
         <activity android:name="cmov1819.p2photo.NewAlbumActivity" />
-        <activity android:name="cmov1819.p2photo.SearchUserActivity" />
         <activity android:name="cmov1819.p2photo.ShowUserAlbumsActivity" />
         <activity android:name="cmov1819.p2photo.ShowAlbumActivity"/>
         <activity android:name="cmov1819.p2photo.AddPhotosActivity" />
