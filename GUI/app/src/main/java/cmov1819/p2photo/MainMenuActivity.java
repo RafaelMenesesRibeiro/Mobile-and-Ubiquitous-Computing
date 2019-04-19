@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -44,8 +45,21 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
-            navigationView.setCheckedItem(R.id.nav_find_user);
+            Intent intent = getIntent();
+            if (intent.getStringExtra("initialScreen").equals(SearchUserFragment.class.getName())) {
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
+                navigationView.setCheckedItem(R.id.nav_find_user);
+            }
+            else if (intent.getStringExtra("initialScreen").equals(ViewUserAlbumsFragment.class.getName())) {
+                String catalogTitle = intent.getStringExtra("title");
+                ArrayList<String> slices = intent.getStringArrayListExtra("slices");
+                Fragment viewAlbumFragment = new ViewAlbumFragment();
+                Bundle data = new Bundle();
+                data.putString("title", catalogTitle);
+                data.putStringArrayList("slices", slices);
+                viewAlbumFragment.setArguments(data);
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
+            }
         }
     }
 
@@ -65,7 +79,20 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewAlbumMemberFragment()).commit();
                 break;
             case R.id.nav_view_album:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewAlbumFragment()).commit();
+                Fragment viewAlbumFragment = new ViewAlbumFragment();
+                Bundle viewAlbumData = new Bundle();
+                viewAlbumData.putString("title", "NO_ALBUM_SELECTED_ERROR");
+                viewAlbumData.putStringArrayList("slices", new ArrayList<String>());
+                viewAlbumFragment.setArguments(viewAlbumData);
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
+                break;
+            case R.id.nav_view_user_albums:
+                Fragment viewUserAlbumsFragment = new ViewUserAlbumsFragment();
+                Bundle viewUserAlbumsData = new Bundle();
+                ArrayList<String> items = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
+                viewUserAlbumsData.putStringArrayList("catalogs", items);
+                viewUserAlbumsFragment.setArguments(viewUserAlbumsData);
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewUserAlbumsFragment).commit();
                 break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -78,18 +105,6 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         }
-    }
-
-    public void viewAlbumClicked(View view) {
-        Intent intent = new Intent(this, ShowAlbumActivity.class);
-        startActivity(intent);
-    }
-
-    public void ListAlbumsClicked(View view) {
-        ArrayList<String> items = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
-        Intent intent = new Intent(this, ShowUserAlbumsActivity.class);
-        intent.putStringArrayListExtra("catalogs", items);
-        startActivity(intent);
     }
 
     public void LogoutClicked(View view) {

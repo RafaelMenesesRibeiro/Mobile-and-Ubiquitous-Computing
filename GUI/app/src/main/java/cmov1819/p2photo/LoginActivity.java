@@ -199,7 +199,9 @@ public class LoginActivity extends AppCompatActivity {
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
         if (tryLogin(usernameValue, passwordValue)) {
-            startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+            Intent intent = new Intent(LoginActivity.this, MainMenuActivity.class);
+            intent.putExtra("initialScreen", SearchUserFragment.class.getName());
+            startActivity(intent);
         }
     }
 
