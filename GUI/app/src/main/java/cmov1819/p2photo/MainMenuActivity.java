@@ -94,6 +94,11 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 viewUserAlbumsFragment.setArguments(viewUserAlbumsData);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewUserAlbumsFragment).commit();
                 break;
+            case R.id.nav_logout:
+                logout();
+                Intent intent = new Intent(this, LoginActivity.class);
+                startActivity(intent);
+                break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
@@ -105,12 +110,6 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
             drawerLayout.closeDrawer(GravityCompat.START);
         }
-    }
-
-    public void LogoutClicked(View view) {
-        logout();
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
     }
 
     public void logout() {

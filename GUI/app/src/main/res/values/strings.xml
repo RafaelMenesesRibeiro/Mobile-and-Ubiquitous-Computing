@@ -17,8 +17,6 @@
     <!-- Labels -->
     <string name="app_name">p2photo</string>
 
-
-
     <!-- Search User Functionality -->
     <string name="find_user">Find User</string>
     <string name="input_username">Input username to search</string>
@@ -38,6 +36,8 @@
     <string name="placeholder_for_album_name">placeholder-for-album-name</string>
     <!-- View User's Albums -->
     <string name="view_user_albums">User albums</string>
+    <!-- Logout -->
+    <string name="logout">Logout</string>
 
     <!-- Button Labels-->
     <string name="done">Done</string>
