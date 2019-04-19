@@ -61,6 +61,9 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             case R.id.nav_add_photos:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new AddPhotosFragment()).commit();
                 break;
+            case R.id.nav_new_album_member:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewAlbumMemberFragment()).commit();
+                break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
@@ -76,11 +79,6 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
     public void viewAlbumClicked(View view) {
         Intent intent = new Intent(this, ShowAlbumActivity.class);
-        startActivity(intent);
-    }
-
-    public void AddUsersClicked(View view) {
-        Intent intent = new Intent(this, NewAlbumMemberActivity.class);
         startActivity(intent);
     }
 
