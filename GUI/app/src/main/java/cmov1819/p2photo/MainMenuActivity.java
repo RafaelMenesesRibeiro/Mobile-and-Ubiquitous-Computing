@@ -64,6 +64,9 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             case R.id.nav_new_album_member:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewAlbumMemberFragment()).commit();
                 break;
+            case R.id.nav_view_album:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewAlbumFragment()).commit();
+                break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
         return true;
