@@ -22,14 +22,17 @@
     <string name="view_album">View Album</string>
     <string name="placeholder_for_album_name">placeholder-for-album-name</string>
     <string name="add_user">Add User</string>
-    <string name="choose_photo">Choose photo</string>
+
     <string name="add_photos">Add Photos</string>
-    <string name="add_photo">Add Photo</string>
+
     <string name="user_name_key">userName</string>
     <string name="user_albums">User albums</string>
     <!-- Search User Functionality -->
     <string name="find_user">Find User</string>
     <string name="input_username">Input username to search</string>
+    <!-- Add Photos Functionality -->
+    <string name="choose_photo">Choose photo</string>
+    <string name="add_photo">Add Photo</string>
 
     <!-- Button Labels-->
     <string name="button_search">Search</string>
