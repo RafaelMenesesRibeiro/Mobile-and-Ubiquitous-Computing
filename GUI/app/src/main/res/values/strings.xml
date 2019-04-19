@@ -1,4 +1,7 @@
 <resources>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
     <!-- Operation Endpoints -->
     <string name="p2photo_domain">p2photo-production.herokuapp.com/</string>
     <string name="p2photo_host">https://p2photo-production.herokuapp.com/</string>
@@ -24,6 +27,12 @@
     <string name="add_photo">Add Photo</string>
     <string name="user_name_key">userName</string>
     <string name="user_albums">User albums</string>
+    <!-- Search User Functionality -->
+    <string name="find_user">Find User</string>
+    <string name="input_username">Input username to search</string>
+
+    <!-- Button Labels-->
+    <string name="button_search">Search</string>
 
     <!-- Server response error reasons -->
     <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>
