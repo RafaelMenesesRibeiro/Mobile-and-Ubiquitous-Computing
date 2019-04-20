@@ -1,5 +1,6 @@
 package cmov1819.p2photo.helpers;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,7 +15,6 @@ import net.openid.appauth.AuthorizationRequest;
 import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
-import net.openid.appauth.ClientSecretPost;
 import net.openid.appauth.ResponseTypeValues;
 import net.openid.appauth.TokenRequest;
 import net.openid.appauth.TokenResponse;
@@ -23,8 +23,6 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import cmov1819.p2photo.LoginActivity;
 
@@ -79,8 +77,29 @@ public class AuthStateManager {
      *  AUTHSTATE REQUEST AND RESPONSE HANDLING
      **********************************************************/
 
-    private void tryAuthorization(final Context context, AuthorizationService service,
-                                  AuthorizationResponse response, AuthorizationException error) {
+    private void getAuthorization(final Context context, boolean forceFinish) {
+        clearAuthState();
+        context.startActivity(new Intent(context, LoginActivity.class));
+        if (forceFinish) { // WARNING DANGEROUS CODE, LEAVE FALSE WHENEVER POSSIBLE
+            ((Activity)context).finish();
+        }
+    }
+
+    public void handleAuthorizationResponse(final Context context, Intent appAuthIntent) {
+        Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
+        AuthorizationResponse response = AuthorizationResponse.fromIntent(appAuthIntent);
+        AuthorizationException error = AuthorizationException.fromIntent(appAuthIntent);
+        this.authState = new AuthState(response, error);
+        if (response != null) {
+            Log.i(AUTH_MGR_TAG, "Handled authorization response " + authState.jsonSerializeString());
+            AuthorizationService service = new AuthorizationService(context);
+            getTokens(context, service, response, error);
+            service.dispose();
+        }
+    }
+
+    private void getTokens(final Context context, AuthorizationService service,
+                           AuthorizationResponse response, AuthorizationException error) {
         service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
             @Override
             public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
@@ -99,12 +118,7 @@ public class AuthStateManager {
         });
     }
 
-    private void tryReauthorization(final Context context) {
-        clearAuthState();
-        context.startActivity(new Intent(context, LoginActivity.class));
-    }
-
-    public synchronized void tryRefreshAuthorization(final Context context) {
+    public synchronized void refreshTokens(final Context context) {
         /*
         * Token request with two params uses NoClientAuthentication, which ends up sending only the CLIENT_ID of this
         * manager. ClientSecretBasic would send only the client_secret.json which isn't meant to use on android
@@ -121,7 +135,7 @@ public class AuthStateManager {
                 if (error != null) {
                     Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to refresh authorization token.");
                     Toast.makeText(context, REFRESH_FAILURE, LENGTH_SHORT).show();
-                    tryReauthorization(context);
+                    getAuthorization(context, true);
                 } else {
                     updateAuthState(response, error);
                 }
@@ -130,19 +144,26 @@ public class AuthStateManager {
         authorizationService.dispose();
     }
 
-    public void handleAuthorizationResponse(final Context context, Intent appAuthIntent) {
-        Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
-        AuthorizationResponse response = AuthorizationResponse.fromIntent(appAuthIntent);
-        AuthorizationException error = AuthorizationException.fromIntent(appAuthIntent);
-        this.authState = new AuthState(response, error);
-        if (response != null) {
-            Log.i(AUTH_MGR_TAG, "Handled authorization response " + authState.jsonSerializeString());
-            AuthorizationService service = new AuthorizationService(context);
-            tryAuthorization(context, service, response, error);
-            service.dispose();
-        }
-    }
+    public void executeWithFreshTokens(final Context context, AuthorizationService authorizationService) {
 
+
+    /*
+        authState.performActionWithFreshTokens(authorizationService, new AuthState.AuthStateAction() {
+            @Override public void execute(String accessToken, String idToken, AuthorizationException error) {
+                if (error != null) {
+                    // negotiation for fresh tokens failed, check ex for more details
+                    Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to use or refresh authorization token.");
+                    Toast.makeText(context, REFRESH_FAILURE, LENGTH_SHORT).show();
+                    getAuthorization(context, true);
+                } else {
+                    // use the access token to do something ...
+
+                }
+            }
+        });
+    */
+   }
+   
     /**********************************************************
      *  AUTHSTATE PERSISTENCE
      **********************************************************/
