@@ -14,13 +14,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.HttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
@@ -67,22 +64,29 @@ public class GoogleDriveInteractor {
     private static GoogleDriveInteractor instance;
     private static DriveServiceHelper driveServiceHelper;
     private static Drive googleDriveService;
-    private static HttpTransport httpTransport;
+    private static NetHttpTransport httpTransport;
 
     private final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
-    private GoogleDriveInteractor(Context context) {
-            httpTransport = AndroidHttp.newCompatibleTransport();
 
+
+    private GoogleDriveInteractor(Context context) {
+        try {
+            httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
             GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(
                     context,
                     ImmutableSet.of(DRIVE_FILE, DRIVE_APPDATA, DRIVE_PHOTOS_READONLY, DRIVE_READONLY)
             );
-
-            Drive googleDriveService = new Drive.Builder(httpTransport, new GsonFactory(), credential)
+            credential.setSelectedAccount(account.getAccount());
+            Drive googleDriveService = new Drive.Builder(httpTransport, JSON_FACTORY, credential)
                     .setApplicationName(MainApplication.getApplicationName())
                     .build();
             GoogleDriveInteractor.driveServiceHelper = new DriveServiceHelper(googleDriveService);
+        } catch (GeneralSecurityException | IOException exc) {
+            Log.e(GOOGLE_DRIVE_TAG, "Could not instanciate <GoogleNetHttpTransport>, aborting application;");
+            System.exit(-1);
+        }
     }
 
     public static GoogleDriveInteractor getInstance(Context context) {
@@ -91,7 +95,7 @@ public class GoogleDriveInteractor {
     }
 
 
-    public void mkdirWithFreshTokens(final Context context, final String folderName, final String folderId,
+    public static void mkdirWithFreshTokens(final Context context, final String folderName, final String folderId,
                                             AuthorizationService authorizationService, AuthState authState) {
 
         driveServiceHelper.createFolder(folderName, folderId).addOnSuccessListener(new OnSuccessListener<GoogleDriveFileHolder>() {

@@ -24,7 +24,6 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.AuthStateManager;
-import cmov1819.p2photo.helpers.GoogleDriveInteractor;
 import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.helpers.SessionManager;
 
@@ -36,11 +35,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        AuthStateManager authStateManager = AuthStateManager.getInstance(this);
-        GoogleDriveInteractor googleDriveInteractor = GoogleDriveInteractor.getInstance(this);
-
-        googleDriveInteractor.mkdirWithFreshTokens(this, "helloworld","131ysa7day13131",
-                new AuthorizationService(this), authStateManager.getAuthState());
+        AuthStateManager.getInstance(this).mkdir(this, "helloworld", "999999999",
+                new AuthorizationService(this));
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
