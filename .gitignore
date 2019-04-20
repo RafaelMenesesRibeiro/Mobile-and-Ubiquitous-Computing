@@ -177,6 +177,7 @@ GUI/.idea/misc.xml
 GUI/.idea/modules.xml
 GUI/.idea/runConfigurations.xml
 GUI/.idea/workspace.xml
-GUI/.idea/dictionaries/FranciscoKlogan.xml
+GUI/.idea/dictionaries/
+GUI/.idea/dictionaries/*.xml
 GUI/.idea/inspectionProfiles/Project_Default.xml
 GUI/.idea/codeStyles/Project.xml
