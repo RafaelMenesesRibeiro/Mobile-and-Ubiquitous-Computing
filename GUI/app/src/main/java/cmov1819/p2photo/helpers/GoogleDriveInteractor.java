@@ -8,12 +8,17 @@ import android.util.Log;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.Task;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
+import com.google.common.collect.ImmutableSet;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -32,6 +37,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+
+import static com.google.api.services.drive.DriveScopes.*;
 
 @SuppressLint("StaticFieldLeak")
 @SuppressWarnings("Duplicates")
@@ -52,27 +59,35 @@ public class GoogleDriveInteractor {
     private static final MediaType JSON_TYPE = MediaType.parse("application/json; charset=utf-8");
 
     private static GoogleDriveInteractor instance;
-    private static Drive driveService;
+    private static DriveServiceHelper driveServiceHelper;
+    private static Drive googleDriveService;
+    private static NetHttpTransport httpTransport;
 
     private final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
 
-    private NetHttpTransport httpTransport;
 
-    private GoogleDriveInteractor() {
+
+    private GoogleDriveInteractor(Context context) {
         try {
             httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(context);
+            GoogleAccountCredential credential = GoogleAccountCredential.usingOAuth2(
+                    context,
+                    ImmutableSet.of(DRIVE_FILE, DRIVE_APPDATA, DRIVE_PHOTOS_READONLY, DRIVE_READONLY)
+            );
+            credential.setSelectedAccount(account.getAccount());
+            Drive googleDriveService = new Drive.Builder(httpTransport, JSON_FACTORY, credential)
+                    .setApplicationName(MainApplication.getApplicationName())
+                    .build();
+            driveServiceHelper = new DriveServiceHelper(googleDriveService);
         } catch (GeneralSecurityException | IOException exc) {
-            Log.e(GOOGLE_DRIVE_TAG, "Could not instanciate <GoogleNetHttpTransport>, aborting");
+            Log.e(GOOGLE_DRIVE_TAG, "Could not instanciate <GoogleNetHttpTransport>, aborting application;");
             System.exit(-1);
         }
-
-        driveService = new Drive.Builder(httpTransport, JSON_FACTORY, null)
-                .setApplicationName(MainApplication.getApplicationName())
-                .build();
     }
 
-    public static GoogleDriveInteractor getInstance() {
-        if (instance == null) { instance = new GoogleDriveInteractor(); }
+    public static GoogleDriveInteractor getInstance(Context context) {
+        if (instance == null) { instance = new GoogleDriveInteractor(context); }
         return instance;
     }
 
@@ -80,47 +95,11 @@ public class GoogleDriveInteractor {
     public static void mkdirWithFreshTokens(final Context context, final String folderName, final String folderId,
                                             AuthorizationService authorizationService, AuthState authState) {
 
-        authState.performActionWithFreshTokens(authorizationService, new AuthState.AuthStateAction() {
-            @Override
-            public void execute(@Nullable String accessToken, @Nullable String idToken,
-                                @Nullable final AuthorizationException error) {
-
-                new AsyncTask<String, Void, JSONObject>() {
-                    @Override
-                    protected JSONObject doInBackground(String... tokens) {
-                        // when using .post(body) the RequestBody.create automatically adds the specified content-type
-                        // to the header of the request, aswell as the body.length itself, therefore, we only need to
-                        // use addHeader(AUTH...)
-                        OkHttpClient okHttpClient = new OkHttpClient();
-                        RequestBody body = RequestBody.create(JSON_TYPE, jsonify(newDirectory(folderId, folderName)));
-                        Request request = new Request.Builder()
-                                .url(SIMPLE_UPLOAD)
-                                .post(body)
-                                .addHeader(AUTHORIZATION_HEADER, "Bearer " + tokens[0])
-                                .build();
-
-                        try {
-                            Response response = okHttpClient.newCall(request).execute();
-                            String jsonBody = response.body().string();
-                            Log.i(GOOGLE_DRIVE_TAG, "mkdir response: " + jsonBody);
-                            return new JSONObject(jsonBody);
-                        } catch (Exception exception) {
-                            Log.e(GOOGLE_DRIVE_TAG, exception.getMessage());
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(JSONObject jsonResponse) {
-                        if (jsonResponse != null && jsonResponse.has("error")) {
-                            processErrorCodes(context, jsonResponse);
-                        } else {
-                            Log.i(GOOGLE_DRIVE_TAG, "Created folder with success");
-                        }
-                    }
-                }.execute(accessToken);
-            }
-        });
+        Task<GoogleDriveFileHolder> task = driveServiceHelper.createFolder(folderName, folderId);
+        GoogleDriveFileHolder result = task.getResult();
+        if (result == null) {
+            Log.e(GOOGLE_DRIVE_TAG, "Did not work home boy.");
+        }
     }
 
     private static void processErrorCodes(Context context, JSONObject jsonResponse) {
@@ -167,5 +146,4 @@ public class GoogleDriveInteractor {
         fileMetadata.setMimeType(FOLDER_TYPE); // folder type
         return fileMetadata;
     }
-
 }
