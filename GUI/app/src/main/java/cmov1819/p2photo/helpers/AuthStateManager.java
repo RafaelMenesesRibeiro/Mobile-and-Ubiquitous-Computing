@@ -105,6 +105,14 @@ public class AuthStateManager {
     }
 
     public synchronized void tryRefreshAuthorization(final Context context) {
+        /*
+        * Token request with two params uses NoClientAuthentication, which ends up sending only the CLIENT_ID of this
+        * manager. ClientSecretBasic would send only the client_secret.json which isn't meant to use on android
+        * applications and finally ClientSecretPost, would send both fields. However, if this does not work, we can use
+        * ClientSecretPost at the risk of exceeding our free Google API Request/Hour quota, if someone impersonates us
+        * by decompiling our application, which is unlikely to happen since our repository is private and our
+        * application isn't deployed anywhere.
+        * */
         TokenRequest request = authState.createTokenRefreshRequest();
         AuthorizationService authorizationService = new AuthorizationService(context);
         authorizationService.performTokenRequest(request, new AuthorizationService.TokenResponseCallback() {
