@@ -24,6 +24,8 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import cmov1819.p2photo.LoginActivity;
+
 import static android.widget.Toast.LENGTH_SHORT;
 
 public class AuthStateManager {
@@ -75,21 +77,8 @@ public class AuthStateManager {
      *  AUTHSTATE REQUEST AND RESPONSE HANDLING
      **********************************************************/
 
-    public void handleAuthorizationResponse(final Context context, Intent appAuthIntent) {
-        Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
-        AuthorizationResponse response = AuthorizationResponse.fromIntent(appAuthIntent);
-        AuthorizationException error = AuthorizationException.fromIntent(appAuthIntent);
-        this.authState = new AuthState(response, error);
-        if (response != null) {
-            Log.i(AUTH_MGR_TAG, "Handled authorization response " + authState.jsonSerializeString());
-            AuthorizationService service = new AuthorizationService(context);
-            tryObtainAuthorizationToken(context, service, response, error);
-            service.dispose();
-        }
-    }
-
-    private void tryObtainAuthorizationToken(final Context context, AuthorizationService service,
-                                             AuthorizationResponse response, AuthorizationException error) {
+    private void tryAuthorization(final Context context, AuthorizationService service,
+                                  AuthorizationResponse response, AuthorizationException error) {
         service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
             @Override
             public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
@@ -108,7 +97,12 @@ public class AuthStateManager {
         });
     }
 
-    public synchronized void tryRefreshAuthorizationToken(final Context context) {
+    private void tryReauthorization(final Context context) {
+        clearAuthState();
+        context.startActivity(new Intent(context, LoginActivity.class));
+    }
+
+    public synchronized void tryRefreshAuthorization(final Context context) {
         ClientSecretPost clientSecretPost = new ClientSecretPost("CLIENT_SECRET"); // TODO SEE IF THIS IS THE .JSON
         TokenRequest request = authState.createTokenRefreshRequest();
         AuthorizationService authorizationService = new AuthorizationService(context);
@@ -118,12 +112,26 @@ public class AuthStateManager {
                 if (error != null) {
                     Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to refresh authorization token.");
                     Toast.makeText(context, REFRESH_FAILURE, LENGTH_SHORT).show();
+                    tryReauthorization(context);
                 } else {
                     updateAuthState(response, error);
                 }
             }
         });
         authorizationService.dispose();
+    }
+
+    public void handleAuthorizationResponse(final Context context, Intent appAuthIntent) {
+        Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
+        AuthorizationResponse response = AuthorizationResponse.fromIntent(appAuthIntent);
+        AuthorizationException error = AuthorizationException.fromIntent(appAuthIntent);
+        this.authState = new AuthState(response, error);
+        if (response != null) {
+            Log.i(AUTH_MGR_TAG, "Handled authorization response " + authState.jsonSerializeString());
+            AuthorizationService service = new AuthorizationService(context);
+            tryAuthorization(context, service, response, error);
+            service.dispose();
+        }
     }
 
     /**********************************************************
@@ -149,6 +157,7 @@ public class AuthStateManager {
     }
 
     public synchronized void clearAuthState() {
+        authState = null;
         sharedPreferences.edit().remove(AUTH_STATE_KEY).apply();
     }
 
