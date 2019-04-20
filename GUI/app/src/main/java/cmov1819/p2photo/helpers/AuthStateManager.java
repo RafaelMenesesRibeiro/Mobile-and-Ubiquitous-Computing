@@ -23,6 +23,8 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import cmov1819.p2photo.LoginActivity;
 
@@ -103,10 +105,9 @@ public class AuthStateManager {
     }
 
     public synchronized void tryRefreshAuthorization(final Context context) {
-        ClientSecretPost clientSecretPost = new ClientSecretPost("CLIENT_SECRET"); // TODO SEE IF THIS IS THE .JSON
         TokenRequest request = authState.createTokenRefreshRequest();
         AuthorizationService authorizationService = new AuthorizationService(context);
-        authorizationService.performTokenRequest(request, clientSecretPost, new AuthorizationService.TokenResponseCallback() {
+        authorizationService.performTokenRequest(request, new AuthorizationService.TokenResponseCallback() {
             @Override
             public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
                 if (error != null) {
