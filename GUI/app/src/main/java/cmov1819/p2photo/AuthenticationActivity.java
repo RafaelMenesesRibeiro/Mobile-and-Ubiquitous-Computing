@@ -72,7 +72,7 @@ public class AuthenticationActivity extends AppCompatActivity {
                             Toast.makeText(getApplicationContext(), "Authentication complete", LENGTH_LONG).show();
                         }
                         else {
-                            Log.i(AUTH_TAG, "Could not obtain OAuth Token from response");
+                            Log.e(AUTH_TAG, "Could not obtain OAuth Token from response");
                             Toast.makeText(getApplicationContext(), failMessage, LENGTH_LONG).show();
                         }
                     }
