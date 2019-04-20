@@ -91,6 +91,10 @@ public class AuthStateManager {
         if (forceFinish) { ((Activity)context).finish(); }
     }
 
+    public AuthState getAuthState() {
+        return authState;
+    }
+
     public void handleAuthorizationResponse(final Context context, Intent appAuthIntent) {
         Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
         AuthorizationResponse response = AuthorizationResponse.fromIntent(appAuthIntent);
@@ -147,10 +151,6 @@ public class AuthStateManager {
             }
         });
         authorizationService.dispose();
-    }
-
-    public void mkdir(final Context context, String name, String id, AuthorizationService authorizationService) {
-        GoogleDriveInteractor.mkdirWithFreshTokens(context, name, id, authorizationService, this.authState);
     }
 
     /**********************************************************
