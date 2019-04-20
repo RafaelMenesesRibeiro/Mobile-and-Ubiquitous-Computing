@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
@@ -25,10 +24,12 @@ import org.json.JSONException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static android.widget.Toast.LENGTH_LONG;
 import static android.widget.Toast.LENGTH_SHORT;
 
 public class AuthStateManager {
+    private static final String AUTH_FAILURE = "Could not obtain valid authorization. Some features will be disabled";
+    private static final String REFRESH_FAILURE = "Could not refresh autorization automatically. Please reauthenticate";
+
     private static AuthStateManager instance;
 
     private final String AUTH_MGR_TAG = "AUTH MANAGER";
@@ -82,29 +83,29 @@ public class AuthStateManager {
         if (response != null) {
             Log.i(AUTH_MGR_TAG, "Handled authorization response " + authState.jsonSerializeString());
             AuthorizationService service = new AuthorizationService(context);
-            service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
-                @Override
-                public void onTokenRequestCompleted(@Nullable TokenResponse tokenResponse, @Nullable AuthorizationException error) {
-                    String failMessage = "Token exchange failed... Some parts of the application might be unavailable.";
-                    if (error != null){
-                        Log.e(AUTH_MGR_TAG, failMessage, error);
-                        Toast.makeText(context, failMessage, LENGTH_SHORT).show();
-                    }
-                    else {
-                        if (tokenResponse != null) {
-                            authState.update(tokenResponse, error);
-                            persistAuthState();
-                            Log.i(AUTH_MGR_TAG, String.format("Token Response [ Access Token: %s, ID Token: %s ]", tokenResponse.accessToken, tokenResponse.idToken));
-                            Toast.makeText(context, "Authentication complete", LENGTH_SHORT).show();
-                        } else {
-                            Log.e(AUTH_MGR_TAG, "Could not obtain OAuth Token from response");
-                            Toast.makeText(context, failMessage, LENGTH_SHORT).show();
-                        }
-                    }
-                }
-            });
+            performTokenRequest(context, service, response, error);
             service.dispose();
         }
+    }
+
+    private void performTokenRequest(final Context context, AuthorizationService service,
+                                     AuthorizationResponse response, AuthorizationException error) {
+        service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
+            @Override
+            public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
+                if (error != null) {
+                    Log.e(AUTH_MGR_TAG, "Token exchange <AuthorizationResponse> had <AuthorizationException>");
+                    Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
+                } else {
+                    if (response != null) {
+                        updateAndPersistAuthState(response, error);
+                    } else {
+                        Log.e(AUTH_MGR_TAG, "Could not obtain <TokenResponse> from <AuthorizationResponse>");
+                        Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
     }
 
     /**********************************************************
@@ -133,22 +134,19 @@ public class AuthStateManager {
         sharedPreferences.edit().remove(AUTH_STATE_KEY).apply();
     }
 
-    public synchronized void refreshAuthState(final Context context) {
+    public synchronized void refreshAndPersistAuthState(final Context context) {
         if (authState.getNeedsTokenRefresh()) {
             ClientSecretPost clientSecretPost = new ClientSecretPost("CLIENT_SECRET"); // TODO SEE IF THIS IS THE .JSON
             TokenRequest request = authState.createTokenRefreshRequest();
-
             AuthorizationService authorizationService = new AuthorizationService(context);
             authorizationService.performTokenRequest(request, clientSecretPost, new AuthorizationService.TokenResponseCallback() {
                 @Override
                 public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
-                    if (error != null){
-                        String message = "Could not refresh autorization token. Redirecting to authentication...";
-                        Log.e(AUTH_MGR_TAG, message);
-                        Toast.makeText(context, message, LENGTH_SHORT).show();
+                    if (error != null) {
+                        Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to refresh authorization token.");
+                        Toast.makeText(context, REFRESH_FAILURE, LENGTH_SHORT).show();
                     } else {
-                        authState.update(response, error);
-                        persistAuthState();
+                        updateAndPersistAuthState(response, error);
                     }
                 }
             });
@@ -156,8 +154,14 @@ public class AuthStateManager {
         }
     }
 
+    public synchronized void updateAndPersistAuthState(TokenResponse response, AuthorizationException error) {
+        Log.i(AUTH_MGR_TAG, "Updated and persisted <TokenResponse>: " + response.accessToken + ", "+ response.idToken);
+        authState.update(response, error);
+        persistAuthState();
+    }
+
     /**********************************************************
-     *  AUTHSTATE VALIDATORS, GETTERS AND SETTERS
+     *  AUTHSTATE VALIDATORS, OPERATORS, GETTERS AND SETTERS
      **********************************************************/
 
     public AuthorizationServiceConfiguration getAuthorizationServiceConfiguration() {
@@ -166,14 +170,6 @@ public class AuthStateManager {
 
     public AuthorizationRequest getAuthorizationRequest() {
         return authorizationRequest;
-    }
-
-    public AuthState getAuthState() {
-        return authState;
-    }
-
-    public void setAuthState(AuthState authState) {
-        this.authState = authState;
     }
 
     public boolean hasValidAuthState() {
