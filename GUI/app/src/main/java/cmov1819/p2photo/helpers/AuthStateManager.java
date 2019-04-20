@@ -15,7 +15,9 @@ import net.openid.appauth.AuthorizationRequest;
 import net.openid.appauth.AuthorizationResponse;
 import net.openid.appauth.AuthorizationService;
 import net.openid.appauth.AuthorizationServiceConfiguration;
+import net.openid.appauth.ClientSecretPost;
 import net.openid.appauth.ResponseTypeValues;
+import net.openid.appauth.TokenRequest;
 import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
@@ -24,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static android.widget.Toast.LENGTH_LONG;
+import static android.widget.Toast.LENGTH_SHORT;
 
 public class AuthStateManager {
     private static AuthStateManager instance;
@@ -71,48 +74,37 @@ public class AuthStateManager {
      *  AUTHSTATE REQUEST AND RESPONSE HANDLING
      **********************************************************/
 
-    @Deprecated
-    public void handleAuthorizationResponse(final Context context, Intent intent) {
-        AuthorizationResponse response = AuthorizationResponse.fromIntent(intent);
-        AuthorizationException error = AuthorizationException.fromIntent(intent);
+    public void handleAuthorizationResponse(final Context context, Intent appAuthIntent) {
+        Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
+        AuthorizationResponse response = AuthorizationResponse.fromIntent(appAuthIntent);
+        AuthorizationException error = AuthorizationException.fromIntent(appAuthIntent);
         this.authState = new AuthState(response, error);
         if (response != null) {
-            Log.i(AUTH_MGR_TAG, "Handled authorization response: " + authState.jsonSerialize().toString());
+            Log.i(AUTH_MGR_TAG, "Handled authorization response " + authState.jsonSerializeString());
             AuthorizationService service = new AuthorizationService(context);
-            tryExchangeAuthCodeForAuthTokens(context, service, response);
-        } else {
-            Log.i(AUTH_MGR_TAG, "Authorization failed with error: " + error.getMessage());
-            String msg = "You must authorize this app to manage some google drive files to use";
-            Toast.makeText(context, msg , LENGTH_LONG).show();
-        }
-    }
-
-    @Deprecated
-    private void tryExchangeAuthCodeForAuthTokens(final Context context,
-                                                  AuthorizationService service,
-                                                  AuthorizationResponse response) {
-
-        Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
-        service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
-            @Override
-            public void onTokenRequestCompleted(@Nullable TokenResponse token, @Nullable AuthorizationException exc) {
-                if (exc != null) {
-                    Log.w(AUTH_MGR_TAG, "Token exchange authorization failed", exc);
-                    String msg = "Could not exchange auth code for an auth token, some features might be unavailable";
-                    Toast.makeText(context, msg, LENGTH_LONG).show();
-                } else {
-                    if (token != null) {
-                        Log.i(AUTH_MGR_TAG, "Token Response [ Access Token: " + token.accessToken + ", ID Token: " + token.idToken + " ]");
-                        authState.update(token, exc);
-                        persistAuthState();
-                    } else {
-                        Log.w(AUTH_MGR_TAG, "Received token is null");
-                        String msg = "Could not exchange auth code for an auth token, some features might be unavailable";
-                        Toast.makeText(context, msg, LENGTH_LONG).show();
+            service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
+                @Override
+                public void onTokenRequestCompleted(@Nullable TokenResponse tokenResponse, @Nullable AuthorizationException error) {
+                    String failMessage = "Token exchange failed... Some parts of the application might be unavailable.";
+                    if (error != null){
+                        Log.e(AUTH_MGR_TAG, failMessage, error);
+                        Toast.makeText(context, failMessage, LENGTH_SHORT).show();
+                    }
+                    else {
+                        if (tokenResponse != null) {
+                            authState.update(tokenResponse, error);
+                            persistAuthState();
+                            Log.i(AUTH_MGR_TAG, String.format("Token Response [ Access Token: %s, ID Token: %s ]", tokenResponse.accessToken, tokenResponse.idToken));
+                            Toast.makeText(context, "Authentication complete", LENGTH_SHORT).show();
+                        } else {
+                            Log.e(AUTH_MGR_TAG, "Could not obtain OAuth Token from response");
+                            Toast.makeText(context, failMessage, LENGTH_SHORT).show();
+                        }
                     }
                 }
-            }
-        });
+            });
+            service.dispose();
+        }
     }
 
     /**********************************************************
@@ -141,24 +133,27 @@ public class AuthStateManager {
         sharedPreferences.edit().remove(AUTH_STATE_KEY).apply();
     }
 
-    public synchronized void refreshAuthState() {
-        /*
-        ClientSecretPost clientSecretPost = new ClientSecretPost(authManager.getAuth().getClientSecret());
-        final TokenRequest request = authState.createTokenRefreshRequest();
-        final AuthorizationService authService = authManager.getAuthService();
+    public synchronized void refreshAuthState(final Context context) {
+        if (authState.getNeedsTokenRefresh()) {
+            ClientSecretPost clientSecretPost = new ClientSecretPost("CLIENT_SECRET"); // TODO SEE IF THIS IS THE .JSON
+            TokenRequest request = authState.createTokenRefreshRequest();
 
-        authService.performTokenRequest(request, clientSecretPost, new AuthorizationService.TokenResponseCallback() {
-            @Override
-            public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException ex) {
-                if (ex != null){
-                    ex.printStackTrace();
-                    return;
+            AuthorizationService authorizationService = new AuthorizationService(context);
+            authorizationService.performTokenRequest(request, clientSecretPost, new AuthorizationService.TokenResponseCallback() {
+                @Override
+                public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
+                    if (error != null){
+                        String message = "Could not refresh autorization token. Redirecting to authentication...";
+                        Log.e(AUTH_MGR_TAG, message);
+                        Toast.makeText(context, message, LENGTH_SHORT).show();
+                    } else {
+                        authState.update(response, error);
+                        persistAuthState();
+                    }
                 }
-                authManager.updateAuthState(response,ex);
-                MyApp.Token = authState.getIdToken();
-            }
-        });
-        */
+            });
+            authorizationService.dispose();
+        }
     }
 
     /**********************************************************
