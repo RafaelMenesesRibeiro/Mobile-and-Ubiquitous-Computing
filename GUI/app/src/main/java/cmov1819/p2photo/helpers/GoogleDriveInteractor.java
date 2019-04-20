@@ -40,7 +40,7 @@ public class GoogleDriveInteractor {
 
     private static final String GOOGLE_API = "https://www.googleapis.com/";
 
-    private static final String SIMPLE_UPLOAD = GOOGLE_API + "upload/drive/v3/files?uploadType=media";
+    private static final String SIMPLE_UPLOAD = GOOGLE_API + "drive/v2/files";
     private static final String MULTIPART_UPLOAD = GOOGLE_API + "upload/drive/v3/files?uploadType=multipart";
     private static final String PART_SEPARATOR = "--part";
 
@@ -91,15 +91,14 @@ public class GoogleDriveInteractor {
                         // when using .post(body) the RequestBody.create automatically adds the specified content-type
                         // to the header of the request, aswell as the body.length itself, therefore, we only need to
                         // use addHeader(AUTH...)
-                        OkHttpClient okHttpClient = new OkHttpClient();
-                        RequestBody body = RequestBody.create(JSON_TYPE, jsonify(newDirectory(folderId, folderName)));
-                        Request request = new Request.Builder()
-                                .url(SIMPLE_UPLOAD)
-                                .post(body)
-                                .addHeader(AUTHORIZATION_HEADER, "Bearer " + tokens[0])
-                                .build();
-
                         try {
+                            OkHttpClient okHttpClient = new OkHttpClient();
+                            RequestBody body = RequestBody.create(JSON_TYPE, newDirectory(folderId, folderName).toString());
+                            Request request = new Request.Builder()
+                                    .url(SIMPLE_UPLOAD)
+                                    .post(body)
+                                    .addHeader(AUTHORIZATION_HEADER, "Bearer " + tokens[0])
+                                    .build();
                             Response response = okHttpClient.newCall(request).execute();
                             String jsonBody = response.body().string();
                             Log.i(GOOGLE_DRIVE_TAG, "mkdir response: " + jsonBody);
@@ -160,12 +159,13 @@ public class GoogleDriveInteractor {
         }
     }
 
-    private static File newDirectory(String folderId, String folderName) {
-        File fileMetadata = new File();
-        fileMetadata.setId(folderId); // catalog id
-        fileMetadata.setName(folderName); // catalog name
-        fileMetadata.setMimeType(FOLDER_TYPE); // folder type
-        return fileMetadata;
+    private static JSONObject newDirectory(String folderId, String folderName) throws JSONException {
+
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("title", folderName);
+        jsonObject.put("mimeType", FOLDER_TYPE);
+
+        return jsonObject;
     }
 
 }
