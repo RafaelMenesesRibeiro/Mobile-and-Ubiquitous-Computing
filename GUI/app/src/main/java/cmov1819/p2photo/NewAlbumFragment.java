@@ -2,9 +2,14 @@ package cmov1819.p2photo;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -21,30 +26,37 @@ import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.helpers.SessionManager;
 
-public class NewAlbumActivity extends AppCompatActivity {
-
+public class NewAlbumFragment extends Fragment {
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_album);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.fragment_new_album, container, false);
+        Button doneButton = view.findViewById(R.id.done);
+        doneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                newAlbumClicked(view);
+            }
+        });
+        return view;
     }
 
     public void newAlbumClicked(View view) {
-        EditText titleInput = (EditText) findViewById(R.id.titleInputBox);
+        EditText titleInput = (EditText) view.findViewById(R.id.nameInputBox);
         String title = titleInput.getText().toString();
 
         if (title.equals("")) {
-            Toast toast = Toast.makeText(this, "Enter a name for the album", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(this.getContext(), "Enter a name for the album", Toast.LENGTH_LONG);
             toast.show();
             return;
         }
 
         try {
             newAlbum(title);
-            Intent intent = new Intent(this, MainMenuActivity.class);
+            Intent intent = new Intent(this.getActivity(), MainMenuActivity.class);
             startActivity(intent);
         } catch (FailedOperationException foex) {
-            Toast toast = Toast.makeText(this, "The create album operation failed. Try again " +
+            Toast toast = Toast.makeText(this.getContext(), "The create album operation failed. Try again " +
                     "later", Toast.LENGTH_LONG);
             toast.show();
         }
@@ -59,8 +71,8 @@ public class NewAlbumActivity extends AppCompatActivity {
             requestBody.put("catalogTitle", albumName);
             // TODO - Implement adding slice to Cloud Provider. //
             requestBody.put("sliceUrl", "http://www.acloudprovider.com/a_album_slice");
-            requestBody.put("calleeUsername", SessionManager.getUsername(this));
-            RequestData requestData = new PostRequestData(this, RequestData.RequestType.NEW_ALBUM
+            requestBody.put("calleeUsername", SessionManager.getUsername(this.getActivity()));
+            RequestData requestData = new PostRequestData(this.getActivity(), RequestData.RequestType.NEW_ALBUM
                     , url, requestBody);
 
             ResponseData result = new QueryManager().execute(requestData).get();

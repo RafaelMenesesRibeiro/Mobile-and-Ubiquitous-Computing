@@ -1,9 +1,14 @@
 package cmov1819.p2photo;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -23,17 +28,24 @@ import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.helpers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
-public class NewAlbumMemberActivity extends AppCompatActivity {
-
+public class NewAlbumMemberFragment extends Fragment {
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_new_album_member);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.fragment_new_album_member, container, false);
+        Button doneButton = view.findViewById(R.id.done);
+        doneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addUserClicked(view);
+            }
+        });
+        return view;
     }
 
     public void addUserClicked(View view) {
-        EditText albumIDInput = findViewById(R.id.albumIDInputBox);
-        EditText usernameInput = findViewById(R.id.toAddUsernameInputBox);
+        EditText albumIDInput = view.findViewById(R.id.albumIDInputBox);
+        EditText usernameInput = view.findViewById(R.id.toAddUsernameInputBox);
         String albumID = albumIDInput.getText().toString();
         String username = usernameInput.getText().toString();
 
@@ -45,15 +57,15 @@ public class NewAlbumMemberActivity extends AppCompatActivity {
         try {
             addMember(albumID, username);
         } catch (FailedOperationException foex) {
-            Toast toast = Toast.makeText(this, "The add user to album operation failed. Try again" +
+            Toast toast = Toast.makeText(this.getContext(), "The add user to album operation failed. Try again" +
                     " later", Toast.LENGTH_LONG);
             toast.show();
         } catch (NoMembershipException nmex) {
-            Toast toast = Toast.makeText(this, "The add user to album operation failed. No " +
+            Toast toast = Toast.makeText(this.getContext(), "The add user to album operation failed. No " +
                     "membership", Toast.LENGTH_LONG);
             toast.show();
         } catch (UsernameException uex) {
-            Toast toast = Toast.makeText(this, "The add user to album operation failed. User does" +
+            Toast toast = Toast.makeText(this.getContext(), "The add user to album operation failed. User does" +
                     " not exist", Toast.LENGTH_LONG);
             toast.show();
         }
@@ -68,8 +80,8 @@ public class NewAlbumMemberActivity extends AppCompatActivity {
             JSONObject requestBody = new JSONObject();
             requestBody.put("catalogId", albumID);
             requestBody.put("newMemberUsername", username);
-            requestBody.put("calleeUsername", SessionManager.getUsername(this));
-            RequestData requestData = new PostRequestData(this,
+            requestBody.put("calleeUsername", SessionManager.getUsername(this.getActivity()));
+            RequestData requestData = new PostRequestData(this.getActivity(),
                     RequestData.RequestType.NEW_ALBUM_MEMBER, url, requestBody);
 
             ResponseData result = new QueryManager().execute(requestData).get();

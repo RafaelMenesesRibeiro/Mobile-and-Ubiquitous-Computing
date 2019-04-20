@@ -201,7 +201,9 @@ public class LoginActivity extends AppCompatActivity {
         Log.i(LOGIN_TAG, "Trying to enable post authorization flows...");
         if (authStateManager.hasValidAuthState()) {
             Log.i(LOGIN_TAG, "Valid authentication state >>> starting new MainMenuActivity...");
-            startActivity(new Intent(LoginActivity.this, MainMenuActivity.class));
+            Intent mainMenuActivityIntent = new Intent(LoginActivity.this, MainMenuActivity.class);
+            mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
+            startActivity(mainMenuActivityIntent);
         }
         else {
             Log.i(LOGIN_TAG, "Invalid authentication state >>> starting AuthenticationActivity...");
@@ -212,6 +214,7 @@ public class LoginActivity extends AppCompatActivity {
             );
             AuthorizationService authorizationService = new AuthorizationService(view.getContext());
             authorizationService.performAuthorizationRequest(authorizationRequest, pendingIntent);
+            authorizationService.dispose();
         }
         finish();
     }

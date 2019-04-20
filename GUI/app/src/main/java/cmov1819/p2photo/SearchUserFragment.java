@@ -1,9 +1,14 @@
 package cmov1819.p2photo;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -12,6 +17,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 
+import cmov1819.p2photo.R;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.BadInputException;
@@ -21,17 +27,23 @@ import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.helpers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-@SuppressWarnings("unchecked")
-public class SearchUserActivity extends AppCompatActivity {
-
+public class SearchUserFragment extends Fragment {
+    @Nullable
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_user);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        final View view = inflater.inflate(R.layout.fragment_search_user, container, false);
+        Button searchButton = view.findViewById(R.id.AlbumDone);
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SearchUser(view);
+            }
+        });
+        return view;
     }
 
     public void SearchUser(View view) throws BadInputException {
-        String username = ((EditText) findViewById(R.id.usernameInputBox)).getText().toString();
+        String username = ((EditText) view.findViewById(R.id.usernameInputBox)).getText().toString();
         if (username.equals("")) {
             // TODO - Handle this. //
             throw new BadInputException("The username to find cannot be empty.");
@@ -40,10 +52,10 @@ public class SearchUserActivity extends AppCompatActivity {
             // TODO - Design tick box for 'bringAlmbums'. //
             LinkedHashMap<String, ArrayList> usernames = searchUser(username, true);
         } catch (NoResultsException nrex) {
-            Toast toast = Toast.makeText(this, "No results were found", Toast.LENGTH_LONG);
+            Toast toast = Toast.makeText(this.getContext(), "No results were found", Toast.LENGTH_LONG);
             toast.show();
         } catch (FailedOperationException foex) {
-            Toast toast = Toast.makeText(this, "The find users operation failed. Try again later"
+            Toast toast = Toast.makeText(this.getContext(), "The find users operation failed. Try again later"
                     , Toast.LENGTH_LONG);
             toast.show();
         }
@@ -55,10 +67,10 @@ public class SearchUserActivity extends AppCompatActivity {
         String url =
                 getString(R.string.p2photo_host) + getString(R.string.find_users_operation) +
                         "?searchPattern="
-                + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.getUsername(this);
+                        + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.getUsername(this.getActivity());
 
         try {
-            RequestData requestData = new RequestData(this, RequestData.RequestType.SEARCH_USERS,
+            RequestData requestData = new RequestData(this.getActivity(), RequestData.RequestType.SEARCH_USERS,
                     url);
 
             ResponseData result = new QueryManager().execute(requestData).get();

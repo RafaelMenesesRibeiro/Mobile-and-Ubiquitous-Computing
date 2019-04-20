@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_create_album"
+            android:icon="@drawable/ic_create_black_24dp"
+            android:title="@string/create_album" />
+
+        <item
+            android:id="@+id/nav_find_user"
+            android:icon="@drawable/ic_person_black_24dp"
+            android:title="@string/find_user" />
+
+        <item
+            android:id="@+id/nav_add_photos"
+            android:icon="@drawable/ic_add_photo_black_24dp"
+            android:title="@string/add_photo" />
+
+        <item
+            android:id="@+id/nav_new_album_member"
+            android:icon="@drawable/ic_person_add_black_24dp"
+            android:title="@string/add_album_member" />
+
+        <item
+            android:id="@+id/nav_view_album"
+            android:icon="@drawable/ic_image_black_24dp"
+            android:title="@string/view_album" />
+
+        <item
+            android:id="@+id/nav_view_user_albums"
+            android:icon="@drawable/ic_list_black_24dp"
+            android:title="@string/view_user_albums" />
+
+        <item
+            android:id="@+id/nav_logout"
+            android:icon="@drawable/ic_logout_black_24dp"
+            android:title="@string/logout" />
+    </group>
+
+
+</menu>

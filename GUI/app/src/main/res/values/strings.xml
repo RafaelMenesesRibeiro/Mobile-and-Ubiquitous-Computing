@@ -1,4 +1,7 @@
 <resources>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
     <!-- Operation Endpoints -->
     <string name="p2photo_domain">p2photo-production.herokuapp.com/</string>
     <string name="p2photo_host">https://p2photo-production.herokuapp.com/</string>
@@ -10,20 +13,37 @@
     <string name="add_member_operation">newAlbumMember</string>
     <string name="view_album_details_endpoint">https://p2photo-production.herokuapp.com/viewAlbumDetails</string>
     <string name="view_album_endpoint">https://p2photo-production.herokuapp.com/viewAlbum</string>
+
     <!-- Labels -->
     <string name="app_name">p2photo</string>
-    <string name="introduce_a_title_for_your_album">Introduce a title for your album</string>
-    <string name="done">Done</string>
-    <string name="create_album">Create Album</string>
-    <string name="add_album_member">Add Album Member</string>
-    <string name="view_album">View Album</string>
-    <string name="placeholder_for_album_name">placeholder-for-album-name</string>
-    <string name="add_user">Add User</string>
+
+    <!-- Search User Functionality -->
+    <string name="find_user">Find User</string>
+    <string name="input_username">Input username to search</string>
+    <!-- Add Photos Functionality -->
     <string name="choose_photo">Choose photo</string>
-    <string name="add_photos">Add Photos</string>
     <string name="add_photo">Add Photo</string>
-    <string name="user_name_key">userName</string>
-    <string name="user_albums">User albums</string>
+    <!-- New Album Functionality -->
+    <string name="create_album">Create Album</string>
+    <string name="input_album_name">Input new album name</string>
+    <!-- New Album Member Functionality -->
+    <string name="add_album_member">Add Album Member</string>
+    <string name="input_album_ID">Input the album ID</string>
+    <string name="input_member_username">Input the username to add</string>
+    <!-- View Album Functionality -->
+    <string name="view_album">View Album</string>
+    <string name="add_user">Add User</string>
+    <string name="placeholder_for_album_name">placeholder-for-album-name</string>
+    <!-- View User's Albums -->
+    <string name="view_user_albums">User albums</string>
+    <!-- Logout -->
+    <string name="logout">Logout</string>
+
+    <!-- Button Labels-->
+    <string name="done">Done</string>
+    <string name="button_search">Search</string>
+    <string name="button_create">Create</string>
+    <string name="button_add">Add</string>
 
     <!-- Server response error reasons -->
     <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>
