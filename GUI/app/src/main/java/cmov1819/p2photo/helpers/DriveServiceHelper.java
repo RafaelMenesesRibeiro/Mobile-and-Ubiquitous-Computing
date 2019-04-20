@@ -10,7 +10,10 @@ import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -88,8 +91,7 @@ public class DriveServiceHelper {
      * Opens the file identified by {@code fileId} and returns a {@link Pair} of its name and
      * contents.
      */
-/*
-    public Task<Pair<String, String>> readFile(String fileId) {
+    public Task<Pair<String, String>> readFile(final String fileId) {
         return Tasks.call(executor, new Callable<Pair<String, String>>() {
             @Override
             public Pair<String, String> call() throws Exception {
@@ -98,8 +100,9 @@ public class DriveServiceHelper {
                 String name = metadata.getName();
 
                 // Stream the file contents to a String.
-                try (InputStream is = driveService.files().get(fileId).executeMediaAsInputStream();
-                     BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+                try {
+                    InputStream is = driveService.files().get(fileId).executeMediaAsInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                     StringBuilder stringBuilder = new StringBuilder();
                     String line;
 
@@ -109,11 +112,12 @@ public class DriveServiceHelper {
                     String contents = stringBuilder.toString();
 
                     return Pair.create(name, contents);
+                } catch (Exception exc) {
+                    return null;
                 }
             }
         });
     }
-*/
     /**
      * Updates the file identified by {@code fileId} with the given {@code name} and {@code
      * content}.

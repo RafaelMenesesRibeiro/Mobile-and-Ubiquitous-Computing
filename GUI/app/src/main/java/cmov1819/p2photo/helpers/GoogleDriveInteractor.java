@@ -3,6 +3,7 @@ package cmov1819.p2photo.helpers;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -10,6 +11,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -79,7 +82,7 @@ public class GoogleDriveInteractor {
             Drive googleDriveService = new Drive.Builder(httpTransport, JSON_FACTORY, credential)
                     .setApplicationName(MainApplication.getApplicationName())
                     .build();
-            driveServiceHelper = new DriveServiceHelper(googleDriveService);
+            GoogleDriveInteractor.driveServiceHelper = new DriveServiceHelper(googleDriveService);
         } catch (GeneralSecurityException | IOException exc) {
             Log.e(GOOGLE_DRIVE_TAG, "Could not instanciate <GoogleNetHttpTransport>, aborting application;");
             System.exit(-1);
@@ -95,11 +98,17 @@ public class GoogleDriveInteractor {
     public static void mkdirWithFreshTokens(final Context context, final String folderName, final String folderId,
                                             AuthorizationService authorizationService, AuthState authState) {
 
-        Task<GoogleDriveFileHolder> task = driveServiceHelper.createFolder(folderName, folderId);
-        GoogleDriveFileHolder result = task.getResult();
-        if (result == null) {
-            Log.e(GOOGLE_DRIVE_TAG, "Did not work home boy.");
-        }
+        driveServiceHelper.createFolder(folderName, folderId).addOnSuccessListener(new OnSuccessListener<GoogleDriveFileHolder>() {
+            @Override
+            public void onSuccess(GoogleDriveFileHolder fileId) {
+                driveServiceHelper.readFile(fileId.getId());
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception exception) {
+                Log.e(GOOGLE_DRIVE_TAG, "Couldn't create file.", exception);
+            }
+        });
     }
 
     private static void processErrorCodes(Context context, JSONObject jsonResponse) {
