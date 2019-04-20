@@ -182,3 +182,16 @@ GUI/.idea/dictionaries/*.xml
 GUI/.idea/inspectionProfiles/Project_Default.xml
 GUI/.idea/codeStyles/Project.xml
 GUI/.idea/codeStyles/Project.xml
+GUI/.idea/libraries/Gradle__com_google_http_client_google_http_client_gson_1_28_0_jar.xml
+GUI/.idea/libraries/Gradle__com_google_http_client_google_http_client_android_1_28_0_jar.xml
+GUI/.idea/libraries/Gradle__com_google_code_gson_gson_2_1_jar.xml
+GUI/.idea/libraries/Gradle__com_google_apis_google_api_services_drive_v3_rev136_1_25_0_jar.xml
+GUI/.idea/libraries/Gradle__com_google_api_client_google_api_client_android_1_28_0_jar.xml
+GUI/.idea/libraries/Gradle__com_google_android_gms_play_services_tasks_16_0_1_aar.xml
+GUI/.idea/libraries/Gradle__com_google_android_gms_play_services_basement_16_0_1_aar.xml
+GUI/.idea/libraries/Gradle__com_google_android_gms_play_services_base_16_0_1_aar.xml
+GUI/.idea/libraries/Gradle__com_google_android_gms_play_services_auth_base_16_0_0_aar.xml
+GUI/.idea/libraries/Gradle__com_google_android_gms_play_services_auth_api_phone_16_0_0_aar.xml
+GUI/.idea/libraries/Gradle__com_google_android_gms_play_services_auth_16_0_1_aar.xml
+GUI/.idea/libraries/Gradle__com_android_support_support_v4_26_1_0_aar.xml
+GUI/.idea/libraries/Gradle__com_android_support_support_media_compat_26_1_0_aar.xml

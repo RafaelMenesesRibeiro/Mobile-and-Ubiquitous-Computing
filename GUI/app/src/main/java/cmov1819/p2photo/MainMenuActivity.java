@@ -14,6 +14,10 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
+import com.google.android.gms.auth.api.Auth;
+
+import net.openid.appauth.AuthorizationService;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
@@ -21,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.AuthStateManager;
 import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.helpers.SessionManager;
 
@@ -42,6 +47,9 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
+        AuthStateManager authStateManager = AuthStateManager.getInstance(this);
+        authStateManager.mkdir(this, "thisworldrox", "38usaptfrance183131", new AuthorizationService(this));
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
