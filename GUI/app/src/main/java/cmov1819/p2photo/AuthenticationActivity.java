@@ -33,11 +33,11 @@ public class AuthenticationActivity extends AppCompatActivity {
         Log.i(AUTH_TAG, "Started Authentication Activity...");
         Toast.makeText(this, "Trying to authenticate", LENGTH_SHORT).show();
 
-        Intent receivedIntent = getIntent();
+        Intent appAuthIntent = getIntent();
 
-        if (!receivedIntent.hasExtra(USED_INTENT)) {
-            handleAuthorizationResponse(receivedIntent);
-            receivedIntent.putExtra(USED_INTENT, true);
+        if (!appAuthIntent.hasExtra(USED_INTENT)) {
+            AuthStateManager.getInstance(this).handleAuthorizationResponse(this, appAuthIntent);
+            appAuthIntent.putExtra(USED_INTENT, true);
         }
 
         Intent mainMenuActivityIntent = new Intent(AuthenticationActivity.this, MainMenuActivity.class);
@@ -45,42 +45,5 @@ public class AuthenticationActivity extends AppCompatActivity {
         startActivity(mainMenuActivityIntent);
 
         finish();
-    }
-
-    private void handleAuthorizationResponse(Intent intent) {
-        AuthorizationResponse response = AuthorizationResponse.fromIntent(intent);
-        AuthorizationException error = AuthorizationException.fromIntent(intent);
-        final AuthState authState = new AuthState(response, error);
-
-        Log.i(AUTH_TAG, "Initiating exchange protocol...");
-        if (response != null) {
-            Log.i(AUTH_TAG, "Handled authorization response " + authState.jsonSerializeString());
-            AuthorizationService service = new AuthorizationService(this);
-            service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
-                @Override
-                public void onTokenRequestCompleted(@Nullable TokenResponse tokenResponse, @Nullable AuthorizationException error) {
-                    String failMessage = "Token exchange failed... Some parts of the application might be unavailable.";
-                    if (error != null) {
-                        Log.w(AUTH_TAG, failMessage, error);
-                        Toast.makeText(getApplicationContext(), failMessage, LENGTH_LONG).show();
-                    } else {
-                        if (tokenResponse != null) {
-                            authState.update(tokenResponse, error);
-                            authStateManager.setAuthState(authState);
-                            authStateManager.persistAuthState();
-                            Log.i(AUTH_TAG, String.format("Token Response [ Access Token: %s, ID Token: %s ]", tokenResponse.accessToken, tokenResponse.idToken));
-                            Toast.makeText(getApplicationContext(), "Authentication complete", LENGTH_LONG).show();
-                        }
-                        else {
-                            Log.i(AUTH_TAG, "Could not obtain OAuth Token from response");
-                            Toast.makeText(getApplicationContext(), failMessage, LENGTH_LONG).show();
-                        }
-                    }
-                }
-
-            });
-            service.dispose();
-            finish();
-        }
     }
 }
