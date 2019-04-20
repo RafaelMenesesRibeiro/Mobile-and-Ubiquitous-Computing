@@ -83,13 +83,13 @@ public class AuthStateManager {
         if (response != null) {
             Log.i(AUTH_MGR_TAG, "Handled authorization response " + authState.jsonSerializeString());
             AuthorizationService service = new AuthorizationService(context);
-            performTokenRequest(context, service, response, error);
+            tryObtainAuthorizationToken(context, service, response, error);
             service.dispose();
         }
     }
 
-    private void performTokenRequest(final Context context, AuthorizationService service,
-                                     AuthorizationResponse response, AuthorizationException error) {
+    private void tryObtainAuthorizationToken(final Context context, AuthorizationService service,
+                                             AuthorizationResponse response, AuthorizationException error) {
         service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
             @Override
             public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
@@ -98,7 +98,7 @@ public class AuthStateManager {
                     Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
                 } else {
                     if (response != null) {
-                        updateAndPersistAuthState(response, error);
+                        updateAuthState(response, error);
                     } else {
                         Log.e(AUTH_MGR_TAG, "Could not obtain <TokenResponse> from <AuthorizationResponse>");
                         Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
@@ -106,6 +106,24 @@ public class AuthStateManager {
                 }
             }
         });
+    }
+
+    public synchronized void tryRefreshAuthorizationToken(final Context context) {
+        ClientSecretPost clientSecretPost = new ClientSecretPost("CLIENT_SECRET"); // TODO SEE IF THIS IS THE .JSON
+        TokenRequest request = authState.createTokenRefreshRequest();
+        AuthorizationService authorizationService = new AuthorizationService(context);
+        authorizationService.performTokenRequest(request, clientSecretPost, new AuthorizationService.TokenResponseCallback() {
+            @Override
+            public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
+                if (error != null) {
+                    Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to refresh authorization token.");
+                    Toast.makeText(context, REFRESH_FAILURE, LENGTH_SHORT).show();
+                } else {
+                    updateAuthState(response, error);
+                }
+            }
+        });
+        authorizationService.dispose();
     }
 
     /**********************************************************
@@ -134,27 +152,7 @@ public class AuthStateManager {
         sharedPreferences.edit().remove(AUTH_STATE_KEY).apply();
     }
 
-    public synchronized void refreshAndPersistAuthState(final Context context) {
-        if (authState.getNeedsTokenRefresh()) {
-            ClientSecretPost clientSecretPost = new ClientSecretPost("CLIENT_SECRET"); // TODO SEE IF THIS IS THE .JSON
-            TokenRequest request = authState.createTokenRefreshRequest();
-            AuthorizationService authorizationService = new AuthorizationService(context);
-            authorizationService.performTokenRequest(request, clientSecretPost, new AuthorizationService.TokenResponseCallback() {
-                @Override
-                public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
-                    if (error != null) {
-                        Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to refresh authorization token.");
-                        Toast.makeText(context, REFRESH_FAILURE, LENGTH_SHORT).show();
-                    } else {
-                        updateAndPersistAuthState(response, error);
-                    }
-                }
-            });
-            authorizationService.dispose();
-        }
-    }
-
-    public synchronized void updateAndPersistAuthState(TokenResponse response, AuthorizationException error) {
+    public synchronized void updateAuthState(TokenResponse response, AuthorizationException error) {
         Log.i(AUTH_MGR_TAG, "Updated and persisted <TokenResponse>: " + response.accessToken + ", "+ response.idToken);
         authState.update(response, error);
         persistAuthState();
