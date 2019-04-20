@@ -15,7 +15,7 @@
     <string name="view_album_endpoint">https://p2photo-production.herokuapp.com/viewAlbum</string>
 
     <!-- Labels -->
-    <string name="app_name">p2photo</string>
+    <string name="app_name">cmov1819.p2photo</string>
 
     <!-- Search User Functionality -->
     <string name="find_user">Find User</string>

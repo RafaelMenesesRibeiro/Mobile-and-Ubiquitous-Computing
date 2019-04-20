@@ -1,10 +1,12 @@
 package cmov1819.p2photo.helpers;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
@@ -20,11 +22,16 @@ import net.openid.appauth.TokenRequest;
 import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import cmov1819.p2photo.LoginActivity;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
@@ -77,12 +84,11 @@ public class AuthStateManager {
      *  AUTHSTATE REQUEST AND RESPONSE HANDLING
      **********************************************************/
 
-    private void getAuthorization(final Context context, boolean forceFinish) {
+    public void getAuthorization(final Context context, String reason, boolean forceFinish) {
+        Toast.makeText(context, reason, LENGTH_SHORT).show();
         clearAuthState();
         context.startActivity(new Intent(context, LoginActivity.class));
-        if (forceFinish) { // WARNING DANGEROUS CODE, LEAVE FALSE WHENEVER POSSIBLE
-            ((Activity)context).finish();
-        }
+        if (forceFinish) { ((Activity)context).finish(); }
     }
 
     public void handleAuthorizationResponse(final Context context, Intent appAuthIntent) {
@@ -118,7 +124,7 @@ public class AuthStateManager {
         });
     }
 
-    public synchronized void refreshTokens(final Context context) {
+    public void refreshTokens(final Context context) {
         /*
         * Token request with two params uses NoClientAuthentication, which ends up sending only the CLIENT_ID of this
         * manager. ClientSecretBasic would send only the client_secret.json which isn't meant to use on android
@@ -134,8 +140,7 @@ public class AuthStateManager {
             public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
                 if (error != null) {
                     Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to refresh authorization token.");
-                    Toast.makeText(context, REFRESH_FAILURE, LENGTH_SHORT).show();
-                    getAuthorization(context, true);
+                    getAuthorization(context, REFRESH_FAILURE,true);
                 } else {
                     updateAuthState(response, error);
                 }
@@ -144,26 +149,10 @@ public class AuthStateManager {
         authorizationService.dispose();
     }
 
-    public void executeWithFreshTokens(final Context context, AuthorizationService authorizationService) {
+    public void mkdir(final Context context, String name, String id, AuthorizationService authorizationService) throws IOException {
+        GoogleDriveInteractor.mkdirWithFreshTokens(context, name, id, authorizationService, this.authState);
+    }
 
-
-    /*
-        authState.performActionWithFreshTokens(authorizationService, new AuthState.AuthStateAction() {
-            @Override public void execute(String accessToken, String idToken, AuthorizationException error) {
-                if (error != null) {
-                    // negotiation for fresh tokens failed, check ex for more details
-                    Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to use or refresh authorization token.");
-                    Toast.makeText(context, REFRESH_FAILURE, LENGTH_SHORT).show();
-                    getAuthorization(context, true);
-                } else {
-                    // use the access token to do something ...
-
-                }
-            }
-        });
-    */
-   }
-   
     /**********************************************************
      *  AUTHSTATE PERSISTENCE
      **********************************************************/
