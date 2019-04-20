@@ -77,7 +77,10 @@ public class AuthenticationActivity extends AppCompatActivity {
                         }
                     }
                 }
+
             });
+            service.dispose();
+            finish();
         }
     }
 }
