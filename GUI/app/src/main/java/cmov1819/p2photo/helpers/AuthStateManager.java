@@ -149,7 +149,7 @@ public class AuthStateManager {
         authorizationService.dispose();
     }
 
-    public void mkdir(final Context context, String name, String id, AuthorizationService authorizationService) throws IOException {
+    public void mkdir(final Context context, String name, String id, AuthorizationService authorizationService) {
         GoogleDriveInteractor.mkdirWithFreshTokens(context, name, id, authorizationService, this.authState);
     }
 
