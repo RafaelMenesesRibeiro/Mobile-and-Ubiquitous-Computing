@@ -126,14 +126,12 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         return new InputStreamReader(connection.getInputStream());
     }
 
-    private static String getJSONStringFromHttpResponse(HttpURLConnection connection,
-                                                        boolean isBadRequest)
+    private static String getJSONStringFromHttpResponse(HttpURLConnection connection, boolean isBadRequest)
             throws IOException {
 
         String currentLine;
         StringBuilder jsonResponse = new StringBuilder();
-        InputStreamReader inputStream = getBufferedReaderFromHttpURLConnection(connection,
-                isBadRequest);
+        InputStreamReader inputStream = getBufferedReaderFromHttpURLConnection(connection, isBadRequest);
         BufferedReader bufferedReader = new BufferedReader(inputStream);
         while ((currentLine = bufferedReader.readLine()) != null) {
             jsonResponse.append(currentLine);

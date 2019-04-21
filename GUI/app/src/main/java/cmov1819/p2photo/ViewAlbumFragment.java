@@ -30,6 +30,8 @@ public class ViewAlbumFragment extends Fragment {
             R.drawable.img9,
     };
 
+    // TODO - Add dropdown menu when coming from burger menu. //
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
