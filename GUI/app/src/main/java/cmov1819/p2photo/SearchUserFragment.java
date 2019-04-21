@@ -1,5 +1,6 @@
 package cmov1819.p2photo;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -50,6 +51,22 @@ public class SearchUserFragment extends Fragment {
         }
         try {
             LinkedHashMap<String, ArrayList> usernames = searchUser(username, true);
+            ArrayList<String> usersList = new ArrayList<>(usernames.keySet());
+
+            Fragment listUsersFragment = new ListUsersFragment();
+            Bundle data = new Bundle();
+            data.putStringArrayList("users", usersList);
+            listUsersFragment.setArguments(data);
+
+            try {
+                Activity activity = getActivity();
+                MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+                mainMenuActivity.changeFragment(listUsersFragment);
+            }
+            catch (NullPointerException | ClassCastException ex) {
+                Toast.makeText(getContext(), "Could not present users list", Toast.LENGTH_LONG).show();
+            }
+
         }
         catch (NoResultsException nrex) {
             Toast.makeText(this.getContext(), "No results were found", Toast.LENGTH_LONG).show();

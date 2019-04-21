@@ -134,4 +134,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             throw new FailedOperationException(ex.getMessage());
         }
     }
+
+    public void changeFragment(Fragment fragment) {
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    }
 }
