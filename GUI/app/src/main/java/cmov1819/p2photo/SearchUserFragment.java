@@ -33,7 +33,7 @@ public class SearchUserFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.fragment_search_user, container, false);
-        Button searchButton = view.findViewById(R.id.AlbumDone);
+        Button searchButton = view.findViewById(R.id.done);
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

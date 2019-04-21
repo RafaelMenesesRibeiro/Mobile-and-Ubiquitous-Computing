@@ -30,7 +30,7 @@
         android:inputType="text" />
 
     <Button
-        android:id="@+id/AlbumDone"
+        android:id="@+id/done"
         style="P2PButton"
         android:layout_width="wrap_content"
         android:layout_height="46dp"
