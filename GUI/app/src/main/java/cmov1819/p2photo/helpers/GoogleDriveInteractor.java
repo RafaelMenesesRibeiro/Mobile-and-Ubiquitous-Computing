@@ -80,11 +80,10 @@ public class GoogleDriveInteractor {
         if (instance == null) { instance = new GoogleDriveInteractor(); }
         return instance;
     }
-    
-    public static void mkdirWithFreshTokens(final Context context, final String folderName, final String folderId,
-                                            AuthorizationService authorizationService, AuthState authState) {
 
-        authState.performActionWithFreshTokens(authorizationService, new AuthState.AuthStateAction() {
+    public static void createFolder(final Context context, final String folderName, AuthState authState) {
+
+        authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(@Nullable String accessToken, @Nullable String idToken,
                                 @Nullable final AuthorizationException error) {
@@ -94,7 +93,7 @@ public class GoogleDriveInteractor {
                     protected JSONObject doInBackground(String... tokens) {
                         try {
                             OkHttpClient okHttpClient = new OkHttpClient();
-                            RequestBody body = RequestBody.create(JSON_TYPE, newDirectory(folderId, folderName).toString());
+                            RequestBody body = RequestBody.create(JSON_TYPE, newDirectory(folderName).toString());
                             Request request = new Request.Builder()
                                     .url(SIMPLE_UPLOAD)
                                     .post(body)
@@ -102,7 +101,7 @@ public class GoogleDriveInteractor {
                                     .build();
                             Response response = okHttpClient.newCall(request).execute();
                             String jsonBody = response.body().string();
-                            Log.i(GOOGLE_DRIVE_TAG, "mkdir response: " + jsonBody);
+                            Log.i(GOOGLE_DRIVE_TAG, "createFolder response: " + jsonBody);
                             return new JSONObject(jsonBody);
                         } catch (Exception exception) {
                             Log.e(GOOGLE_DRIVE_TAG, exception.getMessage());
@@ -160,7 +159,7 @@ public class GoogleDriveInteractor {
         }
     }
 
-    private static JSONObject newDirectory(String folderId, String folderName) throws JSONException {
+    private static JSONObject newDirectory(String folderName) throws JSONException {
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("title", folderName);

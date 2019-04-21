@@ -12,9 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
-
-import com.google.android.gms.auth.api.Auth;
 
 import net.openid.appauth.AuthorizationService;
 
@@ -49,7 +46,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         toggle.syncState();
 
         AuthStateManager authStateManager = AuthStateManager.getInstance(this);
-        authStateManager.mkdir(this, "thisworldrox", "38usaptfrance183131", new AuthorizationService(this));
+        authStateManager.createFolder(this, "RoxWithCallables");
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
