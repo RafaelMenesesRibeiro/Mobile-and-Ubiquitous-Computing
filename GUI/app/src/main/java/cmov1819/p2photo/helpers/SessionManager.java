@@ -16,6 +16,9 @@ import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
+import java.util.Set;
+
 public class SessionManager {
     private static final String SESSION_LOG_TAG = "SESSION";
 
@@ -25,6 +28,8 @@ public class SessionManager {
 
     private static String sessionID;
     private static String username = null;
+
+    private static Set<String> albumMemberships;
 
     /**********************************************************
      * COOKIE METHODS
@@ -66,4 +71,21 @@ public class SessionManager {
         updateUsername(activity, null);
     }
 
+    /**********************************************************
+     * MEMBERSHIP METHODS
+     ***********************************************************/
+
+    public static Set<String> getAlbumMemberships(Activity activity) {
+        if (albumMemberships != null) { return albumMemberships; }
+        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
+        return sharedPref.getStringSet("memberships", null);
+    }
+
+    public static void updateAlbumMemberships(Activity activity, Set<String> albumMemberships) {
+        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putStringSet("memberships", albumMemberships);
+        editor.apply();
+        SessionManager.albumMemberships = albumMemberships;
+    }
 }
