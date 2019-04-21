@@ -25,6 +25,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.security.GeneralSecurityException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import cmov1819.p2photo.MainApplication;
 import okhttp3.MediaType;
@@ -51,6 +54,8 @@ public class GoogleDriveInteractor {
     private static final String FOLDER_TYPE = "application/vnd.google-apps.folder";
     private static final MediaType JSON_TYPE = MediaType.parse("application/json; charset=utf-8");
 
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+
     private static GoogleDriveInteractor instance;
     private static Drive driveService;
 
@@ -75,8 +80,7 @@ public class GoogleDriveInteractor {
         if (instance == null) { instance = new GoogleDriveInteractor(); }
         return instance;
     }
-
-
+    
     public static void mkdirWithFreshTokens(final Context context, final String folderName, final String folderId,
                                             AuthorizationService authorizationService, AuthState authState) {
 
@@ -88,9 +92,6 @@ public class GoogleDriveInteractor {
                 new AsyncTask<String, Void, JSONObject>() {
                     @Override
                     protected JSONObject doInBackground(String... tokens) {
-                        // when using .post(body) the RequestBody.create automatically adds the specified content-type
-                        // to the header of the request, aswell as the body.length itself, therefore, we only need to
-                        // use addHeader(AUTH...)
                         try {
                             OkHttpClient okHttpClient = new OkHttpClient();
                             RequestBody body = RequestBody.create(JSON_TYPE, newDirectory(folderId, folderName).toString());
