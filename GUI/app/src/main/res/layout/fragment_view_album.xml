@@ -46,7 +46,7 @@
 
     <Button
         android:id="@+id/addUserButton"
-        style="P2PButton"
+        style="@style/ActiveButton"
         android:layout_width="wrap_content"
         android:layout_height="46dp"
         android:layout_alignParentBottom="true"
@@ -59,7 +59,7 @@
 
     <Button
         android:id="@+id/addPhotoButton"
-        style="P2PButton"
+        style="@style/ActiveButton"
         android:layout_width="wrap_content"
         android:layout_height="46dp"
         android:layout_marginEnd="30dp"
