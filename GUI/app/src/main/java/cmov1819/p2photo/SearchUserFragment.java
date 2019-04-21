@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.net.HttpURLConnection;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.concurrent.ExecutionException;
 
-import cmov1819.p2photo.R;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.BadInputException;
@@ -61,12 +61,11 @@ public class SearchUserFragment extends Fragment {
             try {
                 Activity activity = getActivity();
                 MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-                mainMenuActivity.changeFragment(listUsersFragment);
+                mainMenuActivity.changeFragment(listUsersFragment, R.id.nav_search_user);
             }
             catch (NullPointerException | ClassCastException ex) {
                 Toast.makeText(getContext(), "Could not present users list", Toast.LENGTH_LONG).show();
             }
-
         }
         catch (NoResultsException nrex) {
             Toast.makeText(this.getContext(), "No results were found", Toast.LENGTH_LONG).show();

@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +25,7 @@ import cmov1819.p2photo.helpers.SessionManager;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +36,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         setSupportActionBar(toolbar);
 
         drawerLayout = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -48,7 +48,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             Intent intent = getIntent();
             if (intent.getStringExtra("initialScreen").equals(SearchUserFragment.class.getName())) {
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
-                navigationView.setCheckedItem(R.id.nav_find_user);
+                navigationView.setCheckedItem(R.id.nav_search_user);
             }
             else if (intent.getStringExtra("initialScreen").equals(ViewUserAlbumsFragment.class.getName())) {
                 String catalogTitle = intent.getStringExtra("title");
@@ -69,7 +69,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             case R.id.nav_create_album:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewAlbumFragment()).commit();
                 break;
-            case R.id.nav_find_user:
+            case R.id.nav_search_user:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
                 break;
             case R.id.nav_add_photos:
@@ -135,7 +135,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         }
     }
 
-    public void changeFragment(Fragment fragment) {
+    public void changeFragment(Fragment fragment, int menuItemID) {
+        navigationView.setCheckedItem(menuItemID);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 }
