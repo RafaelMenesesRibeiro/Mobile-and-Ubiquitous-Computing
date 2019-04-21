@@ -161,12 +161,14 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     private void getCookies(Activity activity, HttpURLConnection connection) {
         Map<String, List<String>> headerFields = connection.getHeaderFields();
         List<String> cookiesHeader = headerFields.get(COOKIES_HEADER);
-        if (cookiesHeader != null) {
-            for (String cookie : cookiesHeader) {
-                // TODO - Check if cookie is in fact SessionID. //
-                System.out.println("NEW COOKIE: " + cookie);
-                updateSessionID(activity, cookie);
-            }
+        if (cookiesHeader != null && cookiesHeader.size() > 0) {
+            String cookie = cookiesHeader.get(0);
+            updateSessionID(activity, cookie);
+            Log.i("STATUS", "QUERY: received login cookie - " + cookie + ".");
+        }
+        else {
+            updateSessionID(activity, "INVALID_SESSION");
+            Log.i("ERROR", "QUERY: no cookies were received.");
         }
     }
 
