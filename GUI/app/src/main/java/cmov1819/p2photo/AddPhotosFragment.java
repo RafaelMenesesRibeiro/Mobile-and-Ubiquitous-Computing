@@ -13,15 +13,21 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Spinner;
 
 import org.apache.http.util.Asserts;
 
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AddPhotosFragment extends Fragment {
     private View view;
+    private ArrayList<String> albumIDs;
 
     @Nullable
     @Override
@@ -42,9 +48,24 @@ public class AddPhotosFragment extends Fragment {
                 addPhotosClicked(view);
             }
         });
+        populate(view);
+        return view;
+    }
+
+    private void populate(View view) {
         ImageView imageView = view.findViewById(R.id.imageView);
         imageView.setImageResource(R.drawable.img_not_available);
-        return view;
+
+        Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
+        HashMap<String, String> map = ViewUserAlbumsFragment.getUserMemberships(getActivity());
+        ArrayList<String> albumNames = new ArrayList<>();
+        albumIDs = new ArrayList<>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            albumIDs.add(entry.getKey());
+            albumNames.add(entry.getValue());
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, albumNames);
+        membershipDropdown.setAdapter(adapter);
     }
 
     public void choosePhotoClicked(View view) {
