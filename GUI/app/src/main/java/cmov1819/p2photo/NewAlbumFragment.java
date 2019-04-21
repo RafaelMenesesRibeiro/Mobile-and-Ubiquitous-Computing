@@ -1,5 +1,6 @@
 package cmov1819.p2photo;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -17,6 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -53,9 +55,23 @@ public class NewAlbumFragment extends Fragment {
 
         try {
             newAlbum(title);
-            Intent intent = new Intent(this.getActivity(), MainMenuActivity.class);
-            startActivity(intent);
-        } catch (FailedOperationException foex) {
+
+            Fragment viewAlbumFragment = new ViewAlbumFragment();
+            Bundle data = new Bundle();
+            data.putString("title", title);
+            data.putStringArrayList("slices", new ArrayList<String>());
+            viewAlbumFragment.setArguments(data);
+
+            try {
+                Activity activity = getActivity();
+                MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+                mainMenuActivity.changeFragment(viewAlbumFragment, R.id.nav_view_album);
+            }
+            catch (NullPointerException | ClassCastException ex) {
+                Toast.makeText(getContext(), "Could not present new album", Toast.LENGTH_LONG).show();
+            }
+        }
+        catch (FailedOperationException foex) {
             Toast toast = Toast.makeText(this.getContext(), "The create album operation failed. Try again " +
                     "later", Toast.LENGTH_LONG);
             toast.show();
@@ -79,6 +95,9 @@ public class NewAlbumFragment extends Fragment {
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
                 Log.i("STATUS", "The new album operation was successful");
+
+                // TODO - Get catalog ID from response. //
+
             } else {
                 Log.i("STATUS", "The new album operation was unsuccessful. Server response code: "
                         + code);
