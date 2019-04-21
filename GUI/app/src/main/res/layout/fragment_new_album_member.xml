@@ -13,7 +13,6 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:text="@string/add_album_member"
-        android:textColor="@color/colorPrimary"
         android:layout_centerHorizontal="true"
         />
 
