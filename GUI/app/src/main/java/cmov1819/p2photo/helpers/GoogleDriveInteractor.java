@@ -13,7 +13,6 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
-import com.google.api.services.drive.model.File;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -25,7 +24,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.security.GeneralSecurityException;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,45 +37,42 @@ import okhttp3.Response;
 @SuppressLint("StaticFieldLeak")
 @SuppressWarnings("Duplicates")
 public class GoogleDriveInteractor {
-    private static final String GOOGLE_DRIVE_TAG = "DRIVE INTERACTOR";
+    public static final String APPLICATION_NAME = MainApplication.getApplicationName();
 
-    private static final String GOOGLE_API = "https://www.googleapis.com/";
+    public static final String GOOGLE_DRIVE_TAG = "DRIVE INTERACTOR";
 
-    private static final String SIMPLE_UPLOAD = GOOGLE_API + "drive/v2/files";
-    private static final String MULTIPART_UPLOAD = GOOGLE_API + "upload/drive/v3/files?uploadType=multipart";
-    private static final String PART_SEPARATOR = "--part";
+    public static final String GOOGLE_API = "https://www.googleapis.com/";
+    public static final String TYPE_GOOGLE_DRIVE_FILE = "application/vnd.google-apps.file";
+    public static final String TYPE_GOOGLE_DRIVE_FOLDER = "application/vnd.google-apps.folder";
+    public static final String TYPE_PHOTO = "application/vnd.google-apps.photo";
+    public static final String TYPE_UNKNOWN = "application/vnd.google-apps.unknown";
 
-    private static final String AUTHORIZATION_HEADER = "Authorization";
-    private static final String CONTENT_TYPE_HEADER = "Content-Type";
-    private static final String CONTENT_LENGTH_HEADER = "Content-Length";
+    public static final String FILE_UPLOAD_ENDPOINT = GOOGLE_API + "drive/v2/files";
 
-    private static final String FOLDER_TYPE = "application/vnd.google-apps.folder";
-    private static final MediaType JSON_TYPE = MediaType.parse("application/json; charset=utf-8");
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String CONTENT_TYPE_HEADER = "Content-Type";
+    public static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
-    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    public static final MediaType JSON_TYPE = MediaType.parse("application/json; charset=utf-8");
 
     private static GoogleDriveInteractor instance;
     private static Drive driveService;
 
-    private final JsonFactory JSON_FACTORY = JacksonFactory.getDefaultInstance();
-
-    private NetHttpTransport httpTransport;
-
     private GoogleDriveInteractor() {
         try {
-            httpTransport = GoogleNetHttpTransport.newTrustedTransport();
+            driveService = new Drive.Builder(
+                    GoogleNetHttpTransport.newTrustedTransport(),
+                    JacksonFactory.getDefaultInstance(),
+                    null).setApplicationName(APPLICATION_NAME).build();
         } catch (GeneralSecurityException | IOException exc) {
             Log.e(GOOGLE_DRIVE_TAG, "Could not instanciate <GoogleNetHttpTransport>, aborting");
             System.exit(-1);
         }
-
-        driveService = new Drive.Builder(httpTransport, JSON_FACTORY, null)
-                .setApplicationName(MainApplication.getApplicationName())
-                .build();
     }
 
     public static GoogleDriveInteractor getInstance() {
-        if (instance == null) { instance = new GoogleDriveInteractor(); }
+        if (instance == null)
+            instance = new GoogleDriveInteractor();
         return instance;
     }
 
@@ -95,7 +90,7 @@ public class GoogleDriveInteractor {
                             OkHttpClient okHttpClient = new OkHttpClient();
                             RequestBody body = RequestBody.create(JSON_TYPE, newDirectory(folderName).toString());
                             Request request = new Request.Builder()
-                                    .url(SIMPLE_UPLOAD)
+                                    .url(FILE_UPLOAD_ENDPOINT)
                                     .post(body)
                                     .addHeader(AUTHORIZATION_HEADER, "Bearer " + tokens[0])
                                     .build();
@@ -160,11 +155,9 @@ public class GoogleDriveInteractor {
     }
 
     private static JSONObject newDirectory(String folderName) throws JSONException {
-
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("title", folderName);
-        jsonObject.put("mimeType", FOLDER_TYPE);
-
+        jsonObject.put("mimeType", TYPE_GOOGLE_DRIVE_FOLDER);
         return jsonObject;
     }
 
