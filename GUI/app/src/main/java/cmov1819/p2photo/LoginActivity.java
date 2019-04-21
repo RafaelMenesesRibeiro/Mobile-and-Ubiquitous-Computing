@@ -21,7 +21,11 @@ import net.openid.appauth.AuthorizationService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -31,6 +35,7 @@ import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.AuthStateManager;
 import cmov1819.p2photo.helpers.QueryManager;
+import cmov1819.p2photo.helpers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
@@ -157,6 +162,9 @@ public class LoginActivity extends AppCompatActivity {
         tryLogin(usernameValue, passwordValue);
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
+        HashMap<BigDecimal, String> albumMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
+        Set<String> albumNames = new HashSet<>(albumMemberships.values());
+        SessionManager.updateAlbumMemberships(this, albumNames);
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {

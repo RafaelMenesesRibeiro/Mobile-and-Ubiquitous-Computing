@@ -1,5 +1,6 @@
 package cmov1819.p2photo;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,8 +14,13 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
@@ -25,6 +31,7 @@ import cmov1819.p2photo.msgtypes.SuccessResponse;
 import static android.widget.Toast.LENGTH_SHORT;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG_TITLE;
+import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
 import static cmov1819.p2photo.helpers.SessionManager.getUsername;
 
 public class ViewUserAlbumsFragment extends Fragment {
@@ -114,5 +121,23 @@ public class ViewUserAlbumsFragment extends Fragment {
 
     private ArrayAdapter<String> newArrayAdapter(ArrayList<String> items) {
         return new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, items);
+    }
+
+    public static HashMap<BigDecimal, String> getUserMemberships(Activity activity) {
+        String url = activity.getString(R.string.get_memberships_endpoint) + "?calleeUsername=" + getUsername(activity);
+        LinkedHashMap<BigDecimal, String> map = new LinkedHashMap<>();
+        try {
+            RequestData requestData = new RequestData(activity, GET_MEMBERSHIPS, url);
+            ResponseData responseData = new QueryManager().execute(requestData).get();
+            if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
+                SuccessResponse payload = (SuccessResponse) responseData.getPayload();
+                Object object = payload.getResult();
+                map = (LinkedHashMap<BigDecimal, String>) object;
+            }
+        }
+        catch (ClassCastException | ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return map;
     }
 }

@@ -13,6 +13,7 @@
     <string name="add_member_operation">newAlbumMember</string>
     <string name="view_album_details_endpoint">https://p2photo-production.herokuapp.com/viewAlbumDetails</string>
     <string name="view_album_endpoint">https://p2photo-production.herokuapp.com/viewAlbum</string>
+    <string name="get_memberships_endpoint">https://p2photo-production.herokuapp.com/getMemberships</string>
 
     <!-- Labels -->
     <string name="app_name">p2photo</string>

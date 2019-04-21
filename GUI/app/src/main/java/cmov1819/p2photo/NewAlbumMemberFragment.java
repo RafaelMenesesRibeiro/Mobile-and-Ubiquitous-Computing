@@ -50,7 +50,7 @@ public class NewAlbumMemberFragment extends Fragment {
 
     private void populate(View view) {
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        ArrayList<String> albumIDs = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
+        ArrayList<String> albumIDs = new ArrayList<>(SessionManager.getAlbumMemberships(getActivity()));
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, albumIDs);
         membershipDropdown.setAdapter(adapter);
     }
