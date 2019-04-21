@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -72,7 +73,13 @@ public class ViewUserAlbumsFragment extends Fragment {
     }
 
     private void buildCatalogArrays() {
-        // TODO - Get actual album IDs from server. //
+        HashMap<String, String> memberships = getUserMemberships(getActivity());
+        for (Map.Entry<String, String> entry : memberships.entrySet()) {
+            catalogIdList.add(entry.getKey());
+            catalogTitleList.add(entry.getValue());
+        }
+
+        /*
         ArrayList<String> intentCatalogIdList = getArguments().getStringArrayList("catalogs");
         String baseUrl =
                 getString(R.string.view_album_details_endpoint) + "?calleeUsername=" + getUsername(getActivity());
@@ -80,6 +87,7 @@ public class ViewUserAlbumsFragment extends Fragment {
             String url = baseUrl + "&catalogId=" + catalogId;
             tryAdd(catalogId, new RequestData(getActivity(), GET_CATALOG_TITLE, url));
         }
+        */
     }
 
     private void tryAdd(String catalogId, RequestData requestData) {
@@ -123,16 +131,16 @@ public class ViewUserAlbumsFragment extends Fragment {
         return new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, items);
     }
 
-    public static HashMap<BigDecimal, String> getUserMemberships(Activity activity) {
+    public static HashMap<String, String> getUserMemberships(Activity activity) {
         String url = activity.getString(R.string.get_memberships_endpoint) + "?calleeUsername=" + getUsername(activity);
-        LinkedHashMap<BigDecimal, String> map = new LinkedHashMap<>();
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
         try {
             RequestData requestData = new RequestData(activity, GET_MEMBERSHIPS, url);
             ResponseData responseData = new QueryManager().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
                 Object object = payload.getResult();
-                map = (LinkedHashMap<BigDecimal, String>) object;
+                map = (LinkedHashMap<String, String>) object;
             }
         }
         catch (ClassCastException | ExecutionException | InterruptedException e) {

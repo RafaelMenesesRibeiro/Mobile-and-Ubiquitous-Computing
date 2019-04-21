@@ -162,8 +162,8 @@ public class LoginActivity extends AppCompatActivity {
         tryLogin(usernameValue, passwordValue);
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
-        HashMap<BigDecimal, String> albumMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
-        Set<BigDecimal> albumIDs = albumMemberships.keySet();
+        HashMap<String, String> albumMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
+        Set<String> albumIDs = albumMemberships.keySet();
         SessionManager.updateAlbumMembershipsIDs(this, albumIDs);
         Set<String> albumNames = new HashSet<>(albumMemberships.values());
         SessionManager.updateAlbumMembershipsNames(this, albumNames);

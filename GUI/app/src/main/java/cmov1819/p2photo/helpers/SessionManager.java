@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -19,7 +20,7 @@ public class SessionManager {
     private static String sessionID;
     private static String username = null;
 
-    private static Set<BigDecimal> albumMembershipIDs;
+    private static Set<String> albumMembershipIDs;
     private static Set<String> albumMembershipNames;
 
     /**********************************************************
@@ -80,25 +81,17 @@ public class SessionManager {
         SessionManager.albumMembershipNames = albumMemberships;
     }
 
-    public static Set<BigDecimal> getAlbumMembershipsIDs(Activity activity) {
+    public static Set<String> getAlbumMembershipsIDs(Activity activity) {
         if (albumMembershipIDs != null) { return albumMembershipIDs; }
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         Set<String> set = sharedPref.getStringSet("membershipIDs", null);
-        Set<BigDecimal> result = new HashSet<>();
-        for (String dec : set) {
-            result.add(new BigDecimal(dec));
-        }
-        return result;
+        return set;
     }
 
-    public static void updateAlbumMembershipsIDs(Activity activity, Set<BigDecimal> albumMemberships) {
+    public static void updateAlbumMembershipsIDs(Activity activity, Set<String> albumMemberships) {
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        Set<String> set = new HashSet<>();
-        for (BigDecimal dec : albumMemberships) {
-            set.add(dec.toPlainString());
-        }
-        editor.putStringSet("membershipIDs", set);
+        editor.putStringSet("membershipIDs", albumMemberships);
         editor.apply();
         SessionManager.albumMembershipIDs = albumMemberships;
     }
