@@ -42,6 +42,8 @@ public class AddPhotosFragment extends Fragment {
                 addPhotosClicked(view);
             }
         });
+        ImageView imageView = view.findViewById(R.id.imageView);
+        imageView.setImageResource(R.drawable.img_not_available);
         return view;
     }
 
