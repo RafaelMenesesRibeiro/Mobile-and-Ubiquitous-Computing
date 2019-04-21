@@ -80,8 +80,7 @@ public class GoogleDriveInteractor {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
-            public void execute(@Nullable String accessToken, @Nullable String idToken,
-                                @Nullable final AuthorizationException error) {
+            public void execute(String accessToken, String idToken, final AuthorizationException error) {
 
                 new AsyncTask<String, Void, JSONObject>() {
                     @Override
