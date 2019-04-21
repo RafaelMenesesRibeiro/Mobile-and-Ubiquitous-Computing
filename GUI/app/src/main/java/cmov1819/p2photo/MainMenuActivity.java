@@ -50,7 +50,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
                 navigationView.setCheckedItem(R.id.nav_search_user);
             }
-            else if (intent.getStringExtra("initialScreen").equals(ViewUserAlbumsFragment.class.getName())) {
+            else if (intent.getStringExtra("initialScreen").equals(ViewAlbumFragment.class.getName())) {
                 String catalogTitle = intent.getStringExtra("title");
                 ArrayList<String> slices = intent.getStringArrayListExtra("slices");
                 Fragment viewAlbumFragment = new ViewAlbumFragment();
