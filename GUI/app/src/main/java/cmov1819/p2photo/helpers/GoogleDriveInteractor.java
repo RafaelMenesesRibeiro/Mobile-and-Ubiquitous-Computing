@@ -3,14 +3,12 @@ package cmov1819.p2photo.helpers;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.annotation.Nullable;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.http.javanet.NetHttpTransport;
-import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 
@@ -24,15 +22,13 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.security.GeneralSecurityException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import cmov1819.p2photo.MainApplication;
+import cmov1819.p2photo.helpers.GoogleDriveAPIRequests.CreateFolder;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 @SuppressLint("StaticFieldLeak")
 @SuppressWarnings("Duplicates")
@@ -77,65 +73,44 @@ public class GoogleDriveInteractor {
     }
 
     public static void createFolder(final Context context, final String folderName, AuthState authState) {
-
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
-
-                new AsyncTask<String, Void, JSONObject>() {
-                    @Override
-                    protected JSONObject doInBackground(String... tokens) {
-                        try {
-                            OkHttpClient okHttpClient = new OkHttpClient();
-                            RequestBody body = RequestBody.create(JSON_TYPE, newDirectory(folderName).toString());
-                            Request request = new Request.Builder()
-                                    .url(FILE_UPLOAD_ENDPOINT)
-                                    .post(body)
-                                    .addHeader(AUTHORIZATION_HEADER, "Bearer " + tokens[0])
-                                    .build();
-                            Response response = okHttpClient.newCall(request).execute();
-                            String jsonBody = response.body().string();
-                            Log.i(GOOGLE_DRIVE_TAG, "createFolder response: " + jsonBody);
-                            return new JSONObject(jsonBody);
-                        } catch (Exception exception) {
-                            Log.e(GOOGLE_DRIVE_TAG, exception.getMessage());
-                            return null;
-                        }
+                AsyncTask<String, Void, JSONObject> request = new CreateFolder(folderName, accessToken, idToken);
+                try {
+                    if (error != null) {
+                        Log.w(GOOGLE_DRIVE_TAG, "negotiation for fresh tokens failed, check ex for more details");
                     }
-
-                    @Override
-                    protected void onPostExecute(JSONObject jsonResponse) {
-                        if (jsonResponse != null && jsonResponse.has("error")) {
-                            processErrorCodes(context, jsonResponse);
-                        } else {
-                            Log.i(GOOGLE_DRIVE_TAG, "Created folder with success");
-                        }
+                    else {
+                        request.execute(accessToken);
+                        JSONObject response = request.get(10, TimeUnit.SECONDS);
+                        String folderId = CreateFolder.processResponse(context, response);
                     }
-                }.execute(accessToken);
+                } catch (InterruptedException | TimeoutException | ExecutionException exc) {
+                    if (request != null)
+                        request.cancel(true);
+                    Log.e(GOOGLE_DRIVE_TAG, "API Calling threads timed out or were interrutped.");
+                } catch (JSONException jsone) {
+                    Log.e(GOOGLE_DRIVE_TAG, "createFolder or processErrorCodes accessed unexisting fields");
+                }
             }
         });
     }
 
-    private static void processErrorCodes(Context context, JSONObject jsonResponse) {
-        try {
-            String message = jsonResponse.getString("message");
-            int code = jsonResponse.getInt("code");
-            switch (code) {
-                case HttpURLConnection.HTTP_UNAUTHORIZED:
-                    Log.e(GOOGLE_DRIVE_TAG, "HTTP_UNAUTHORIZED: " + message);
+    public static void processErrorCodes(Context context, JSONObject jsonResponse) throws JSONException {
+        String message = jsonResponse.getString("message");
+        int code = jsonResponse.getInt("code");
+        switch (code) {
+            case HttpURLConnection.HTTP_UNAUTHORIZED:
+                AuthStateManager.getInstance(context).getAuthorization(context, message, true);
+                break;
+            case HttpURLConnection.HTTP_FORBIDDEN:
+                if (message.startsWith("The user has not granted the app")) {
                     AuthStateManager.getInstance(context).getAuthorization(context, message, true);
-                    break;
-                case HttpURLConnection.HTTP_FORBIDDEN:
-                    Log.e(GOOGLE_DRIVE_TAG, "HTTP_FORBIDDEN: " + message);
-                    if (message.startsWith("The user has not granted the app")) {
-                        AuthStateManager.getInstance(context).getAuthorization(context, message, true);
-                    }
-                    break;
-                default:
-                    Log.e(GOOGLE_DRIVE_TAG, "UNEXPECTED ERROR WITH CODE " + code + ": " + message);
-            }
-        } catch (JSONException jsone) {
-            Log.e(GOOGLE_DRIVE_TAG, "GoogleDriveInteractor#processResponseCodes accessed unexisting field");
+                }
+                break;
+            default:
+                Log.e(GOOGLE_DRIVE_TAG, "UNEXPECTED ERROR WITH CODE " + code + ": " + message);
         }
     }
 
