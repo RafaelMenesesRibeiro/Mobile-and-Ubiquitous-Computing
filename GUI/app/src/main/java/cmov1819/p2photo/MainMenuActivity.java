@@ -34,8 +34,6 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        this.driveMediator = P2PhotoGoogleDriveMediator.getInstance(this);
-
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -47,6 +45,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+        // TODO KILL THIS PROP CODE THAT ONLY SERVES TO TEST API CALLS
+        this.driveMediator = P2PhotoGoogleDriveMediator.getInstance(this);
         driveMediator.newCatatalog(this, "helloworld2.0");
 
         // Does not redraw the fragment when the screen rotates.
