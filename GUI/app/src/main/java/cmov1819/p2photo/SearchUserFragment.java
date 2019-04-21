@@ -36,28 +36,26 @@ public class SearchUserFragment extends Fragment {
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SearchUser(view);
+                searchUserClicked(view);
             }
         });
         return view;
     }
 
-    public void SearchUser(View view) throws BadInputException {
+    public void searchUserClicked(View view) throws BadInputException {
         String username = ((EditText) view.findViewById(R.id.usernameInputBox)).getText().toString();
         if (username.equals("")) {
-            // TODO - Handle this. //
-            throw new BadInputException("The username to find cannot be empty.");
+            Toast.makeText(this.getContext(), "The username cannot be empty.", Toast.LENGTH_LONG).show();
+            return;
         }
         try {
-            // TODO - Design tick box for 'bringAlmbums'. //
             LinkedHashMap<String, ArrayList> usernames = searchUser(username, true);
-        } catch (NoResultsException nrex) {
-            Toast toast = Toast.makeText(this.getContext(), "No results were found", Toast.LENGTH_LONG);
-            toast.show();
-        } catch (FailedOperationException foex) {
-            Toast toast = Toast.makeText(this.getContext(), "The find users operation failed. Try again later"
-                    , Toast.LENGTH_LONG);
-            toast.show();
+        }
+        catch (NoResultsException nrex) {
+            Toast.makeText(this.getContext(), "No results were found", Toast.LENGTH_LONG).show();
+        }
+        catch (FailedOperationException foex) {
+            Toast.makeText(this.getContext(), "The find users operation failed. Try again later", Toast.LENGTH_LONG).show();
         }
     }
 
