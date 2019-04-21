@@ -8,14 +8,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -40,27 +44,37 @@ public class NewAlbumMemberFragment extends Fragment {
                 addUserClicked(view);
             }
         });
+        populate(view);
         return view;
     }
 
+    private void populate(View view) {
+        Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
+        ArrayList<String> albumIDs = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, albumIDs);
+        membershipDropdown.setAdapter(adapter);
+    }
+
     public void addUserClicked(View view) {
-        EditText albumIDInput = view.findViewById(R.id.albumIDInputBox);
+        Spinner albumIDInput = view.findViewById(R.id.membershipDropdownMenu);
+        String albumID = albumIDInput.getSelectedItem().toString();
         EditText usernameInput = view.findViewById(R.id.toAddUsernameInputBox);
-        String albumID = albumIDInput.getText().toString();
         String username = usernameInput.getText().toString();
 
-        if (albumID.equals("") || username.equals("")) {
-            albumIDInput.setText("");
-            usernameInput.setText("");
+        if (username.equals("")) {
+            Toast.makeText(getContext(), "The username cannot by empty", Toast.LENGTH_LONG).show();
+            return;
         }
 
         try {
             addMember(albumID, username);
-        } catch (FailedOperationException foex) {
+        }
+        catch (FailedOperationException foex) {
             Toast toast = Toast.makeText(this.getContext(), "The add user to album operation failed. Try again" +
                     " later", Toast.LENGTH_LONG);
             toast.show();
-        } catch (NoMembershipException nmex) {
+        }
+        catch (NoMembershipException nmex) {
             Toast toast = Toast.makeText(this.getContext(), "The add user to album operation failed. No " +
                     "membership", Toast.LENGTH_LONG);
             toast.show();
