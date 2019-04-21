@@ -79,20 +79,6 @@ public class AuthStateManager {
      *  AUTHSTATE REQUEST AND RESPONSE HANDLING
      **********************************************************/
 
-    @Deprecated
-    public void getAuthorization(final Context context, String reason, boolean forceFinish) {
-        Toast.makeText(context, reason, LENGTH_SHORT).show();
-        clearAuthState();
-        context.startActivity(new Intent(context, LoginActivity.class));
-        if (forceFinish) { ((Activity)context).finish(); }
-    }
-
-    public void getAuthorization(final Context context, String reason) {
-        Toast.makeText(context, reason, LENGTH_SHORT).show();
-        clearAuthState();
-        context.startActivity(new Intent(context, LoginActivity.class));
-    }
-
     public void handleAuthorizationResponse(final Context context, Intent appAuthIntent) {
         Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
         AuthorizationResponse response = AuthorizationResponse.fromIntent(appAuthIntent);
@@ -106,6 +92,7 @@ public class AuthStateManager {
         }
     }
 
+    @Deprecated
     public void refreshTokens(final Context context) {
         TokenRequest request = authState.createTokenRefreshRequest();
         AuthorizationService authorizationService = new AuthorizationService(context);
@@ -121,6 +108,14 @@ public class AuthStateManager {
             }
         });
         authorizationService.dispose();
+    }
+
+    @Deprecated
+    public void getAuthorization(final Context context, String reason, boolean forceFinish) {
+        Toast.makeText(context, reason, LENGTH_SHORT).show();
+        clearAuthState();
+        context.startActivity(new Intent(context, LoginActivity.class));
+        if (forceFinish) { ((Activity)context).finish(); }
     }
 
     /**********************************************************
