@@ -85,7 +85,9 @@ public class GoogleDriveManager {
                              final AuthState authState) {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
-            @Override
+            @Override // performActionWithTokens is a Task, that when executes, starts DoInBackGround, once the result
+            // returns, it calls createFile, which is a task TOO, nice. All of this returns to another task in
+            // P2PhotoGoogleDriveMediator. HAVE FUN
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
                 Log.i(GOOGLE_DRIVE_TAG, ">>> Initiating GoogleDriveManager#createFolder request");
                 AsyncTask<String, Void, JSONObject> request = new CreateFolder(folderName, accessToken, idToken);
