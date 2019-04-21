@@ -1,12 +1,10 @@
 package cmov1819.p2photo.helpers;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
@@ -22,16 +20,11 @@ import net.openid.appauth.TokenRequest;
 import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import cmov1819.p2photo.LoginActivity;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
@@ -149,8 +142,8 @@ public class AuthStateManager {
         authorizationService.dispose();
     }
 
-    public void mkdir(final Context context, String name, String id, AuthorizationService authorizationService) {
-        GoogleDriveInteractor.mkdirWithFreshTokens(context, name, id, authorizationService, this.authState);
+    public void createFolder(final Context context, String name) {
+        GoogleDriveInteractor.createFolder(context, name, this.authState);
     }
 
     /**********************************************************
