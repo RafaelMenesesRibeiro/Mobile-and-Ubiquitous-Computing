@@ -51,7 +51,9 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
+
         this.authStateManager = AuthStateManager.getInstance(this);
+        
         final Button loginButton = findViewById(R.id.LoginButton);
         final Button signUpButton = findViewById(R.id.SignUpBottom);
         final EditText usernameInput = findViewById(R.id.usernameInputBox);
