@@ -14,14 +14,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
@@ -31,7 +28,6 @@ import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_SHORT;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
-import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG_TITLE;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
 import static cmov1819.p2photo.helpers.SessionManager.getUsername;
 
@@ -63,7 +59,8 @@ public class ViewUserAlbumsFragment extends Fragment {
 
                 if (!ViewUserAlbumsFragment.slicesURLList.isEmpty())  {
                     goToShowAlbumActivity(catalogTitle);
-                } else {
+                }
+                else {
                     Toast.makeText(getContext(), "BAD", LENGTH_SHORT).show();
                 }
             }
@@ -115,7 +112,7 @@ public class ViewUserAlbumsFragment extends Fragment {
                 ViewUserAlbumsFragment.slicesURLList = (ArrayList<String>) payload.getResult();
             }
         } catch (ExecutionException | InterruptedException e) {
-            // pass;
+            e.printStackTrace();
         }
     }
 
