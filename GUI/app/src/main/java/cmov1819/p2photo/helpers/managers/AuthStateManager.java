@@ -1,4 +1,4 @@
-package cmov1819.p2photo.helpers;
+package cmov1819.p2photo.helpers.managers;
 
 import android.app.Activity;
 import android.content.Context;
@@ -77,13 +77,6 @@ public class AuthStateManager {
      *  AUTHSTATE REQUEST AND RESPONSE HANDLING
      **********************************************************/
 
-    public void getAuthorization(final Context context, String reason, boolean forceFinish) {
-        Toast.makeText(context, reason, LENGTH_SHORT).show();
-        clearAuthState();
-        context.startActivity(new Intent(context, LoginActivity.class));
-        if (forceFinish) { ((Activity)context).finish(); }
-    }
-
     public void handleAuthorizationResponse(final Context context, Intent appAuthIntent) {
         Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
         AuthorizationResponse response = AuthorizationResponse.fromIntent(appAuthIntent);
@@ -92,58 +85,35 @@ public class AuthStateManager {
         if (response != null) {
             Log.i(AUTH_MGR_TAG, "Handled authorization response " + authState.jsonSerializeString());
             AuthorizationService service = new AuthorizationService(context);
-            getTokens(context, service, response, error);
+            exchangeAuthorizationForAcessTokens(context, service, response, error);
             service.dispose();
         }
     }
 
-    private void getTokens(final Context context, AuthorizationService service,
-                           AuthorizationResponse response, AuthorizationException error) {
-        service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
-            @Override
-            public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
-                if (error != null) {
-                    Log.e(AUTH_MGR_TAG, "Token exchange <AuthorizationResponse> had <AuthorizationException>");
-                    Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
-                } else {
-                    if (response != null) {
-                        updateAuthState(response, error);
-                    } else {
-                        Log.e(AUTH_MGR_TAG, "Could not obtain <TokenResponse> from <AuthorizationResponse>");
-                        Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
-    }
-
+    @Deprecated
     public void refreshTokens(final Context context) {
-        /*
-        * Token request with two params uses NoClientAuthentication, which ends up sending only the CLIENT_ID of this
-        * manager. ClientSecretBasic would send only the client_secret.json which isn't meant to use on android
-        * applications and finally ClientSecretPost, would send both fields. However, if this does not work, we can use
-        * ClientSecretPost at the risk of exceeding our free Google API Request/Hour quota, if someone impersonates us
-        * by decompiling our application, which is unlikely to happen since our repository is private and our
-        * application isn't deployed anywhere.
-        * */
         TokenRequest request = authState.createTokenRefreshRequest();
         AuthorizationService authorizationService = new AuthorizationService(context);
         authorizationService.performTokenRequest(request, new AuthorizationService.TokenResponseCallback() {
             @Override
             public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
-                if (error != null) {
-                    Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to refresh authorization token.");
-                    getAuthorization(context, REFRESH_FAILURE,true);
-                } else {
-                    updateAuthState(response, error);
-                }
+            if (error != null) {
+                Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to refresh authorization token.");
+                getAuthorization(context, REFRESH_FAILURE,true);
+            } else {
+                updateAuthState(response, error);
+            }
             }
         });
         authorizationService.dispose();
     }
 
-    public void createFolder(final Context context, String name) {
-        GoogleDriveInteractor.createFolder(context, name, this.authState);
+    @Deprecated
+    public void getAuthorization(final Context context, String reason, boolean forceFinish) {
+        Toast.makeText(context, reason, LENGTH_SHORT).show();
+        clearAuthState();
+        context.startActivity(new Intent(context, LoginActivity.class));
+        if (forceFinish) { ((Activity)context).finish(); }
     }
 
     /**********************************************************
@@ -183,6 +153,10 @@ public class AuthStateManager {
      *  AUTHSTATE VALIDATORS, OPERATORS, GETTERS AND SETTERS
      **********************************************************/
 
+    public synchronized AuthState getAuthState() {
+        return authState;
+    }
+
     public AuthorizationServiceConfiguration getAuthorizationServiceConfiguration() {
         return authorizationServiceConfiguration;
     }
@@ -191,7 +165,7 @@ public class AuthStateManager {
         return authorizationRequest;
     }
 
-    public boolean hasValidAuthState() {
+    public synchronized boolean hasValidAuthState() {
         if (authState == null) {
             return false;
         }
@@ -220,4 +194,25 @@ public class AuthStateManager {
         )));
         return builder.build();
     }
+
+    private void exchangeAuthorizationForAcessTokens(final Context context, AuthorizationService service,
+                                                     AuthorizationResponse response, AuthorizationException error) {
+        service.performTokenRequest(response.createTokenExchangeRequest(), new AuthorizationService.TokenResponseCallback() {
+            @Override
+            public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
+                if (error != null) {
+                    Log.e(AUTH_MGR_TAG, "Token exchange <AuthorizationResponse> had <AuthorizationException>");
+                    Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
+                } else {
+                    if (response != null) {
+                        updateAuthState(response, error);
+                    } else {
+                        Log.e(AUTH_MGR_TAG, "Could not obtain <TokenResponse> from <AuthorizationResponse>");
+                        Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
+                    }
+                }
+            }
+        });
+    }
+
 }
