@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,12 +34,8 @@ public class ViewAlbumFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_view_album, container, false);
-        try {
-            populate(view);
-        }
-        catch (NullPointerException ex) {
-            // TODO - Decide. //
-        }
+        populate(view);
+
         Button addUserButton = view.findViewById(R.id.addUserButton);
         addUserButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,14 +53,22 @@ public class ViewAlbumFragment extends Fragment {
         return view;
     }
 
-    private void populate(View view) throws NullPointerException {
-        // TODO - @FranciscoBarros //
+    private void populate(View view) {
+        if (getArguments() == null) {
+            Log.i("ERROR", "VIEW ALBUM: arguments passed to fragment are null");
+            return;
+        }
+
         String catalogTitle = getArguments().getString("title");
         ArrayList<String> slicesURLList = getArguments().getStringArrayList("slices");
 
-        if (catalogTitle.equals("NO_ALBUM_SELECTED_ERROR?")) {
-            // TODO - Implement. //
-            Toast.makeText(getContext(), "NO ALBUM SELECTED", LENGTH_SHORT).show();
+        if (catalogTitle == null) {
+            Log.i("ERROR", "VIEW ALBUM: catalogTitle is null.");
+            return;
+        }
+        if (slicesURLList == null) {
+            Log.i("ERROR", "VIEW ALBUM: slicesURLList is null.");
+            return;
         }
 
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
@@ -73,6 +78,7 @@ public class ViewAlbumFragment extends Fragment {
             Toast.makeText(getContext(), "UPS IM EMPTY", LENGTH_LONG).show();
         }
 
+        // TODO - @FranciscoBarros //
         /*
         GridView grid = findViewById(R.id.albumGrid);
 
@@ -80,7 +86,6 @@ public class ViewAlbumFragment extends Fragment {
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // TODO - Implement this. //
                 Toast.makeText(ViewAlbumFragment.this, "IMAGE WAS CLICKED: " + position,
                         Toast.LENGTH_SHORT).show();
             }
