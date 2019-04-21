@@ -25,21 +25,10 @@
         android:layout_below="@+id/addNewAlbumMember"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginLeft="15dp"
         />
-
-    <!--
-    <EditText
-        android:id="@+id/albumIDInputBox"
-        style="@style/InputLabels"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/addNewAlbumMember"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="50dp"
-        android:hint="@string/input_album_ID"
-        android:inputType="text" />
-    -->
-
+    
     <EditText
         android:id="@+id/toAddUsernameInputBox"
         style="@style/InputLabels"
