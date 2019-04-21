@@ -3,6 +3,7 @@ package cmov1819.p2photo.helpers.datastructures;
 import android.content.Intent;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DriveResultsData {
     private ArrayList<String> folderContents = null;
@@ -13,6 +14,7 @@ public class DriveResultsData {
     private String message = null;
     private Boolean hasError = false;
     private Boolean suggestRetry = false;
+    private AtomicInteger attempts = new AtomicInteger(0);
 
     public DriveResultsData(){}
 
@@ -79,4 +81,9 @@ public class DriveResultsData {
     public void setSuggestRetry(Boolean suggestRetry) {
         this.suggestRetry = suggestRetry;
     }
+
+    public Integer getAttempts() {
+        return attempts.getAndIncrement();
+    }
+
 }

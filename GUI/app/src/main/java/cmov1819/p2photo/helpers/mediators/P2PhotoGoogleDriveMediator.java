@@ -1,6 +1,8 @@
 package cmov1819.p2photo.helpers.mediators;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.widget.Toast;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,9 +12,11 @@ import cmov1819.p2photo.helpers.datastructures.DriveResultsData;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.GoogleDriveManager;
 
-public class P2PhotoGoogleDriveMediator {
-    private static P2PhotoGoogleDriveMediator instance;
+import static android.widget.Toast.LENGTH_SHORT;
 
+public class P2PhotoGoogleDriveMediator {
+    private static final String P2P_MEDIATOR_TAG = "P2P Mediator";
+    private static P2PhotoGoogleDriveMediator instance;
     private AuthStateManager authStateMgr;
     private GoogleDriveManager googleDriveMgr;
     private AtomicInteger requestCounter;
@@ -32,36 +36,49 @@ public class P2PhotoGoogleDriveMediator {
         return instance;
     }
 
-    public DriveResultsData newCatatalog(final Context context, final String catalogName) {
-        Integer requestId = newDriveResultMapping();
+    @SuppressLint("StaticFieldLeak")
+    public void newCatalog(final Context context,
+                           final String catalogName,
+                           final String catalogSlice,
+                           final Integer requestId) {
 
-        googleDriveMgr.createFolder(context, catalogName, requestId, authStateMgr.getAuthState());
-        String rootFolderId = requestsMap.get(requestId).getFolderId();
-        if (rootFolderId == null) {
-            return null;
-        }
+        // Only creates a folder in Google Drive and a file with the specified name inside it
+        new AsyncTask<String, Void, DriveResultsData>() {
+            @Override
+            protected DriveResultsData doInBackground(String... strings) {
+                googleDriveMgr.createFolder(context, catalogName, catalogSlice, requestId, authStateMgr.getAuthState());
+                return requestsMap.get(requestId);
+            }
 
-        googleDriveMgr.createFile(context, requestId,"catalog", rootFolderId, authStateMgr.getAuthState());
-        String fileId = requestsMap.get(requestId).getFileId();
-        if (fileId == null) {
-            return null;
-        }
-
-        return requestsMap.remove(requestId); // remove returns previously value associated with key
+            @Override
+            protected void onPostExecute(DriveResultsData driveResultsData) {
+                if (driveResultsData.getSuggestRetry() && driveResultsData.getAttempts() < 3) {
+                    newCatalog(context, catalogName, catalogSlice, requestId);
+                } else if (driveResultsData.getSuggestedIntent() != null) {
+                    context.startActivity(driveResultsData.getSuggestedIntent());
+                    requestsMap.remove(requestId);
+                } else if (driveResultsData.getHasError()) {
+                    Toast.makeText(context, driveResultsData.getMessage(), LENGTH_SHORT).show();
+                    requestsMap.remove(requestId);
+                } else {
+                    Toast.makeText(context, "Created catalog", LENGTH_SHORT).show();
+                    requestsMap.remove(requestId);
+                }
+            }
+        }.execute();
     }
 
-    public DriveResultsData addPhoto(final Context context,
-                           final String photoName,
-                           final String photoDriveId,
-                           final String photoPath) {
+    public DriveResultsData newPhoto(final Context context,
+                                     final String photoName,
+                                     final String photoDriveId,
+                                     final String photoPath) {
         Integer requestId = newDriveResultMapping();
         return null;
     }
 
-    private Integer newDriveResultMapping() {
+    public Integer newDriveResultMapping() {
         Integer requestId = requestCounter.incrementAndGet();
         requestsMap.put(requestId, new DriveResultsData());
         return requestId;
     }
-
 }

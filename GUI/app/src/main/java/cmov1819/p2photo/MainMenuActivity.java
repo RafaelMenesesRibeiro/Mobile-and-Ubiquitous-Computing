@@ -46,7 +46,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
         // TODO KILL THIS PROP CODE THAT ONLY SERVES TO TEST API CALLS
         this.driveMediator = P2PhotoGoogleDriveMediator.getInstance(this);
-        driveMediator.newCatatalog(this, "helloworld2.0");
+        driveMediator.newCatalog(this, "helloworld2.0", "catalog", driveMediator.newDriveResultMapping());
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {

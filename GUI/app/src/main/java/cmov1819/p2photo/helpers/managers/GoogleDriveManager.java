@@ -1,6 +1,5 @@
 package cmov1819.p2photo.helpers.managers;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -32,7 +31,6 @@ import cmov1819.p2photo.helpers.driveasynctasks.CreateFolder;
 import cmov1819.p2photo.helpers.mediators.P2PhotoGoogleDriveMediator;
 import okhttp3.MediaType;
 
-@SuppressLint("StaticFieldLeak")
 public class GoogleDriveManager {
     public static final String APPLICATION_NAME = MainApplication.getApplicationName();
 
@@ -70,8 +68,7 @@ public class GoogleDriveManager {
                     JacksonFactory.getDefaultInstance(),
                     null).setApplicationName(APPLICATION_NAME).build();
         } catch (GeneralSecurityException | IOException exc) {
-            Log.e(GOOGLE_DRIVE_TAG, "Could not instanciate <GoogleNetHttpTransport>, aborting");
-            System.exit(-1);
+            Log.e(GOOGLE_DRIVE_TAG, exc.getCause().toString());
         }
     }
 
@@ -83,12 +80,14 @@ public class GoogleDriveManager {
 
     public void createFolder(final Context context,
                              final String folderName,
+                             final String fileId,
                              final Integer requestId,
                              final AuthState authState) {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
+                Log.i(GOOGLE_DRIVE_TAG, ">>> Initiating GoogleDriveManager#createFolder request");
                 AsyncTask<String, Void, JSONObject> request = new CreateFolder(folderName, accessToken, idToken);
                 try {
                     if (error != null) {
@@ -101,8 +100,12 @@ public class GoogleDriveManager {
                         } else if (response.has("error")) {
                             processErrorCodes(context, requestId, response);
                         } else {
-                            Log.i(GOOGLE_DRIVE_TAG, "Created folder with success");
-                            P2PhotoGoogleDriveMediator.requestsMap.get(requestId).setFolderId(response.getString("id"));
+                            String folderId = response.getString("id");
+                            Log.i(GOOGLE_DRIVE_TAG, String.format("Created %s folder with success", folderId));
+                            P2PhotoGoogleDriveMediator.requestsMap.get(requestId).setFolderId(folderId);
+                            if (fileId != null) {
+                                createFile(context, requestId, fileId, folderId, authState);
+                            }
                         }
                     }
                 } catch (TimeoutException toe) {
@@ -126,6 +129,7 @@ public class GoogleDriveManager {
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
+                Log.i(GOOGLE_DRIVE_TAG, ">>> Initiating GoogleDriveManager#createFile request");
                 AsyncTask<String, Void, JSONObject> request = new CreateFile(fileName, rootFolderId, accessToken, idToken);
                 try {
                     if (error != null) {
@@ -172,7 +176,7 @@ public class GoogleDriveManager {
     }
 
     private void setError(Context context, Integer requestId, String message) {
-        Log.e(GOOGLE_DRIVE_TAG, "createFolder or processErrorCodes accessed unexisting fields");
+        Log.e(GOOGLE_DRIVE_TAG, message);
         DriveResultsData driveResultsData = P2PhotoGoogleDriveMediator.requestsMap.get(requestId);
         driveResultsData.setHasError(true);
         driveResultsData.setMessage(message);
