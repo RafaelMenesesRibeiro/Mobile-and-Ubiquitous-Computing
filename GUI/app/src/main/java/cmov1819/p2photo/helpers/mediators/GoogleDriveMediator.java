@@ -77,11 +77,7 @@ public class GoogleDriveMediator {
         return instance;
     }
 
-    public void newCatalog(final Context context,
-                           final String folderName,
-                           final String fileId,
-                           final AuthState authState) {
-
+    public void newCatalog(final Context context, final String catalogTitle, final AuthState authState) {
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
@@ -93,7 +89,7 @@ public class GoogleDriveMediator {
                                 suggestReauthentication(context, error.getMessage());
                             }
                             else {
-                                JSONObject createFolderResult = createFolder(folderName, tokens[0]);
+                                JSONObject createFolderResult = createFolder(catalogTitle, tokens[0]);
                                 if (createFolderResult == null) {
                                     setWarning(context,"Null response received from Google REST API.");
                                 }
