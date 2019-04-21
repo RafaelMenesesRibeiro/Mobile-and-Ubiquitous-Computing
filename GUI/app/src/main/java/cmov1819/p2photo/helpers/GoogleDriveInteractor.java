@@ -27,6 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import cmov1819.p2photo.MainApplication;
+import cmov1819.p2photo.helpers.GoogleDriveAPIRequests.CreateFile;
 import cmov1819.p2photo.helpers.GoogleDriveAPIRequests.CreateFolder;
 import okhttp3.MediaType;
 
@@ -40,8 +41,16 @@ public class GoogleDriveInteractor {
     public static final String GOOGLE_API = "https://www.googleapis.com/";
     public static final String TYPE_GOOGLE_DRIVE_FILE = "application/vnd.google-apps.file";
     public static final String TYPE_GOOGLE_DRIVE_FOLDER = "application/vnd.google-apps.folder";
-    public static final String TYPE_PHOTO = "application/vnd.google-apps.photo";
-    public static final String TYPE_UNKNOWN = "application/vnd.google-apps.unknown";
+    public static final String TYPE_GOOGLE_PHOTO = "application/vnd.google-apps.photo";
+    public static final String TYPE_GOOGLE_UNKNOWN = "application/vnd.google-apps.unknown";
+
+    public static final String TYPE_JSON = "application/json";
+    public static final String TYPE_TXT = "text/plain";
+    public static final String TYPE_JPEG = "image/jpeg";
+    public static final String TYPE_PNG = "image/png";
+    public static final String TYPE_BMP = "image/bmp";
+    public static final String TYPE_GIF = "image/gif";
+    public static final String TYPE_WEBP = "image/webp";
 
     public static final String FILE_UPLOAD_ENDPOINT = GOOGLE_API + "drive/v2/files";
 
@@ -77,6 +86,34 @@ public class GoogleDriveInteractor {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
                 AsyncTask<String, Void, JSONObject> request = new CreateFolder(folderName, accessToken, idToken);
+                try {
+                    if (error != null) {
+                        Log.w(GOOGLE_DRIVE_TAG, "negotiation for fresh tokens failed, check ex for more details");
+                    }
+                    else {
+                        request.execute(accessToken);
+                        JSONObject response = request.get(10, TimeUnit.SECONDS);
+                        String folderId = CreateFolder.processResponse(context, response);
+                    }
+                } catch (InterruptedException | TimeoutException | ExecutionException exc) {
+                    if (request != null)
+                        request.cancel(true);
+                    Log.e(GOOGLE_DRIVE_TAG, "API Calling threads timed out or were interrutped.");
+                } catch (JSONException jsone) {
+                    Log.e(GOOGLE_DRIVE_TAG, "createFolder or processErrorCodes accessed unexisting fields");
+                }
+            }
+        });
+    }
+
+    public static void createFile(final Context context,
+                                  final String fileName, final String rootFolder,
+                                  AuthState authState) {
+
+        authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
+            @Override
+            public void execute(String accessToken, String idToken, final AuthorizationException error) {
+                AsyncTask<String, Void, JSONObject> request = new CreateFile(fileName, rootFolder, accessToken, idToken);
                 try {
                     if (error != null) {
                         Log.w(GOOGLE_DRIVE_TAG, "negotiation for fresh tokens failed, check ex for more details");

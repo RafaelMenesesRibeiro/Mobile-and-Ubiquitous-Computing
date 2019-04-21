@@ -12,47 +12,46 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static cmov1819.p2photo.helpers.GoogleDriveInteractor.*;
+import static cmov1819.p2photo.helpers.GoogleDriveInteractor.AUTHORIZATION_HEADER;
+import static cmov1819.p2photo.helpers.GoogleDriveInteractor.FILE_UPLOAD_ENDPOINT;
+import static cmov1819.p2photo.helpers.GoogleDriveInteractor.GOOGLE_DRIVE_TAG;
+import static cmov1819.p2photo.helpers.GoogleDriveInteractor.JSON_TYPE;
+import static cmov1819.p2photo.helpers.GoogleDriveInteractor.TYPE_GOOGLE_DRIVE_FOLDER;
+import static cmov1819.p2photo.helpers.GoogleDriveInteractor.TYPE_TXT;
+import static cmov1819.p2photo.helpers.GoogleDriveInteractor.processErrorCodes;
 
-public class CreateFolder extends AsyncTask<String, Void, JSONObject> {
-    private String folderName;
-    private String rootFolderId;
-    private String accessToken;
-    private String idToken;
+public class CreateFile extends AsyncTask<String, Void, JSONObject> {
+    private final String fileName;
+    private final String rootFolderId;
+    private final String accessToken;
+    private final String idToken;
 
-    public CreateFolder(String folderName, String accessToken, String idToken) {
-        this.folderName = folderName;
-        this.rootFolderId = "root";
-        this.accessToken = accessToken;
-        this.idToken = idToken;
-    }
-
-    public CreateFolder(String folderName, String rootFolderId, String accessToken, String idToken) {
-        this.folderName = folderName;
+    public CreateFile(String fileName, String rootFolderId, String accessToken, String idToken) {
+        this.fileName = fileName;
         this.rootFolderId = rootFolderId;
         this.accessToken = accessToken;
         this.idToken = idToken;
     }
 
     public static String processResponse(Context context, JSONObject response) throws JSONException {
-        String folderId = null;
+        String fileId = null;
         if (response == null) {
-            Log.e(GOOGLE_DRIVE_TAG, "createFolder method resulted in a null response from google API.");
+            Log.e(GOOGLE_DRIVE_TAG, "createFile method resulted in a null response from google API.");
         } else if (response.has("error")) {
-            Log.e(GOOGLE_DRIVE_TAG,"createFolder response had error: " + response.getString("message"));
+            Log.e(GOOGLE_DRIVE_TAG,"createFile response had error: " + response.getString("message"));
             processErrorCodes(context, response);
         } else {
-            Log.i(GOOGLE_DRIVE_TAG, "Created folder with success");
+            Log.i(GOOGLE_DRIVE_TAG, "Created file with success");
             return response.getString("id");
         }
-        return folderId;
+        return fileId;
     }
 
     @Override
     protected JSONObject doInBackground(String... strings) {
         try {
             OkHttpClient okHttpClient = new OkHttpClient();
-            RequestBody body = RequestBody.create(JSON_TYPE, newDirectory(folderName).toString());
+            RequestBody body = RequestBody.create(JSON_TYPE, newFile().toString());
             Request request = new Request.Builder()
                     .url(FILE_UPLOAD_ENDPOINT)
                     .post(body)
@@ -60,7 +59,7 @@ public class CreateFolder extends AsyncTask<String, Void, JSONObject> {
                     .build();
             Response response = okHttpClient.newCall(request).execute();;
             String jsonBody = response.body().string();
-            Log.i(GOOGLE_DRIVE_TAG, "createFolder response: " + jsonBody);
+            Log.i(GOOGLE_DRIVE_TAG, "createFile response: " + jsonBody);
             return new JSONObject(jsonBody);
         } catch (Exception exception) {
             Log.e(GOOGLE_DRIVE_TAG, exception.getMessage());
@@ -68,10 +67,10 @@ public class CreateFolder extends AsyncTask<String, Void, JSONObject> {
         }
     }
 
-    private JSONObject newDirectory(String folderName) throws JSONException {
+    private JSONObject newFile() throws JSONException {
         JSONObject jsonObject = new JSONObject();
-        jsonObject.put("title", folderName);
-        jsonObject.put("mimeType", TYPE_GOOGLE_DRIVE_FOLDER);
+        jsonObject.put("title", fileName);
+        jsonObject.put("mimeType", TYPE_TXT);
 
         if (!rootFolderId.equals("root")) {
             jsonObject.put("parents", String.format("[{ \"id\" : \"%s\" }]", rootFolderId));
