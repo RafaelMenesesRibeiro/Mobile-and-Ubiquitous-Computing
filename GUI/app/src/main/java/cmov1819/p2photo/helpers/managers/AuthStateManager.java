@@ -50,7 +50,6 @@ public class AuthStateManager {
     private AuthorizationServiceConfiguration authorizationServiceConfiguration;
     private AuthorizationRequest authorizationRequest;
     private AuthState authState;
-    private GoogleDriveManager googleDriveManagerInstance;
 
     /**********************************************************
      * SINGLETON METHODS
@@ -67,7 +66,6 @@ public class AuthStateManager {
         this.authorizationRequest = newAuthorizationRequest();
         this.authorizationRequestCode = this.authorizationRequest.hashCode();
         this.authState = restoreAuthState();
-        this.googleDriveManagerInstance = GoogleDriveManager.getInstance();
     }
 
     public static AuthStateManager getInstance(final Context context) {
