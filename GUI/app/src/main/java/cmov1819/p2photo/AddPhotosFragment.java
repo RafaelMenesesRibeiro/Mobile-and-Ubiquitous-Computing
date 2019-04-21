@@ -9,11 +9,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+
+import org.apache.http.util.Asserts;
 
 import java.io.FileNotFoundException;
 
@@ -53,14 +56,14 @@ public class AddPhotosFragment extends Fragment {
 
         if (resultCode == Activity.RESULT_OK) {
             Uri targetUri = data.getData();
-            Bitmap bitmap;
+            ImageView imageView = this.view.findViewById(R.id.imageView);
             try {
-                bitmap = BitmapFactory.decodeStream(getActivity().getContentResolver().openInputStream(targetUri));
-                ImageView imageView = this.view.findViewById(R.id.imageView);
+                Bitmap bitmap = BitmapFactory.decodeStream(getActivity().getContentResolver().openInputStream(targetUri));
                 imageView.setImageBitmap(bitmap);
-            } catch (FileNotFoundException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            }
+            catch (FileNotFoundException | NullPointerException ex) {
+                imageView.setImageResource(R.drawable.img_not_available);
+                Log.i("ERROR", "AddPhotos: Could not load selected image file " + targetUri);
             }
         }
     }
