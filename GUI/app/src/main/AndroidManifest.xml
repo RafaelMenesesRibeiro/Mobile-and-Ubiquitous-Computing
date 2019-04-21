@@ -40,12 +40,6 @@
         </activity>
 
         <activity android:name=".MainMenuActivity" />
-        <activity android:name=".NewAlbumMemberActivity" />
-        <activity android:name=".NewAlbumActivity" />
-        <activity android:name=".SearchUserActivity" />
-        <activity android:name=".ShowUserAlbumsActivity" />
-        <activity android:name=".ShowAlbumActivity" />
-        <activity android:name=".AddPhotosActivity" />
         
     </application>
 
