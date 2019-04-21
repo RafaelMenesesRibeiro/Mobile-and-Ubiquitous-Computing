@@ -1,5 +1,6 @@
 package cmov1819.p2photo;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,6 +20,8 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -32,6 +35,8 @@ import cmov1819.p2photo.helpers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 public class NewAlbumMemberFragment extends Fragment {
+    private ArrayList<String> albumIDs;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -49,14 +54,22 @@ public class NewAlbumMemberFragment extends Fragment {
 
     private void populate(View view) {
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        ArrayList<String> albumIDs = new ArrayList<>(SessionManager.getAlbumMembershipsNames(getActivity()));
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, albumIDs);
+        HashMap<String, String> map = ViewUserAlbumsFragment.getUserMemberships(getActivity());
+        ArrayList<String> albumNames = new ArrayList<>();
+        albumIDs = new ArrayList<>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            albumIDs.add(entry.getKey());
+            albumNames.add(entry.getValue());
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, albumNames);
         membershipDropdown.setAdapter(adapter);
     }
 
     public void addUserClicked(View view) {
         Spinner albumIDInput = view.findViewById(R.id.membershipDropdownMenu);
-        String albumID = albumIDInput.getSelectedItem().toString();
+        int index = albumIDInput.getSelectedItemPosition();
+        String albumID = albumIDs.get(index);
+        String albumName = albumIDInput.getSelectedItem().toString();
         EditText usernameInput = view.findViewById(R.id.toAddUsernameInputBox);
         String username = usernameInput.getText().toString();
 
@@ -67,6 +80,17 @@ public class NewAlbumMemberFragment extends Fragment {
 
         try {
             addMember(albumID, username);
+
+            Fragment viewAlbumFragment = new ViewAlbumFragment();
+            Bundle data = new Bundle();
+            data.putString("title", albumName);
+            // TODO - Implement fetching slices in ViewAlbumFragment. //
+            data.putStringArrayList("slices", new ArrayList<String>());
+            viewAlbumFragment.setArguments(data);
+
+            Activity activity = getActivity();
+            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+            mainMenuActivity.changeFragment(viewAlbumFragment, R.id.nav_view_album);
         }
         catch (FailedOperationException foex) {
             Toast toast = Toast.makeText(this.getContext(), "The add user to album operation failed. Try again" +
@@ -77,10 +101,14 @@ public class NewAlbumMemberFragment extends Fragment {
             Toast toast = Toast.makeText(this.getContext(), "The add user to album operation failed. No " +
                     "membership", Toast.LENGTH_LONG);
             toast.show();
-        } catch (UsernameException uex) {
+        }
+        catch (UsernameException uex) {
             Toast toast = Toast.makeText(this.getContext(), "The add user to album operation failed. User does" +
                     " not exist", Toast.LENGTH_LONG);
             toast.show();
+        }
+        catch (NullPointerException | ClassCastException ex) {
+            Toast.makeText(getContext(), "Could not present new album", Toast.LENGTH_LONG).show();
         }
     }
 
