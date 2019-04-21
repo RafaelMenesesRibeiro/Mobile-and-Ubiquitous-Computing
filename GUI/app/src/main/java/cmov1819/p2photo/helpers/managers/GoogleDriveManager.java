@@ -94,7 +94,7 @@ public class GoogleDriveManager {
                         suggestReauthentication(context, requestId, error.getMessage());
                     } else {
                         request.execute(accessToken);
-                        JSONObject response = request.get(10, TimeUnit.SECONDS);
+                        JSONObject response = request.get(5, TimeUnit.SECONDS);
                         if (response == null) {
                             setWarning(context, requestId, "Null response received from Google REST API.");
                         } else if (response.has("error")) {
@@ -136,7 +136,7 @@ public class GoogleDriveManager {
                         suggestReauthentication(context, requestId, error.getMessage());
                     } else {
                         request.execute(accessToken);
-                        JSONObject response = request.get(10, TimeUnit.SECONDS);
+                        JSONObject response = request.get(5, TimeUnit.SECONDS);
                         if (response == null) {
                             setWarning(context, requestId, "Null response received from Google REST API.");
                         } else if (response.has("error")) {
