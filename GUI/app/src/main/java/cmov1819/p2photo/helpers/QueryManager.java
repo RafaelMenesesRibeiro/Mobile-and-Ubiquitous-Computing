@@ -86,6 +86,11 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     connection.setRequestMethod("POST");
                     result = newAlbumMember(activity, connection, requestData);
                     break;
+                case GET_MEMBERSHIPS:
+                    connection.setRequestMethod("GET");
+                    connection.setDoOutput(false);
+                    result = getMemberships(activity, connection);
+                    break;
                 default:
                     Log.i("ERROR", "Should never be here.");
                     break;
@@ -236,6 +241,13 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         sendJSON(connection, postData.getParams());
         connection.connect();
         BasicResponse payload = QueryManager.getBasicResponse(connection);
+        return new ResponseData(connection.getResponseCode(), payload);
+    }
+
+    private ResponseData getMemberships(Activity activity, HttpURLConnection connection) throws IOException {
+        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
+        connection.connect();
+        BasicResponse payload = getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 }
