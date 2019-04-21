@@ -28,7 +28,7 @@ public class AuthenticationActivity extends AppCompatActivity {
         Intent appAuthIntent = getIntent();
 
         if (!appAuthIntent.hasExtra(USED_INTENT)) {
-            AuthStateManager.getInstance(this).handleAuthorizationResponse(this, appAuthIntent);
+            authStateManager.handleAuthorizationResponse(this, appAuthIntent);
             appAuthIntent.putExtra(USED_INTENT, true);
         }
 
