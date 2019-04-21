@@ -19,7 +19,6 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -50,7 +49,7 @@ public class NewAlbumMemberFragment extends Fragment {
 
     private void populate(View view) {
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        ArrayList<String> albumIDs = new ArrayList<>(SessionManager.getAlbumMemberships(getActivity()));
+        ArrayList<String> albumIDs = new ArrayList<>(SessionManager.getAlbumMembershipsNames(getActivity()));
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, albumIDs);
         membershipDropdown.setAdapter(adapter);
     }

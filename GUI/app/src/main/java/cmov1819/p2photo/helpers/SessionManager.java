@@ -4,19 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.text.TextUtils;
-import android.util.Log;
 
-import net.openid.appauth.AuthState;
-import net.openid.appauth.AuthorizationException;
-import net.openid.appauth.AuthorizationService;
-import net.openid.appauth.TokenRequest;
-import net.openid.appauth.TokenResponse;
-
-import org.json.JSONException;
-
-import java.util.ArrayList;
+import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.Set;
 
 public class SessionManager {
@@ -29,7 +19,8 @@ public class SessionManager {
     private static String sessionID;
     private static String username = null;
 
-    private static Set<String> albumMemberships;
+    private static Set<BigDecimal> albumMembershipIDs;
+    private static Set<String> albumMembershipNames;
 
     /**********************************************************
      * COOKIE METHODS
@@ -75,17 +66,41 @@ public class SessionManager {
      * MEMBERSHIP METHODS
      ***********************************************************/
 
-    public static Set<String> getAlbumMemberships(Activity activity) {
-        if (albumMemberships != null) { return albumMemberships; }
+    public static Set<String> getAlbumMembershipsNames(Activity activity) {
+        if (albumMembershipNames != null) { return albumMembershipNames; }
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
-        return sharedPref.getStringSet("memberships", null);
+        return sharedPref.getStringSet("membershipNames", null);
     }
 
-    public static void updateAlbumMemberships(Activity activity, Set<String> albumMemberships) {
+    public static void updateAlbumMembershipsNames(Activity activity, Set<String> albumMemberships) {
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putStringSet("memberships", albumMemberships);
+        editor.putStringSet("membershipNames", albumMemberships);
         editor.apply();
-        SessionManager.albumMemberships = albumMemberships;
+        SessionManager.albumMembershipNames = albumMemberships;
     }
+
+    public static Set<BigDecimal> getAlbumMembershipsIDs(Activity activity) {
+        if (albumMembershipIDs != null) { return albumMembershipIDs; }
+        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
+        Set<String> set = sharedPref.getStringSet("membershipIDs", null);
+        Set<BigDecimal> result = new HashSet<>();
+        for (String dec : set) {
+            result.add(new BigDecimal(dec));
+        }
+        return result;
+    }
+
+    public static void updateAlbumMembershipsIDs(Activity activity, Set<BigDecimal> albumMemberships) {
+        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        Set<String> set = new HashSet<>();
+        for (BigDecimal dec : albumMemberships) {
+            set.add(dec.toPlainString());
+        }
+        editor.putStringSet("membershipIDs", set);
+        editor.apply();
+        SessionManager.albumMembershipIDs = albumMemberships;
+    }
+
 }

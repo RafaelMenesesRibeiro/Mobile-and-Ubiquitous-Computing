@@ -163,8 +163,10 @@ public class LoginActivity extends AppCompatActivity {
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
         HashMap<BigDecimal, String> albumMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
+        Set<BigDecimal> albumIDs = albumMemberships.keySet();
+        SessionManager.updateAlbumMembershipsIDs(this, albumIDs);
         Set<String> albumNames = new HashSet<>(albumMemberships.values());
-        SessionManager.updateAlbumMemberships(this, albumNames);
+        SessionManager.updateAlbumMembershipsNames(this, albumNames);
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {
