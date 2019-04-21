@@ -95,7 +95,12 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewUserAlbumsFragment).commit();
                 break;
             case R.id.nav_logout:
-                logout();
+                try {
+                    logout();
+                }
+                catch (FailedOperationException ex) {
+                    Log.i("ERROR", "LOGOUT: Failed to logout, proceeding");
+                }
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
                 break;
@@ -112,12 +117,11 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         }
     }
 
-    public void logout() {
+    public void logout() throws FailedOperationException {
         String username = SessionManager.getUsername(this);
         Log.i("MSG", "Logout: " + username);
 
-        String url =
-                getString(R.string.p2photo_host) + getString(R.string.logout_operation) + username;
+        String url = getString(R.string.p2photo_host) + getString(R.string.logout_operation) + username;
         RequestData rData = new RequestData(this, RequestData.RequestType.LOGOUT, url);
         try {
             ResponseData result = new QueryManager().execute(rData).get();
