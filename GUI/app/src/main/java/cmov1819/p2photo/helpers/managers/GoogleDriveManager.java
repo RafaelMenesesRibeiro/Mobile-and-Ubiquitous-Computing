@@ -2,11 +2,10 @@ package cmov1819.p2photo.helpers.managers;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
@@ -25,13 +24,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
+import cmov1819.p2photo.helpers.datastructures.DriveResultsData;
 import cmov1819.p2photo.helpers.driveasynctasks.CreateFile;
 import cmov1819.p2photo.helpers.driveasynctasks.CreateFolder;
+import cmov1819.p2photo.helpers.mediators.P2PhotoGoogleDriveMediator;
 import okhttp3.MediaType;
 
 @SuppressLint("StaticFieldLeak")
-@SuppressWarnings("Duplicates")
 public class GoogleDriveManager {
     public static final String APPLICATION_NAME = MainApplication.getApplicationName();
 
@@ -80,7 +81,10 @@ public class GoogleDriveManager {
         return instance;
     }
 
-    public void createFolder(final Context context, final String folderName, AuthState authState) {
+    public void createFolder(final Context context,
+                             final String folderName,
+                             final Integer requestId,
+                             final AuthState authState) {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
@@ -88,25 +92,36 @@ public class GoogleDriveManager {
                 AsyncTask<String, Void, JSONObject> request = new CreateFolder(folderName, accessToken, idToken);
                 try {
                     if (error != null) {
-                        Log.w(GOOGLE_DRIVE_TAG, "negotiation for fresh tokens failed, check ex for more details");
-                    }
-                    else {
+                        suggestReauthentication(context, requestId, error.getMessage());
+                    } else {
                         request.execute(accessToken);
                         JSONObject response = request.get(10, TimeUnit.SECONDS);
-                        String folderId = CreateFolder.processResponse(context, response);
+                        if (response == null) {
+                            setWarning(context, requestId, "Null response received from Google REST API.");
+                        } else if (response.has("error")) {
+                            processErrorCodes(context, requestId, response);
+                        } else {
+                            Log.i(GOOGLE_DRIVE_TAG, "Created folder with success");
+                            P2PhotoGoogleDriveMediator.requestsMap.get(requestId).setFolderId(response.getString("id"));
+                        }
                     }
-                } catch (InterruptedException | TimeoutException | ExecutionException exc) {
-                    if (request != null)
-                        request.cancel(true);
-                    Log.e(GOOGLE_DRIVE_TAG, "API Calling threads timed out or were interrutped.");
+                } catch (TimeoutException toe) {
+                    if (request != null) request.cancel(true);
+                    suggestRetry(context, requestId, toe.getMessage());
+                } catch (InterruptedException | ExecutionException exc) {
+                    setWarning(context, requestId, exc.getMessage());
                 } catch (JSONException jsone) {
-                    Log.e(GOOGLE_DRIVE_TAG, "createFolder or processErrorCodes accessed unexisting fields");
+                    setError(context, requestId, jsone.getMessage());
                 }
             }
         });
     }
 
-    public void createFile(final Context context, final String fileName, final String rootFolderId, AuthState authState) {
+    public void createFile(final Context context,
+                           final Integer requestId,
+                           final String fileName,
+                           final String rootFolderId,
+                           AuthState authState) {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
@@ -114,53 +129,78 @@ public class GoogleDriveManager {
                 AsyncTask<String, Void, JSONObject> request = new CreateFile(fileName, rootFolderId, accessToken, idToken);
                 try {
                     if (error != null) {
-                        Log.w(GOOGLE_DRIVE_TAG, "negotiation for fresh tokens failed, check ex for more details");
-                    }
-                    else {
+                        suggestReauthentication(context, requestId, error.getMessage());
+                    } else {
                         request.execute(accessToken);
                         JSONObject response = request.get(10, TimeUnit.SECONDS);
-                        String folderId = CreateFolder.processResponse(context, response);
+                        if (response == null) {
+                            setWarning(context, requestId, "Null response received from Google REST API.");
+                        } else if (response.has("error")) {
+                            processErrorCodes(context, requestId, response);
+                        } else {
+                            Log.i(GOOGLE_DRIVE_TAG, "Created file with success");
+                            P2PhotoGoogleDriveMediator.requestsMap.get(requestId).setFileId(response.getString("id"));
+                            P2PhotoGoogleDriveMediator.requestsMap.get(requestId).setFileUrl(response.getString("url"));
+                        }
                     }
-                } catch (InterruptedException | TimeoutException | ExecutionException exc) {
-                    if (request != null)
-                        request.cancel(true);
-                    Log.e(GOOGLE_DRIVE_TAG, "API Calling threads timed out or were interrutped.");
+                } catch (TimeoutException toe) {
+                    if (request != null) request.cancel(true);
+                    suggestRetry(context, requestId, toe.getMessage());
+                } catch (InterruptedException | ExecutionException exc) {
+                    setWarning(context, requestId, exc.getMessage());
                 } catch (JSONException jsone) {
-                    Log.e(GOOGLE_DRIVE_TAG, "createFile or processErrorCodes accessed unexisting fields");
+                    setError(context, requestId, jsone.getMessage());
                 }
             }
         });
-    }
-
-    public static void processErrorCodes(Context context, JSONObject jsonResponse) throws JSONException {
-        String message = jsonResponse.getString("message");
-        int code = jsonResponse.getInt("code");
-        switch (code) {
-            case HttpURLConnection.HTTP_UNAUTHORIZED:
-                AuthStateManager.getInstance(context).getAuthorization(context, message, true);
-                break;
-            case HttpURLConnection.HTTP_FORBIDDEN:
-                if (message.startsWith("The user has not granted the app")) {
-                    AuthStateManager.getInstance(context).getAuthorization(context, message, true);
-                }
-                break;
-            default:
-                Log.e(GOOGLE_DRIVE_TAG, "UNEXPECTED ERROR WITH CODE " + code + ": " + message);
-        }
     }
 
     /**********************************************************
      *  HELPERS
      **********************************************************/
 
-    private static String jsonify(Object object) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.writeValueAsString(object);
-        } catch (JsonProcessingException e) {
-            Log.e(GOOGLE_DRIVE_TAG, "Could not convert object to json using GoogleDriveManager#jsonify");
-            return "{}";
+    public void processErrorCodes(Context context, Integer requestId, JSONObject jsonResponse) throws JSONException {
+        String message = jsonResponse.getString("message");
+        int code = jsonResponse.getInt("code");
+        if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            suggestReauthentication(context, requestId, message);
+        } else if (code == HttpURLConnection.HTTP_FORBIDDEN && message.startsWith("The user has not granted the app")) {
+            suggestReauthentication(context, requestId, message);
+        } else {
+            setError(context, requestId,"Received unexpected error code from Google API.");
         }
+    }
+
+    private void setError(Context context, Integer requestId, String message) {
+        Log.e(GOOGLE_DRIVE_TAG, "createFolder or processErrorCodes accessed unexisting fields");
+        DriveResultsData driveResultsData = P2PhotoGoogleDriveMediator.requestsMap.get(requestId);
+        driveResultsData.setHasError(true);
+        driveResultsData.setMessage(message);
+        driveResultsData.setSuggestRetry(false);
+    }
+
+    private void setWarning(Context context, Integer requestId, String message) {
+        Log.w(GOOGLE_DRIVE_TAG, message);
+        DriveResultsData driveResultsData = P2PhotoGoogleDriveMediator.requestsMap.get(requestId);
+        driveResultsData.setHasError(true);
+        driveResultsData.setMessage(message);
+        driveResultsData.setSuggestRetry(false);
+    }
+
+    private void suggestRetry(Context context, Integer requestId, String message) {
+        Log.w(GOOGLE_DRIVE_TAG, "Google Drive REST API timed out");
+        DriveResultsData driveResultsData = P2PhotoGoogleDriveMediator.requestsMap.get(requestId);
+        driveResultsData.setHasError(true);
+        driveResultsData.setMessage(message);
+        driveResultsData.setSuggestRetry(true);
+    }
+
+    private void suggestReauthentication(Context context, Integer requestId, String message) {
+        Log.w(GOOGLE_DRIVE_TAG, message);
+        DriveResultsData driveResultsData = P2PhotoGoogleDriveMediator.requestsMap.get(requestId);
+        driveResultsData.setHasError(true);
+        driveResultsData.setMessage(message);
+        driveResultsData.setSuggestedIntent(new Intent(context, LoginActivity.class));
     }
 
     private static JSONObject newDirectory(String folderName) throws JSONException {

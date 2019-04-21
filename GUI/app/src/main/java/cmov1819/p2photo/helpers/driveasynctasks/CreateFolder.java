@@ -34,20 +34,6 @@ public class CreateFolder extends AsyncTask<String, Void, JSONObject> {
         this.idToken = idToken;
     }
 
-    public static String processResponse(Context context, JSONObject response) throws JSONException {
-        String folderId = null;
-        if (response == null) {
-            Log.e(GOOGLE_DRIVE_TAG, "createFolder method resulted in a null response from google API.");
-        } else if (response.has("error")) {
-            Log.e(GOOGLE_DRIVE_TAG,"createFolder response had error: " + response.getString("message"));
-            processErrorCodes(context, response);
-        } else {
-            Log.i(GOOGLE_DRIVE_TAG, "Created folder with success");
-            return response.getString("id");
-        }
-        return folderId;
-    }
-
     @Override
     protected JSONObject doInBackground(String... strings) {
         try {

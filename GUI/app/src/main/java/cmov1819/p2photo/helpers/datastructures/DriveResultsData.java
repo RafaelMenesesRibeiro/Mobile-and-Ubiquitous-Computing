@@ -1,15 +1,36 @@
 package cmov1819.p2photo.helpers.datastructures;
 
+import android.content.Intent;
+
 import java.util.ArrayList;
 
 public class DriveResultsData {
-    private String folderId;
-    private String fileId;
-    private String fileUrl;
-    private ArrayList<String> folderContents;
-    private boolean hasError = false;
+    private ArrayList<String> folderContents = null;
+    private Intent suggestedIntent = null;
+    private String folderId = null;
+    private String fileId = null;
+    private String fileUrl = null;
+    private String message = null;
+    private Boolean hasError = false;
+    private Boolean suggestRetry = false;
 
     public DriveResultsData(){}
+
+    public ArrayList<String> getFolderContents() {
+        return folderContents;
+    }
+
+    public void setFolderContents(ArrayList<String> folderContents) {
+        this.folderContents = folderContents;
+    }
+
+    public Intent getSuggestedIntent() {
+        return suggestedIntent;
+    }
+
+    public void setSuggestedIntent(Intent suggestedIntent) {
+        this.suggestedIntent = suggestedIntent;
+    }
 
     public String getFolderId() {
         return folderId;
@@ -35,19 +56,27 @@ public class DriveResultsData {
         this.fileUrl = fileUrl;
     }
 
-    public ArrayList<String> getFolderContents() {
-        return folderContents;
+    public String getMessage() {
+        return message;
     }
 
-    public void setFolderContents(ArrayList<String> folderContents) {
-        this.folderContents = folderContents;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
-    public boolean isHasError() {
+    public Boolean getHasError() {
         return hasError;
     }
 
-    public void setHasError(boolean hasError) {
+    public void setHasError(Boolean hasError) {
         this.hasError = hasError;
+    }
+
+    public Boolean getSuggestRetry() {
+        return suggestRetry;
+    }
+
+    public void setSuggestRetry(Boolean suggestRetry) {
+        this.suggestRetry = suggestRetry;
     }
 }

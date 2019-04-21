@@ -23,14 +23,18 @@ import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.mediators.P2PhotoGoogleDriveMediator;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout drawerLayout;
+    private P2PhotoGoogleDriveMediator driveMediator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+
+        this.driveMediator = P2PhotoGoogleDriveMediator.getInstance(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -43,8 +47,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        AuthStateManager authStateManager = AuthStateManager.getInstance(this);
-        authStateManager.createFolder(this, "RoxWithCallables");
+        driveMediator.newCatatalog(this, "helloworld2.0");
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {

@@ -20,10 +20,10 @@
         tools:targetApi="m">
 
         <activity android:name=".LoginActivity">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <suggestedIntent-filter>
+                <action android:name="android.suggestedIntent.action.MAIN" />
+                <category android:name="android.suggestedIntent.category.LAUNCHER" />
+            </suggestedIntent-filter>
         </activity>
 
         <activity android:name=".AuthenticationActivity"/>
@@ -31,12 +31,12 @@
         <activity
             android:name="net.openid.appauth.RedirectUriReceiverActivity"
             tools:node="replace">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
+            <suggestedIntent-filter>
+                <action android:name="android.suggestedIntent.action.VIEW" />
+                <category android:name="android.suggestedIntent.category.DEFAULT" />
+                <category android:name="android.suggestedIntent.category.BROWSABLE" />
                 <data android:scheme="cmov1819.p2photo" />
-            </intent-filter>
+            </suggestedIntent-filter>
         </activity>
 
         <activity android:name=".MainMenuActivity" />

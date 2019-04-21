@@ -1,6 +1,5 @@
 package cmov1819.p2photo.helpers.driveasynctasks;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -17,7 +16,6 @@ import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.FILE_UPLOAD_E
 import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.GOOGLE_DRIVE_TAG;
 import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.JSON_TYPE;
 import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.TYPE_TXT;
-import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.processErrorCodes;
 
 public class CreateFile extends AsyncTask<String, Void, JSONObject> {
     private final String fileName;
@@ -30,20 +28,6 @@ public class CreateFile extends AsyncTask<String, Void, JSONObject> {
         this.rootFolderId = rootFolderId;
         this.accessToken = accessToken;
         this.idToken = idToken;
-    }
-
-    public static String processResponse(Context context, JSONObject response) throws JSONException {
-        String fileId = null;
-        if (response == null) {
-            Log.e(GOOGLE_DRIVE_TAG, "createFile method resulted in a null response from google API.");
-        } else if (response.has("error")) {
-            Log.e(GOOGLE_DRIVE_TAG,"createFile response had error: " + response.getString("message"));
-            processErrorCodes(context, response);
-        } else {
-            Log.i(GOOGLE_DRIVE_TAG, "Created file with success");
-            return response.getString("id");
-        }
-        return fileId;
     }
 
     @Override
