@@ -27,6 +27,7 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.helpers.SessionManager;
+import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 public class NewAlbumFragment extends Fragment {
     @Nullable
@@ -54,10 +55,11 @@ public class NewAlbumFragment extends Fragment {
         }
 
         try {
-            newAlbum(title);
+            String catalogID = newAlbum(title);
 
             Fragment viewAlbumFragment = new ViewAlbumFragment();
             Bundle data = new Bundle();
+            data.putString("catalogID", catalogID);
             data.putString("title", title);
             data.putStringArrayList("slices", new ArrayList<String>());
             viewAlbumFragment.setArguments(data);
@@ -78,7 +80,7 @@ public class NewAlbumFragment extends Fragment {
         }
     }
 
-    private void newAlbum(String albumName) {
+    private String newAlbum(String albumName) {
         Log.i("MSG", "Create album: " + albumName);
         String url = getString(R.string.p2photo_host) + getString(R.string.new_album_operation);
 
@@ -95,15 +97,17 @@ public class NewAlbumFragment extends Fragment {
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
                 Log.i("STATUS", "The new album operation was successful");
-
-                // TODO - Get catalog ID from response. //
-
-            } else {
+                SuccessResponse payload = (SuccessResponse) result.getPayload();
+                String catalogID = (String) payload.getResult();
+                return catalogID;
+            }
+            else {
                 Log.i("STATUS", "The new album operation was unsuccessful. Server response code: "
                         + code);
                 throw new FailedOperationException();
             }
-        } catch (JSONException | ExecutionException | InterruptedException ex) {
+        }
+        catch (JSONException | ExecutionException | InterruptedException ex) {
             throw new FailedOperationException(ex.getMessage());
         }
     }

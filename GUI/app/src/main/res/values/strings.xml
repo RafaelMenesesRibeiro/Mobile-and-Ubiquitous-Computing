@@ -33,7 +33,7 @@
     <string name="input_member_username">Input the username to add</string>
     <!-- View Album Functionality -->
     <string name="view_album">View Album</string>
-    <string name="add_user">Add User</string>
+    <string name="add_member">Add Member</string>
     <string name="placeholder_for_album_name">placeholder-for-album-name</string>
     <!-- View User's Albums -->
     <string name="view_user_albums">User albums</string>

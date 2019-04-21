@@ -63,6 +63,16 @@ public class NewAlbumMemberFragment extends Fragment {
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, albumNames);
         membershipDropdown.setAdapter(adapter);
+
+        if (getArguments() != null) {
+            String albumID;
+            if ((albumID = getArguments().getString("albumID")) != null) {
+                int index = albumIDs.indexOf(albumID);
+                if (index != -1) {
+                    membershipDropdown.setSelection(index);
+                }
+            }
+        }
     }
 
     public void addUserClicked(View view) {
@@ -83,6 +93,7 @@ public class NewAlbumMemberFragment extends Fragment {
 
             Fragment viewAlbumFragment = new ViewAlbumFragment();
             Bundle data = new Bundle();
+            data.putString("catalogID", albumID);
             data.putString("title", albumName);
             // TODO - Implement fetching slices in ViewAlbumFragment. //
             data.putStringArrayList("slices", new ArrayList<String>());

@@ -54,7 +54,7 @@
         android:layout_marginBottom="30dp"
         android:layout_toStartOf="@+id/addPhotoButton"
         android:layout_toLeftOf="@+id/addPhotoButton"
-        android:text="@string/add_user" />
+        android:text="@string/add_member" />
 
     <Button
         android:id="@+id/addPhotoButton"

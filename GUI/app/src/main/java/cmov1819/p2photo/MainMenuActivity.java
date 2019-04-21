@@ -51,10 +51,12 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 navigationView.setCheckedItem(R.id.nav_search_user);
             }
             else if (intent.getStringExtra("initialScreen").equals(ViewAlbumFragment.class.getName())) {
+                String catalogID = intent.getStringExtra("catalogID");
                 String catalogTitle = intent.getStringExtra("title");
                 ArrayList<String> slices = intent.getStringArrayListExtra("slices");
                 Fragment viewAlbumFragment = new ViewAlbumFragment();
                 Bundle data = new Bundle();
+                data.putString("catalogID", catalogID);
                 data.putString("title", catalogTitle);
                 data.putStringArrayList("slices", slices);
                 viewAlbumFragment.setArguments(data);
@@ -81,6 +83,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             case R.id.nav_view_album:
                 Fragment viewAlbumFragment = new ViewAlbumFragment();
                 Bundle viewAlbumData = new Bundle();
+                viewAlbumData.putString("catalogID", "NO_ALBUM_SELECTED_ERROR");
                 viewAlbumData.putString("title", "NO_ALBUM_SELECTED_ERROR");
                 viewAlbumData.putStringArrayList("slices", new ArrayList<String>());
                 viewAlbumFragment.setArguments(viewAlbumData);

@@ -52,13 +52,14 @@ public class ViewUserAlbumsFragment extends Fragment {
         userAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String catalogID = catalogIdList.get(position);
                 String catalogTitle = catalogTitleList.get(position);
                 String toast = "Loading: " + catalogTitle + "...";
                 Toast.makeText(getContext(), toast, LENGTH_SHORT).show();
                 setSliceURLList(catalogIdList.get(position));
 
                 if (!ViewUserAlbumsFragment.slicesURLList.isEmpty())  {
-                    goToShowAlbumActivity(catalogTitle);
+                    goToShowAlbumActivity(catalogID, catalogTitle);
                 }
                 else {
                     Toast.makeText(getContext(), "BAD", LENGTH_SHORT).show();
@@ -116,9 +117,10 @@ public class ViewUserAlbumsFragment extends Fragment {
         }
     }
 
-    private void goToShowAlbumActivity(String catalogTitle) {
+    private void goToShowAlbumActivity(String catalogID, String catalogTitle) {
         Intent intent = new Intent(getContext(), MainMenuActivity.class);
         intent.putExtra("initialScreen", ViewAlbumFragment.class.getName());
+        intent.putExtra("catalogID", catalogID);
         intent.putExtra("title", catalogTitle);
         intent.putStringArrayListExtra("slices", slicesURLList);
         startActivity(intent);

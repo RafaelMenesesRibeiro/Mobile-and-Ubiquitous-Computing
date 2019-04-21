@@ -66,6 +66,16 @@ public class AddPhotosFragment extends Fragment {
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, albumNames);
         membershipDropdown.setAdapter(adapter);
+
+        if (getArguments() != null) {
+            String albumID;
+            if ((albumID = getArguments().getString("albumID")) != null) {
+                int index = albumIDs.indexOf(albumID);
+                if (index != -1) {
+                    membershipDropdown.setSelection(index);
+                }
+            }
+        }
     }
 
     public void choosePhotoClicked(View view) {
