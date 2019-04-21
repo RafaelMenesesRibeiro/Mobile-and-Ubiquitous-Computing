@@ -65,6 +65,7 @@ public class ViewUserAlbumsFragment extends Fragment {
     }
 
     private void buildCatalogArrays() {
+        // TODO - Get actual album IDs from server. //
         ArrayList<String> intentCatalogIdList = getArguments().getStringArrayList("catalogs");
         String baseUrl =
                 getString(R.string.view_album_details_endpoint) + "?calleeUsername=" + getUsername(getActivity());
