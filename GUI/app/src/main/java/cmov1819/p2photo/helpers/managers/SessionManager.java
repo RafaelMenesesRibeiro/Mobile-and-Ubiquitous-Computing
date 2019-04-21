@@ -1,20 +1,9 @@
-package cmov1819.p2photo.helpers;
+package cmov1819.p2photo.helpers.managers;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.text.TextUtils;
-import android.util.Log;
-
-import net.openid.appauth.AuthState;
-import net.openid.appauth.AuthorizationException;
-import net.openid.appauth.AuthorizationService;
-import net.openid.appauth.TokenRequest;
-import net.openid.appauth.TokenResponse;
-
-import org.json.JSONException;
 
 public class SessionManager {
     private static final String SESSION_LOG_TAG = "SESSION";

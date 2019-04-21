@@ -6,7 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-import cmov1819.p2photo.helpers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
 
 import static android.widget.Toast.LENGTH_SHORT;
 

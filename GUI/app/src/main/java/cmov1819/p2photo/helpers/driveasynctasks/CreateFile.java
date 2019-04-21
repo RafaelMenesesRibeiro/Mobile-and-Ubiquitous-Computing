@@ -1,4 +1,4 @@
-package cmov1819.p2photo.helpers.GoogleDriveAPIRequests;
+package cmov1819.p2photo.helpers.driveasynctasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -12,13 +12,12 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static cmov1819.p2photo.helpers.GoogleDriveInteractor.AUTHORIZATION_HEADER;
-import static cmov1819.p2photo.helpers.GoogleDriveInteractor.FILE_UPLOAD_ENDPOINT;
-import static cmov1819.p2photo.helpers.GoogleDriveInteractor.GOOGLE_DRIVE_TAG;
-import static cmov1819.p2photo.helpers.GoogleDriveInteractor.JSON_TYPE;
-import static cmov1819.p2photo.helpers.GoogleDriveInteractor.TYPE_GOOGLE_DRIVE_FOLDER;
-import static cmov1819.p2photo.helpers.GoogleDriveInteractor.TYPE_TXT;
-import static cmov1819.p2photo.helpers.GoogleDriveInteractor.processErrorCodes;
+import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.AUTHORIZATION_HEADER;
+import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.FILE_UPLOAD_ENDPOINT;
+import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.GOOGLE_DRIVE_TAG;
+import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.JSON_TYPE;
+import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.TYPE_TXT;
+import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.processErrorCodes;
 
 public class CreateFile extends AsyncTask<String, Void, JSONObject> {
     private final String fileName;

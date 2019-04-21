@@ -1,10 +1,9 @@
-package cmov1819.p2photo.helpers;
+package cmov1819.p2photo.helpers.managers;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,13 +26,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import cmov1819.p2photo.MainApplication;
-import cmov1819.p2photo.helpers.GoogleDriveAPIRequests.CreateFile;
-import cmov1819.p2photo.helpers.GoogleDriveAPIRequests.CreateFolder;
+import cmov1819.p2photo.helpers.driveasynctasks.CreateFile;
+import cmov1819.p2photo.helpers.driveasynctasks.CreateFolder;
 import okhttp3.MediaType;
 
 @SuppressLint("StaticFieldLeak")
 @SuppressWarnings("Duplicates")
-public class GoogleDriveInteractor {
+public class GoogleDriveManager {
     public static final String APPLICATION_NAME = MainApplication.getApplicationName();
 
     public static final String GOOGLE_DRIVE_TAG = "DRIVE INTERACTOR";
@@ -60,10 +59,10 @@ public class GoogleDriveInteractor {
 
     public static final MediaType JSON_TYPE = MediaType.parse("application/json; charset=utf-8");
 
-    private static GoogleDriveInteractor instance;
+    private static GoogleDriveManager instance;
     private static Drive driveService;
 
-    private GoogleDriveInteractor() {
+    private GoogleDriveManager() {
         try {
             driveService = new Drive.Builder(
                     GoogleNetHttpTransport.newTrustedTransport(),
@@ -75,13 +74,14 @@ public class GoogleDriveInteractor {
         }
     }
 
-    public static GoogleDriveInteractor getInstance() {
+    public static GoogleDriveManager getInstance() {
         if (instance == null)
-            instance = new GoogleDriveInteractor();
+            instance = new GoogleDriveManager();
         return instance;
     }
 
-    public static void createFolder(final Context context, final String folderName, AuthState authState) {
+    public void createFolder(final Context context, final String folderName, AuthState authState) {
+
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
@@ -106,14 +106,12 @@ public class GoogleDriveInteractor {
         });
     }
 
-    public static void createFile(final Context context,
-                                  final String fileName, final String rootFolder,
-                                  AuthState authState) {
+    public void createFile(final Context context, final String fileName, final String rootFolderId, AuthState authState) {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
-                AsyncTask<String, Void, JSONObject> request = new CreateFile(fileName, rootFolder, accessToken, idToken);
+                AsyncTask<String, Void, JSONObject> request = new CreateFile(fileName, rootFolderId, accessToken, idToken);
                 try {
                     if (error != null) {
                         Log.w(GOOGLE_DRIVE_TAG, "negotiation for fresh tokens failed, check ex for more details");
@@ -128,7 +126,7 @@ public class GoogleDriveInteractor {
                         request.cancel(true);
                     Log.e(GOOGLE_DRIVE_TAG, "API Calling threads timed out or were interrutped.");
                 } catch (JSONException jsone) {
-                    Log.e(GOOGLE_DRIVE_TAG, "createFolder or processErrorCodes accessed unexisting fields");
+                    Log.e(GOOGLE_DRIVE_TAG, "createFile or processErrorCodes accessed unexisting fields");
                 }
             }
         });
@@ -160,7 +158,7 @@ public class GoogleDriveInteractor {
         try {
             return objectMapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            Log.e(GOOGLE_DRIVE_TAG, "Could not convert object to json using GoogleDriveInteractor#jsonify");
+            Log.e(GOOGLE_DRIVE_TAG, "Could not convert object to json using GoogleDriveManager#jsonify");
             return "{}";
         }
     }

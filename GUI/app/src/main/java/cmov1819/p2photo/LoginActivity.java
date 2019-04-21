@@ -2,9 +2,7 @@ package cmov1819.p2photo;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -29,12 +27,12 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.AuthStateManager;
-import cmov1819.p2photo.helpers.QueryManager;
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
-import static cmov1819.p2photo.helpers.SessionManager.updateUsername;
+import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
     private static final String LOGIN_TAG = "LOGIN";

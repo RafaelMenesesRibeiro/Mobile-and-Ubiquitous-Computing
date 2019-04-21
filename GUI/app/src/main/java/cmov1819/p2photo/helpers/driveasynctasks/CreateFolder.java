@@ -1,4 +1,4 @@
-package cmov1819.p2photo.helpers.GoogleDriveAPIRequests;
+package cmov1819.p2photo.helpers.driveasynctasks;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -12,7 +12,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
-import static cmov1819.p2photo.helpers.GoogleDriveInteractor.*;
+import static cmov1819.p2photo.helpers.managers.GoogleDriveManager.*;
 
 public class CreateFolder extends AsyncTask<String, Void, JSONObject> {
     private String folderName;
