@@ -25,7 +25,6 @@ import cmov1819.p2photo.helpers.SessionManager;
 
 import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.NO_ALBUM_SELECTED;
-import static cmov1819.p2photo.ViewAlbumFragment.SLICES_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -56,12 +55,10 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             if (intent.getStringExtra(START_SCREEN).equals(ViewAlbumFragment.class.getName())) {
                 String catalogID = intent.getStringExtra(CATALOG_ID_EXTRA);
                 String catalogTitle = intent.getStringExtra(TITLE_EXTRA);
-                ArrayList<String> slices = intent.getStringArrayListExtra(SLICES_EXTRA);
                 Fragment viewAlbumFragment = new ViewAlbumFragment();
                 Bundle data = new Bundle();
                 data.putString(CATALOG_ID_EXTRA, catalogID);
                 data.putString(TITLE_EXTRA, catalogTitle);
-                data.putStringArrayList(SLICES_EXTRA, slices);
                 viewAlbumFragment.setArguments(data);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
                 return;
@@ -91,13 +88,13 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 Bundle viewAlbumData = new Bundle();
                 viewAlbumData.putString(CATALOG_ID_EXTRA, NO_ALBUM_SELECTED);
                 viewAlbumData.putString(TITLE_EXTRA, NO_ALBUM_SELECTED);
-                viewAlbumData.putStringArrayList(SLICES_EXTRA, new ArrayList<String>());
                 viewAlbumFragment.setArguments(viewAlbumData);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
                 break;
             case R.id.nav_view_user_albums:
                 Fragment viewUserAlbumsFragment = new ViewUserAlbumsFragment();
                 Bundle viewUserAlbumsData = new Bundle();
+                // TODO - Fetch this in ViewUserAlbumsFragment. //
                 ArrayList<String> items = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
                 viewUserAlbumsData.putStringArrayList("catalogs", items);
                 viewUserAlbumsFragment.setArguments(viewUserAlbumsData);

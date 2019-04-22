@@ -34,7 +34,6 @@ import cmov1819.p2photo.helpers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.SLICES_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
 
 public class NewAlbumMemberFragment extends Fragment {
@@ -98,7 +97,6 @@ public class NewAlbumMemberFragment extends Fragment {
             Bundle data = new Bundle();
             data.putString(CATALOG_ID_EXTRA, albumID);
             data.putString(TITLE_EXTRA, albumName);
-            data.putStringArrayList(SLICES_EXTRA, new ArrayList<String>()); // TODO - Implement fetching slices in ViewAlbumFragment. //
             viewAlbumFragment.setArguments(data);
 
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
