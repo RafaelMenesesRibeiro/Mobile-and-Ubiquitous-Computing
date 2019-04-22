@@ -182,6 +182,7 @@ GUI/.idea/dictionaries/*.xml
 GUI/.idea/inspectionProfiles/Project_Default.xml
 GUI/.idea/codeStyles/Project.xml
 GUI/.idea/codeStyles/Project.xml
+GUI/.idea/sonarlint/*
 GUI/.idea/libraries/Gradle__com_google_http_client_google_http_client_gson_1_28_0_jar.xml
 GUI/.idea/libraries/Gradle__com_google_http_client_google_http_client_android_1_28_0_jar.xml
 GUI/.idea/libraries/Gradle__com_google_code_gson_gson_2_1_jar.xml

@@ -15,29 +15,37 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:text="@string/add_photo"
-        android:textColor="@color/colorPrimary"
         android:layout_centerHorizontal="true"
         />
 
-    <android.support.v7.widget.AppCompatImageView
+    <Spinner
+        android:id="@+id/membershipDropdownMenu"
+        android:layout_width="230dp"
+        android:layout_height="wrap_content"
+        android:spinnerMode="dropdown"
+        android:layout_below="@+id/addPhotosLabel"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="-50dp"
+        />
+
+    <ImageView
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/addPhotosLabel"
-        android:layout_marginStart="8dp"
+        android:layout_below="@+id/membershipDropdownMenu"
+        android:layout_above="@+id/done"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
         android:layout_marginLeft="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:maxWidth="360dp"
-        android:maxHeight="480dp"
         android:minWidth="50dp"
-        android:minHeight="100dp"
         android:layout_centerHorizontal="true"
         />
 
     <Button
         android:id="@+id/choosePhoto"
-        style="P2PButton"
+        style="@style/ActiveButton"
         android:layout_width="wrap_content"
         android:layout_height="46dp"
         android:layout_alignParentBottom="true"
@@ -50,7 +58,7 @@
 
     <Button
         android:id="@+id/done"
-        style="P2PButton"
+        style="@style/ActiveButton"
         android:layout_width="wrap_content"
         android:layout_height="46dp"
         android:layout_marginEnd="30dp"

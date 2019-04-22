@@ -13,6 +13,7 @@
     <string name="add_member_operation">newAlbumMember</string>
     <string name="view_album_details_endpoint">https://p2photo-production.herokuapp.com/viewAlbumDetails</string>
     <string name="view_album_endpoint">https://p2photo-production.herokuapp.com/viewAlbum</string>
+    <string name="get_memberships_endpoint">https://p2photo-production.herokuapp.com/getMemberships</string>
 
     <!-- Labels -->
     <string name="app_name">cmov1819.p2photo</string>
@@ -32,8 +33,9 @@
     <string name="input_member_username">Input the username to add</string>
     <!-- View Album Functionality -->
     <string name="view_album">View Album</string>
-    <string name="add_user">Add User</string>
+    <string name="add_member">Add Member</string>
     <string name="placeholder_for_album_name">placeholder-for-album-name</string>
+    <string name="choose_album">Choose album to view</string>
     <!-- View User's Albums -->
     <string name="view_user_albums">User albums</string>
     <!-- Logout -->
@@ -51,4 +53,8 @@
     <string name="loading_complete">Loading complete…</string>
     <string name="no_membership">invalid membership - user does not belong to referenced album</string>
     <string name="no_user">invalid username - does not exist in p2photo databases</string>
+
+    <!-- Error messages -->
+    <string name="add_user_unsuccessful">The add user to album operation was unsuccessful. </string>
+    <string name="find_user_unsuccessful">The find users operation failed. </string>
 </resources>

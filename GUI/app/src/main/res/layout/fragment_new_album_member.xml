@@ -13,27 +13,27 @@
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
         android:text="@string/add_album_member"
-        android:textColor="@color/colorPrimary"
         android:layout_centerHorizontal="true"
         />
 
-    <EditText
-        android:id="@+id/albumIDInputBox"
-        style="@style/InputLabels"
+    <Spinner
+        android:id="@+id/membershipDropdownMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:spinnerMode="dropdown"
         android:layout_below="@+id/addNewAlbumMember"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp"
-        android:hint="@string/input_album_ID"
-        android:inputType="text" />
-
+        android:layout_marginStart="15dp"
+        android:layout_marginLeft="15dp"
+        />
+    
     <EditText
         android:id="@+id/toAddUsernameInputBox"
         style="@style/InputLabels"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/albumIDInputBox"
+        android:layout_below="@+id/membershipDropdownMenu"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:hint="@string/input_member_username"
@@ -41,7 +41,7 @@
 
     <Button
         android:id="@+id/done"
-        style="P2PButton"
+        style="@style/ActiveButton"
         android:layout_width="wrap_content"
         android:layout_height="46dp"
         android:layout_centerHorizontal="true"
@@ -53,4 +53,5 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         />
+
 </RelativeLayout>

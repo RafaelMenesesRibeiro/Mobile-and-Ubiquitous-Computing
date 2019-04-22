@@ -1,5 +1,6 @@
 package cmov1819.p2photo;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,6 +16,7 @@ import android.widget.Toast;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
@@ -26,52 +28,64 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
+import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
+
 public class SearchUserFragment extends Fragment {
+    private Activity activity;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_search_user, container, false);
-        Button searchButton = view.findViewById(R.id.AlbumDone);
+        Button searchButton = view.findViewById(R.id.done);
         searchButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SearchUser(view);
+                searchUserClicked(view);
             }
         });
         return view;
     }
 
-    public void SearchUser(View view) throws BadInputException {
+    public void searchUserClicked(View view) throws BadInputException {
         String username = ((EditText) view.findViewById(R.id.usernameInputBox)).getText().toString();
         if (username.equals("")) {
-            // TODO - Handle this. //
-            throw new BadInputException("The username to find cannot be empty.");
+            Toast.makeText(this.getContext(), "The username cannot be empty.", Toast.LENGTH_LONG).show();
+            return;
         }
         try {
-            // TODO - Design tick box for 'bringAlmbums'. //
-            LinkedHashMap<String, ArrayList> usernames = searchUser(username, true);
-        } catch (NoResultsException nrex) {
-            Toast toast = Toast.makeText(this.getContext(), "No results were found", Toast.LENGTH_LONG);
-            toast.show();
-        } catch (FailedOperationException foex) {
-            Toast toast = Toast.makeText(this.getContext(), "The find users operation failed. Try again later"
-                    , Toast.LENGTH_LONG);
-            toast.show();
+            Map<String, ArrayList> usernames = searchUser(username, true);
+            ArrayList<String> usersList = new ArrayList<>(usernames.keySet());
+
+            Fragment listUsersFragment = new ListUsersFragment();
+            Bundle data = new Bundle();
+            data.putStringArrayList(USERS_EXTRA, usersList);
+            listUsersFragment.setArguments(data);
+
+            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+            mainMenuActivity.changeFragment(listUsersFragment, R.id.nav_search_user);
+        }
+        catch (NoResultsException nrex) {
+            Toast.makeText(activity, "No results were found", Toast.LENGTH_LONG).show();
+        }
+        catch (FailedOperationException foex) {
+            Toast.makeText(activity, R.string.find_user_unsuccessful + "Try again later", Toast.LENGTH_LONG).show();
+        }
+        catch (NullPointerException | ClassCastException ex) {
+            Toast.makeText(activity, "Could not present users list", Toast.LENGTH_LONG).show();
         }
     }
 
-    public LinkedHashMap<String, ArrayList> searchUser(String usernameToFind, boolean bringAlbums)
+    public Map<String, ArrayList> searchUser(String usernameToFind, boolean bringAlbums)
             throws FailedOperationException, NoResultsException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
-        String url =
-                getString(R.string.p2photo_host) + getString(R.string.find_users_operation) +
-                        "?searchPattern="
-                        + usernameToFind + "&bringAlbums=" + bringAlbums + "&calleeUsername=" + SessionManager.getUsername(this.getActivity());
+        String url = getString(R.string.p2photo_host) + getString(R.string.find_users_operation) +
+                    "?searchPattern=" + usernameToFind + "&bringAlbums=" + bringAlbums
+                    + "&calleeUsername=" + SessionManager.getUsername(activity);
 
         try {
-            RequestData requestData = new RequestData(this.getActivity(), RequestData.RequestType.SEARCH_USERS,
-                    url);
-
+            RequestData requestData = new RequestData(this.getActivity(), RequestData.RequestType.SEARCH_USERS, url);
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
@@ -81,16 +95,16 @@ public class SearchUserFragment extends Fragment {
                 Object object = payload.getResult();
 
                 if (bringAlbums) {
-                    LinkedHashMap<String, ArrayList> map =
-                            (LinkedHashMap<String, ArrayList>) object;
+                    LinkedHashMap<String, ArrayList> map = (LinkedHashMap<String, ArrayList>) object;
                     Log.i("MSG", "Users and respective albums: " + map.toString());
                     if (map.size() == 0) {
                         throw new NoResultsException();
                     }
                     return map;
-                } else {
-                    ArrayList<String> usernames = (ArrayList) object;
-                    if (usernames.size() == 0) {
+                }
+                else {
+                    ArrayList<String> usernames = (ArrayList<String>) object;
+                    if (usernames.isEmpty()) {
                         throw new NoResultsException();
                     }
                     LinkedHashMap<String, ArrayList> map = new LinkedHashMap<>();
@@ -99,12 +113,14 @@ public class SearchUserFragment extends Fragment {
                     }
                     return map;
                 }
-            } else {
-                Log.i("STATUS", "The find users operation was unsuccessful. Server response code:" +
-                        " " + code);
+            }
+            else {
+                Log.i("STATUS", R.string.find_user_unsuccessful + "Server response code: " + code);
                 throw new FailedOperationException("URL: " + url);
             }
-        } catch (ExecutionException | InterruptedException | ClassCastException ex) {
+        }
+        catch (ExecutionException | InterruptedException | ClassCastException ex) {
+            Thread.currentThread().interrupt();
             throw new FailedOperationException(ex.getMessage());
         }
     }

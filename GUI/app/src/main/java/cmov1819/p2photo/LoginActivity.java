@@ -20,6 +20,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -29,6 +32,7 @@ import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
@@ -157,6 +161,11 @@ public class LoginActivity extends AppCompatActivity {
         tryLogin(usernameValue, passwordValue);
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
+        Map<String, String> albumMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
+        Set<String> albumIDs = albumMemberships.keySet();
+        SessionManager.updateAlbumMembershipsIDs(this, albumIDs);
+        Set<String> albumNames = new HashSet<>(albumMemberships.values());
+        SessionManager.updateAlbumMembershipsNames(this, albumNames);
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {

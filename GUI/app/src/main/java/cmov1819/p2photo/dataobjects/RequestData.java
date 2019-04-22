@@ -11,7 +11,8 @@ public class RequestData {
         GET_CATALOG_TITLE,
         GET_CATALOG,
         NEW_ALBUM,
-        NEW_ALBUM_MEMBER
+        NEW_ALBUM_MEMBER,
+        GET_MEMBERSHIPS
     }
 
     private Activity activity;

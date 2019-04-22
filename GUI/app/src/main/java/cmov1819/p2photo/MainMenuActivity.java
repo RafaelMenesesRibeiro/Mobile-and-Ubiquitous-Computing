@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-
 import net.openid.appauth.AuthState;
 
 import java.util.ArrayList;
@@ -28,8 +27,15 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 
+import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.NO_ALBUM_SELECTED;
+import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
+
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    public static final String START_SCREEN = "initialScreen";
+
     private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     private GoogleDriveMediator driveMediator;
     private AuthStateManager authStateManager;
 
@@ -42,7 +48,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         setSupportActionBar(toolbar);
 
         drawerLayout = findViewById(R.id.drawer_layout);
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -57,20 +63,19 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
             Intent intent = getIntent();
-            if (intent.getStringExtra("initialScreen").equals(SearchUserFragment.class.getName())) {
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
-                navigationView.setCheckedItem(R.id.nav_find_user);
-            }
-            else if (intent.getStringExtra("initialScreen").equals(ViewUserAlbumsFragment.class.getName())) {
-                String catalogTitle = intent.getStringExtra("title");
-                ArrayList<String> slices = intent.getStringArrayListExtra("slices");
+            if (intent.getStringExtra(START_SCREEN).equals(ViewAlbumFragment.class.getName())) {
+                String catalogID = intent.getStringExtra(CATALOG_ID_EXTRA);
+                String catalogTitle = intent.getStringExtra(TITLE_EXTRA);
                 Fragment viewAlbumFragment = new ViewAlbumFragment();
                 Bundle data = new Bundle();
-                data.putString("title", catalogTitle);
-                data.putStringArrayList("slices", slices);
+                data.putString(CATALOG_ID_EXTRA, catalogID);
+                data.putString(TITLE_EXTRA, catalogTitle);
                 viewAlbumFragment.setArguments(data);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
+                return;
             }
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
+            navigationView.setCheckedItem(R.id.nav_search_user);
         }
     }
 
@@ -80,7 +85,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             case R.id.nav_create_album:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewAlbumFragment()).commit();
                 break;
-            case R.id.nav_find_user:
+            case R.id.nav_search_user:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
                 break;
             case R.id.nav_add_photos:
@@ -92,23 +97,32 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             case R.id.nav_view_album:
                 Fragment viewAlbumFragment = new ViewAlbumFragment();
                 Bundle viewAlbumData = new Bundle();
-                viewAlbumData.putString("title", "NO_ALBUM_SELECTED_ERROR");
-                viewAlbumData.putStringArrayList("slices", new ArrayList<String>());
+                viewAlbumData.putString(CATALOG_ID_EXTRA, NO_ALBUM_SELECTED);
+                viewAlbumData.putString(TITLE_EXTRA, NO_ALBUM_SELECTED);
                 viewAlbumFragment.setArguments(viewAlbumData);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
                 break;
             case R.id.nav_view_user_albums:
                 Fragment viewUserAlbumsFragment = new ViewUserAlbumsFragment();
                 Bundle viewUserAlbumsData = new Bundle();
+                // TODO - Fetch this in ViewUserAlbumsFragment. //
                 ArrayList<String> items = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
                 viewUserAlbumsData.putStringArrayList("catalogs", items);
                 viewUserAlbumsFragment.setArguments(viewUserAlbumsData);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewUserAlbumsFragment).commit();
                 break;
             case R.id.nav_logout:
-                logout();
+                try {
+                    logout();
+                }
+                catch (FailedOperationException ex) {
+                    Log.i("ERROR", "LOGOUT: Failed to logout, proceeding");
+                }
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
+                break;
+            default:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
                 break;
         }
         drawerLayout.closeDrawer(GravityCompat.START);
@@ -123,12 +137,11 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         }
     }
 
-    public void logout() {
+    public void logout() throws FailedOperationException {
         String username = SessionManager.getUsername(this);
         Log.i("MSG", "Logout: " + username);
 
-        String url =
-                getString(R.string.p2photo_host) + getString(R.string.logout_operation) + username;
+        String url = getString(R.string.p2photo_host) + getString(R.string.logout_operation) + username;
         RequestData rData = new RequestData(this, RequestData.RequestType.LOGOUT, url);
         try {
             ResponseData result = new QueryManager().execute(rData).get();
@@ -137,12 +150,20 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 Log.i("STATUS", "The logout operation was successful");
                 SessionManager.deleteSessionID(this);
                 SessionManager.deleteUsername(this);
-            } else {
+            }
+            else {
                 Log.i("STATUS", "The login operation was unsuccessful. Unknown error.");
                 throw new FailedOperationException();
             }
-        } catch (ExecutionException | InterruptedException ex) {
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
             throw new FailedOperationException(ex.getMessage());
         }
+    }
+
+    public void changeFragment(Fragment fragment, int menuItemID) {
+        navigationView.setCheckedItem(menuItemID);
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 }
