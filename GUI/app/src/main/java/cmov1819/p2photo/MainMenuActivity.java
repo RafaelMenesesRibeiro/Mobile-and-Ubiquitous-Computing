@@ -12,6 +12,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
+
 import net.openid.appauth.AuthState;
 
 import java.util.ArrayList;
@@ -57,7 +60,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
         // TODO KILL THIS PROP CODE THAT ONLY SERVES TO TEST API CALLS
         this.authStateManager = AuthStateManager.getInstance(this);
-        this.driveMediator = GoogleDriveMediator.getInstance();
+        this.driveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
         driveMediator.newCatalog(this, "thooooor", authStateManager.getAuthState());
 
         // Does not redraw the fragment when the screen rotates.
