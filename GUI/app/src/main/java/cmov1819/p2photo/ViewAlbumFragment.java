@@ -136,12 +136,12 @@ public class ViewAlbumFragment extends Fragment {
             Log.i("ERROR", "VIEW ALBUM: catalogTitle is null.");
             return false;
         }
-        List<String> slicesURLList = getSlicesURLList(albumID);
+        List<String[]> slicesURLList = getSlicesURLList(albumID);
         populateGrid(view, catalogTitle, slicesURLList);
         return true;
     }
 
-    private void populateGrid(View view, String catalogTitle, List<String> slicesURLList) {
+    private void populateGrid(View view, String catalogTitle, List<String[]> slicesURLList) {
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
@@ -183,7 +183,7 @@ public class ViewAlbumFragment extends Fragment {
         }
     }
 
-    public List<String> getSlicesURLList(String catalogID) {
+    public List<String[]> getSlicesURLList(String catalogID) {
         String url = getString(
                 R.string.view_album_endpoint) +
                 "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
@@ -193,7 +193,7 @@ public class ViewAlbumFragment extends Fragment {
             ResponseData responseData = new QueryManager().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
-                return (ArrayList<String>) payload.getResult();
+                return (ArrayList<String[]>) payload.getResult();
             }
         }
         catch (ExecutionException | InterruptedException ex) {
