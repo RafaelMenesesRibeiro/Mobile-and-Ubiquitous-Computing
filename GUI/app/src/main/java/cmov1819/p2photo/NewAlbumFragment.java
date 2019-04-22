@@ -27,9 +27,6 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_TITLE_EXTRA;
-
 public class NewAlbumFragment extends Fragment {
     private Activity activity;
 
