@@ -24,14 +24,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AddPhotosFragment extends Fragment {
+    private Activity activity;
     private View view;
-    private ArrayList<String> albumIDs;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        this.activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_add_photos, container, false);
         this.view = view;
+
         Button chooseButton = view.findViewById(R.id.choosePhoto);
         chooseButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,23 +57,21 @@ public class AddPhotosFragment extends Fragment {
         imageView.setImageResource(R.drawable.img_not_available);
 
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        HashMap<String, String> map = ViewUserAlbumsFragment.getUserMemberships(getActivity());
+        HashMap<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
         ArrayList<String> albumNames = new ArrayList<>();
-        albumIDs = new ArrayList<>();
+        ArrayList<String> albumIDs = new ArrayList<>();
         for (Map.Entry<String, String> entry : map.entrySet()) {
             albumIDs.add(entry.getKey());
             albumNames.add(entry.getValue());
         }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, albumNames);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, albumNames);
         membershipDropdown.setAdapter(adapter);
 
-        if (getArguments() != null) {
-            String albumID;
-            if ((albumID = getArguments().getString("albumID")) != null) {
-                int index = albumIDs.indexOf(albumID);
-                if (index != -1) {
-                    membershipDropdown.setSelection(index);
-                }
+        String albumID;
+        if (getArguments() != null && (albumID = getArguments().getString("albumID")) != null) {
+            int index = albumIDs.indexOf(albumID);
+            if (index != -1) {
+                membershipDropdown.setSelection(index);
             }
         }
     }
@@ -89,7 +89,7 @@ public class AddPhotosFragment extends Fragment {
             Uri targetUri = data.getData();
             ImageView imageView = this.view.findViewById(R.id.imageView);
             try {
-                Bitmap bitmap = BitmapFactory.decodeStream(getActivity().getContentResolver().openInputStream(targetUri));
+                Bitmap bitmap = BitmapFactory.decodeStream(activity.getContentResolver().openInputStream(targetUri));
                 imageView.setImageBitmap(bitmap);
             }
             catch (FileNotFoundException | NullPointerException ex) {
