@@ -70,8 +70,8 @@ public class NewAlbumFragment extends Fragment {
             Toast.makeText(this.getContext(), "The create album operation failed. Try again later", Toast.LENGTH_LONG).show();
         }
         catch (NullPointerException | ClassCastException ex) {
-        Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
-    }
+            Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
+        }
     }
 
     private String newAlbum(String albumName) {
