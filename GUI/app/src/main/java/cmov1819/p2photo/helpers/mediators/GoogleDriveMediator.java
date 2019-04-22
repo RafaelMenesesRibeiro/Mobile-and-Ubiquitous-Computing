@@ -22,12 +22,15 @@ import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationService;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +38,8 @@ import java.util.List;
 
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
+import cmov1819.p2photo.MainMenuActivity;
+import cmov1819.p2photo.NewAlbumFragment;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import okhttp3.MediaType;
 
@@ -83,6 +88,63 @@ public class GoogleDriveMediator {
         if (instance == null)
             instance = new GoogleDriveMediator(accessToken);
         return instance;
+    }
+
+    public void retrieveCatalogSlice(final Context context,
+                                     final String googleDriveCatalogId,
+                                     final AuthState authState) {
+
+        authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
+            @Override
+            public void execute(String accessToken, String idToken, final AuthorizationException error) {
+                new AsyncTask<String, Void, JSONObject>() {
+                    @Override
+                    protected JSONObject doInBackground(String... tokens) {
+                        try {
+                            if (error != null) {
+                                suggestReauthentication(context, error.getMessage());
+                                return null;
+                            }
+
+                            credential.setAccessToken(tokens[0]);
+                            // Retrieve the metadata as a File object.
+                            String readContents = readFileContents(googleDriveCatalogId);
+
+                            if (readContents.equals("")) {
+                                setWarning(context, "catalog.json file not found or malformed");
+                                return null;
+                            }
+
+                            return new JSONObject(readContents);
+
+                        } catch (IOException | JSONException exc) {
+                            setError(context, exc.getMessage());
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected void onPostExecute(JSONObject jsonObject) {
+                        ArrayList<String> slicePhotosList = new ArrayList<>();
+
+                        try {
+                            JSONArray jsonArray = jsonObject.getJSONArray("photos");
+                            if (jsonArray != null) {
+                                int photoCount = jsonArray.length();
+                                for (int photo=0; photo < photoCount; photo++){
+                                    slicePhotosList.add(jsonArray.getString(photo));
+                                }
+                            }
+                        } catch (JSONException jsone) {
+                            setError(context, "Could not generate ArrayList<Strings> slicePhotosList.");
+                        }
+
+                        // TODO Pass this ArrayList<String> to some place that can iterate urls and download images
+                    }
+
+                }.execute(accessToken);
+            }
+        });
     }
 
     public void newCatalog(final Context context,
@@ -137,7 +199,7 @@ public class GoogleDriveMediator {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
-                            // TODO Rafael: Call WebServer Endpoint that maps createTextFile.getId() with p2photoCatalogId
+                            NewAlbumFragment.googleDriveSliceID = file.getId();
                         }
                     }
                 }.execute(accessToken);
@@ -260,9 +322,17 @@ public class GoogleDriveMediator {
         return googleFile;
     }
 
-    @Deprecated
-    private File createImgFile(String parentId, String fileName, String mimeType, String filePath) throws IOException {
-        return createImgFile(parentId, fileName, mimeType, new java.io.File(filePath));
+    private String readFileContents(String googleDriveCatalogId) throws IOException {
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading file contents...");
+        // Stream the file contents to a String.
+        InputStream inputStream = driveService.files().get(googleDriveCatalogId).executeMediaAsInputStream();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        StringBuilder stringBuilder = new StringBuilder();
+        while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line);
+        }
+        return stringBuilder.toString();
     }
 
     /**********************************************************
