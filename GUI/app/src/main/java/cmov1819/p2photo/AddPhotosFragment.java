@@ -149,7 +149,8 @@ public class AddPhotosFragment extends Fragment {
         */
         googleDriveMediator.newPhoto(
                 getContext(),
-                null,
+                "1Uy1i200TF8sPiccjnhgjDCD3RfpEpHZB",
+                "1NQeZnrE9vLldHvOwh3PEomLE5CozdHmR",
                 androidFilePath.getName(),
                 GoogleDriveMediator.TYPE_PNG,
                 androidFilePath,

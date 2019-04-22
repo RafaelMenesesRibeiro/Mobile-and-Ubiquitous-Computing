@@ -17,6 +17,9 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.Permission;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -25,6 +28,7 @@ import net.openid.appauth.AuthorizationService;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONStringer;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -173,6 +177,8 @@ public class GoogleDriveMediator {
                                     return null;
                                 }
 
+                                Log.i(GOOGLE_DRIVE_TAG, ">>> Creating folder... ID = " + catalogFolderFile.getId());
+
                                 String catalogFolderId = catalogFolderFile.getId();
                                 String catalogJsonContent = newCatalogJsonFile(title, p2photoId, catalogFolderId);
                                 File catalogJsonFile = createTextFile(catalogFolderId,"catalog.json", catalogJsonContent);
@@ -180,6 +186,8 @@ public class GoogleDriveMediator {
                                 if (catalogJsonFile == null) {
                                     setWarning(context,"Null catalog.json file received from Google REST API.");
                                 }
+
+                                Log.i(GOOGLE_DRIVE_TAG, ">>> Creating catalog... ID = " + catalogJsonFile.getId());
 
                                 Permission userPermission = new Permission().setType("anyone").setRole("reader");
                                 driveService.permissions().create(catalogJsonFile.getId(), userPermission).setFields("id").execute();
@@ -209,6 +217,7 @@ public class GoogleDriveMediator {
 
     public void newPhoto(final Context context,
                          final String googleDriveCatalogId,
+                         final String googleDriveFolderId,
                          final String photoName,
                          final String mimeType,
                          final java.io.File androidFilePath,
@@ -229,11 +238,30 @@ public class GoogleDriveMediator {
                                 credential.setAccessToken(tokens[0]);
 
                                 File googlePhotoFile = createImgFile(
-                                        googleDriveCatalogId, photoName, mimeType, androidFilePath
+                                        googleDriveFolderId, photoName, mimeType, androidFilePath
                                 );
 
                                 if (googlePhotoFile == null) {
                                     setWarning(context,"Null response received from Google REST API.");
+                                } else {
+                                    try {
+                                        JSONObject catalog = new JSONObject(readFileContents(googleDriveCatalogId));
+                                        JSONArray photos = catalog.getJSONArray("photos");
+                                        photos.put(googlePhotoFile.getId());
+                                        catalog.put("photos", photos);
+
+                                        InputStream targetStream = new ByteArrayInputStream(catalog.toString(4).getBytes(Charset.forName("UTF-8")));
+                                        AbstractInputStreamContent contentStream = new InputStreamContent(TYPE_JSON, targetStream);
+
+                                        File metadata = new File()
+                                                .setName("catalog.json")
+                                                .setMimeType(TYPE_TXT);
+
+                                        driveService.files().update(googleDriveCatalogId, metadata, contentStream).execute();
+                                    } catch (JSONException | IOException exc) {
+                                        setError(context, exc.getMessage());
+                                        return null;
+                                    }
                                 }
 
                                 return googlePhotoFile;
@@ -352,7 +380,7 @@ public class GoogleDriveMediator {
         catalogJson.put("title", title);
         catalogJson.put("p2photoId", p2photoId);
         catalogJson.put("googleDriveId", catalogFolderId);
-        catalogJson.put("photos", new ArrayList<String>());
+        catalogJson.put("photos", new JSONArray());
         return catalogJson.toString(4);
     }
 
