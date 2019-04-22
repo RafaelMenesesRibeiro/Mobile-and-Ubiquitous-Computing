@@ -70,14 +70,14 @@ public class ViewAlbumFragment extends Fragment {
         addUserButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addUserClicked(view);
+                addUserClicked();
             }
         });
         Button addPhotoButton = view.findViewById(R.id.addPhotoButton);
         addPhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addPhotoClicked(view);
+                addPhotoClicked();
             }
         });
 
@@ -164,7 +164,7 @@ public class ViewAlbumFragment extends Fragment {
         });
     }
 
-    private void addUserClicked(View view) {
+    private void addUserClicked() {
         Fragment newAlbumMemberFragment = new NewAlbumMemberFragment();
         Bundle newAlbumMemberData = new Bundle();
         newAlbumMemberData.putString(NewAlbumMemberFragment.ALBUM_ID_EXTRA, albumID);
@@ -179,7 +179,7 @@ public class ViewAlbumFragment extends Fragment {
         }
     }
 
-    private void addPhotoClicked(View view) {
+    private void addPhotoClicked() {
         Fragment addPhotoFragment = new AddPhotosFragment();
         Bundle addPhotoData = new Bundle();
         addPhotoData.putString(AddPhotosFragment.ALBUM_ID_EXTRA, albumID);
