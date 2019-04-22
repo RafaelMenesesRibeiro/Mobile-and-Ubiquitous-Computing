@@ -17,19 +17,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
-import cmov1819.p2photo.helpers.managers.QueryManager;
-import cmov1819.p2photo.helpers.managers.SessionManager;
 
 public class NewAlbumFragment extends Fragment {
     private Activity activity;
