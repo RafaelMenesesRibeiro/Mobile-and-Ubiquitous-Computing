@@ -66,7 +66,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         // TODO KILL THIS PROP CODE THAT ONLY SERVES TO TEST API CALLS
         this.authStateManager = AuthStateManager.getInstance(this);
         this.driveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
-        driveMediator.newCatalog(this, "thooooor", authStateManager.getAuthState());
+        driveMediator.newCatalog(this, "thooooor", "somerandomIdfromWebserver", authStateManager.getAuthState());
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
