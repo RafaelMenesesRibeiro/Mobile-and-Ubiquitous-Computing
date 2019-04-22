@@ -142,6 +142,7 @@ public class GoogleDriveMediator {
                         } catch (IOException | JSONException exc) {
                             setError(context, exc.getMessage());
                         }
+                        
                         Bitmap[] displayablePhotosArray =
                                 displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
                     }
