@@ -1,6 +1,8 @@
 package cmov1819.p2photo;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -20,7 +22,15 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -29,6 +39,7 @@ public class AddPhotosFragment extends Fragment {
     private Activity activity;
     private View view;
     private ArrayList<String> albumIDs;
+    private File selectedImage;
 
     @Nullable
     @Override
@@ -86,15 +97,35 @@ public class AddPhotosFragment extends Fragment {
                 Bitmap bitmap = BitmapFactory.decodeStream(activity.getContentResolver().openInputStream(targetUri));
                 imageView.setImageBitmap(bitmap);
 
+                try {
+                    save(bitmap);
+                    Bitmap bitmap2 = BitmapFactory.decodeFile(selectedImage.getAbsolutePath());
+                    imageView.setImageBitmap(bitmap2);
+                }
+                catch (IOException ioex) {
+                    Log.i("ERROR", "Add Photo: Could not upload selected image file " + targetUri);
+                    return;
+                }
+
                 Button doneButton = view.findViewById(R.id.done);
                 MainMenuActivity.activateButton(doneButton);
             }
             catch (FileNotFoundException | NullPointerException ex) {
                 imageView.setImageResource(R.drawable.img_not_available);
-                Log.i("ERROR", "AddPhotos: Could not load selected image file " + targetUri);
+                Log.i("ERROR", "Add Photo: Could not load selected image file " + targetUri);
+                ex.printStackTrace();
             }
         }
     }
+
+    private void save(Bitmap bitmap) throws IOException {
+        ContextWrapper cw = new ContextWrapper(getContext());
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        File imageFile = new File(directory,"image.png");
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, new FileOutputStream(imageFile));
+        selectedImage = imageFile;
+    }
+
 
     public void addPhotosClicked(View view) {
         Spinner dropdown = view.findViewById(R.id.membershipDropdownMenu);
