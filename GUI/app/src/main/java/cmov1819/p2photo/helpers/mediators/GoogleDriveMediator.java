@@ -87,39 +87,33 @@ public class GoogleDriveMediator {
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
-            new AsyncTask<String, Void, File>() {
-                @Override
-                protected File doInBackground(String... tokens) {
-                    try {
-                        if (error != null) {
-                            suggestReauthentication(context, error.getMessage());
-                        }
-                        else {
-                            credential.setAccessToken(tokens[0]);
+                new AsyncTask<String, Void, File>() {
+                    @Override
+                    protected File doInBackground(String... tokens) {
+                        try {
+                            if (error != null) {
+                                suggestReauthentication(context, error.getMessage());
+                                return null;
+                            }
+                            else {
+                                credential.setAccessToken(tokens[0]);
+                                File catalogFolderFile = createFolder(title, tokens[0]);
 
-                            File catalogFolderFile = createFolder(title, tokens[0]);
-
-                            if (catalogFolderFile == null) {
-                                setWarning(context,"Null response received from Google REST API.");
-                            } else {
+                                if (catalogFolderFile == null) {
+                                    setWarning(context,"Null response received from Google REST API.");
+                                    return null;
+                                }
                                 Log.i(GOOGLE_DRIVE_TAG, "Created folder with success");
                                 String catalogFolderId = catalogFolderFile.getId();
-                                JSONObject catalogJson = new JSONObject();
-                                catalogJson.put("title", title);
-                                catalogJson.put("p2photoId", "SOMETHING IDK WHAT FOR");
-                                catalogJson.put("googleDriveId", catalogFolderId);
-                                catalogJson.put("photos", new ArrayList<String>());
-                                String catalogJsonContent = catalogJson.toString(4);
-
+                                String catalogJsonContent = newCatalogJsonFile(title, "prop", catalogFolderId);
                                 return createTextFile(catalogFolderId,"catalog.json", catalogJsonContent);
                             }
+                        } catch (JSONException | IOException exc) {
+                            setError(context, exc.getMessage());
+                            return null;
                         }
-                    } catch (JSONException | IOException exc) {
-                        setError(context, exc.getMessage());
                     }
-                    return null;
-                }
-            }.execute(accessToken);
+                }.execute(accessToken);
             }
         });
     }
@@ -129,7 +123,7 @@ public class GoogleDriveMediator {
      **********************************************************/
 
     private File createFolder(String parentId,
-                                String folderName) throws IOException {
+                              String folderName) throws IOException {
 
         Log.i(GOOGLE_DRIVE_TAG, ">>> Creating folder...");
 
@@ -147,8 +141,8 @@ public class GoogleDriveMediator {
     }
 
     private File createTextFile(String parentId,
-                                  String fileName,
-                                  String fileContent) throws IOException {
+                                String fileName,
+                                String fileContent) throws IOException {
 
         Log.i(GOOGLE_DRIVE_TAG, ">>> Creating text file...");
 
@@ -205,6 +199,15 @@ public class GoogleDriveMediator {
         }
     }
 
+    private String newCatalogJsonFile(String title, String p2photoId, String catalogFolderId) throws JSONException {
+        JSONObject catalogJson = new JSONObject();
+        catalogJson.put("title", title);
+        catalogJson.put("p2photoId", p2photoId);
+        catalogJson.put("googleDriveId", catalogFolderId);
+        catalogJson.put("photos", new ArrayList<String>());
+        return catalogJson.toString(4);
+    }
+
     private void setError(Context context, String message) {
         Log.e(GOOGLE_DRIVE_TAG, message);
     }
@@ -220,13 +223,6 @@ public class GoogleDriveMediator {
     private void suggestReauthentication(Context context, String message) {
         Log.w(GOOGLE_DRIVE_TAG, message);
         context.startActivity(new Intent(context, LoginActivity.class));
-    }
-
-    private static JSONObject newDirectory(String folderName) throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("title", folderName);
-        jsonObject.put("mimeType", TYPE_GOOGLE_DRIVE_FOLDER);
-        return jsonObject;
     }
 
 }
