@@ -64,7 +64,6 @@ public class GoogleDriveMediator {
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
     public static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
-
     private static GoogleDriveMediator instance;
     private static Credential credential;
     private static Drive driveService;
@@ -173,7 +172,6 @@ public class GoogleDriveMediator {
     private File createImgFile(String parentId,
                                String filePath,
                                String fileName,
-                               String fileContent,
                                String mimeType) throws IOException {
 
         Log.i(GOOGLE_DRIVE_TAG, ">>> Creating image file with content type: " + mimeType + "...");
