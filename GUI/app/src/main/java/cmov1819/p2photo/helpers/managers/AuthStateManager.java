@@ -9,6 +9,8 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.common.collect.ImmutableSet;
+
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationRequest;
@@ -184,14 +186,12 @@ public class AuthStateManager {
                 ResponseTypeValues.CODE,
                 this.REDIRECT_URI
         );
-        builder.setScopes(new ArrayList<>(Arrays.asList(
+        builder.setScopes(ImmutableSet.of(
                 "email", "profile", "openid",
-                "https://www.googleapis.com/auth/drive.photos.readonly",
-                "https://www.googleapis.com/auth/drive.metadata.readonly",
-                "https://www.googleapis.com/auth/drive.readonly",
                 "https://www.googleapis.com/auth/drive.file",
                 "https://www.googleapis.com/auth/drive.appdata"
-        )));
+                )
+        );
         return builder.build();
     }
 
