@@ -23,17 +23,25 @@ import cmov1819.p2photo.dataobjects.PostRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
+import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 public class NewAlbumFragment extends Fragment {
+    public static String googleDriveSliceID;
+    private AuthStateManager authStateManager;
+    private GoogleDriveMediator googleDriveMediator;
     private Activity activity;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
+        authStateManager = AuthStateManager.getInstance(this.getContext());
+        googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
         final View view = inflater.inflate(R.layout.fragment_new_album, container, false);
         populate(view);
         return view;
@@ -81,8 +89,16 @@ public class NewAlbumFragment extends Fragment {
         try {
             JSONObject requestBody = new JSONObject();
             requestBody.put("catalogTitle", albumName);
-            requestBody.put("sliceUrl", "http://www.acloudprovider.com/a_album_slice"); // TODO - Implement adding slice to Cloud Provider. //
-            requestBody.put("googleDriveSliceID", " ");
+            // TODO - Implement adding slice to Cloud Provider. //
+            requestBody.put("sliceUrl", "http://www.acloudprovider.com/a_album_slice");
+            googleDriveMediator.newCatalog(
+                    getActivity(),
+                    albumName,
+                    "TODO",
+                    authStateManager.getAuthState()
+            );
+            Thread.sleep(1000);
+            requestBody.put("googleDriveFileID", NewAlbumFragment.googleDriveSliceID);
             requestBody.put("calleeUsername", SessionManager.getUsername(activity));
             RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_ALBUM, url, requestBody);
 
@@ -94,7 +110,8 @@ public class NewAlbumFragment extends Fragment {
                 return (String) payload.getResult();
             }
             else {
-                Log.i("STATUS", "The new album operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage());
+                ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
+                Log.i("STATUS", "The new album operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason());
                 throw new FailedOperationException();
             }
         }
