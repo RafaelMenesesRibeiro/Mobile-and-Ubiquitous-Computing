@@ -27,8 +27,8 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_ID_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_TITLE_EXTRA;
 
 public class NewAlbumFragment extends Fragment {
     private Activity activity;
@@ -38,17 +38,20 @@ public class NewAlbumFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_new_album, container, false);
-        final Button doneButton = view.findViewById(R.id.done);
-        MainMenuActivity.inactiveButton(doneButton);
+        populate(view);
+        return view;
+    }
+
+    private void populate(final View view) {
+        Button doneButton = view.findViewById(R.id.done);
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 newAlbumClicked(view);
             }
         });
-        final EditText editText = view.findViewById(R.id.nameInputBox);
-        MainMenuActivity.addTextWatcher(editText, doneButton);
-        return view;
+        EditText editText = view.findViewById(R.id.nameInputBox);
+        MainMenuActivity.bingEditTextWithButton(editText, doneButton);
     }
 
     public void newAlbumClicked(View view) {
@@ -62,23 +65,16 @@ public class NewAlbumFragment extends Fragment {
         }
 
         try {
-            String catalogID = newAlbum(albumTitle);
-
-            Fragment viewAlbumFragment = new ViewAlbumFragment();
-            Bundle data = new Bundle();
-            data.putString(CATALOG_ID_EXTRA, catalogID);
-            data.putString(TITLE_EXTRA, albumTitle);
-            viewAlbumFragment.setArguments(data);
-
+            String albumID = newAlbum(albumTitle);
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.changeFragment(viewAlbumFragment, R.id.nav_view_album);
+            mainMenuActivity.goToAlbum(albumID, albumTitle);
         }
         catch (FailedOperationException foex) {
             Toast.makeText(this.getContext(), "The create album operation failed. Try again later", Toast.LENGTH_LONG).show();
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(getContext(), "Could not present new album", Toast.LENGTH_LONG).show();
-        }
+        Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
+    }
     }
 
     private String newAlbum(String albumName) {
@@ -90,8 +86,7 @@ public class NewAlbumFragment extends Fragment {
             requestBody.put("catalogTitle", albumName);
             requestBody.put("sliceUrl", "http://www.acloudprovider.com/a_album_slice"); // TODO - Implement adding slice to Cloud Provider. //
             requestBody.put("calleeUsername", SessionManager.getUsername(activity));
-            RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_ALBUM
-                    , url, requestBody);
+            RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_ALBUM, url, requestBody);
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();

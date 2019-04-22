@@ -38,16 +38,15 @@ public class SearchUserFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_search_user, container, false);
-        final Button doneButton = view.findViewById(R.id.done);
-        MainMenuActivity.inactiveButton(doneButton);
+        Button doneButton = view.findViewById(R.id.done);
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 searchUserClicked(view);
             }
         });
-        final EditText editText = view.findViewById(R.id.usernameInputBox);
-        MainMenuActivity.addTextWatcher(editText, doneButton);
+        EditText editText = view.findViewById(R.id.usernameInputBox);
+        MainMenuActivity.bingEditTextWithButton(editText, doneButton);
         return view;
     }
 

@@ -38,8 +38,8 @@ import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class ViewAlbumFragment extends Fragment {
-    public static final String CATALOG_ID_EXTRA = "catalogID";
-    public static final String TITLE_EXTRA = "title";
+    public static final String ALBUM_ID_EXTRA = "catalogID";
+    public static final String ALBUM_TITLE_EXTRA = "title";
     public static final String NO_ALBUM_SELECTED = "NO_ALBUM_SELECTED_ERROR";
 
     private Activity activity;
@@ -93,7 +93,7 @@ public class ViewAlbumFragment extends Fragment {
                 int index = dropdownMenu.getSelectedItemPosition();
                 albumID = albumIDs.get(index);
                 String catalogName = albumNames.get(index);
-                populateGrid(view, catalogName, new ArrayList<String>());
+                populateGrid(view, catalogName, getSlicesURLList(albumID));
             }
         });
         return view;
@@ -105,7 +105,7 @@ public class ViewAlbumFragment extends Fragment {
             return false;
         }
 
-        albumID = getArguments().getString(CATALOG_ID_EXTRA);
+        albumID = getArguments().getString(ALBUM_ID_EXTRA);
         if (albumID == null) {
             Log.i("ERROR", "VIEW ALBUM: catalogID is null.");
             return false;
@@ -131,7 +131,7 @@ public class ViewAlbumFragment extends Fragment {
             return true;
         }
 
-        String catalogTitle = getArguments().getString(TITLE_EXTRA);
+        String catalogTitle = getArguments().getString(ALBUM_TITLE_EXTRA);
         if (catalogTitle == null) {
             Log.i("ERROR", "VIEW ALBUM: catalogTitle is null.");
             return false;

@@ -28,9 +28,9 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 
-import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_ID_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.NO_ALBUM_SELECTED;
-import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_TITLE_EXTRA;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static final String START_SCREEN = "initialScreen";
@@ -68,18 +68,6 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
-            Intent intent = getIntent();
-            if (intent.getStringExtra(START_SCREEN).equals(ViewAlbumFragment.class.getName())) {
-                String catalogID = intent.getStringExtra(CATALOG_ID_EXTRA);
-                String catalogTitle = intent.getStringExtra(TITLE_EXTRA);
-                Fragment viewAlbumFragment = new ViewAlbumFragment();
-                Bundle data = new Bundle();
-                data.putString(CATALOG_ID_EXTRA, catalogID);
-                data.putString(TITLE_EXTRA, catalogTitle);
-                viewAlbumFragment.setArguments(data);
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
-                return;
-            }
             goHome();
         }
     }
@@ -100,12 +88,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewAlbumMemberFragment()).commit();
                 break;
             case R.id.nav_view_album:
-                Fragment viewAlbumFragment = new ViewAlbumFragment();
-                Bundle viewAlbumData = new Bundle();
-                viewAlbumData.putString(CATALOG_ID_EXTRA, NO_ALBUM_SELECTED);
-                viewAlbumData.putString(TITLE_EXTRA, NO_ALBUM_SELECTED);
-                viewAlbumFragment.setArguments(viewAlbumData);
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
+                goToAlbum(NO_ALBUM_SELECTED, NO_ALBUM_SELECTED);
                 break;
             case R.id.nav_view_user_albums:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewUserAlbumsFragment()).commit();
@@ -166,6 +149,15 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
     }
 
+    public void goToAlbum(String albumID, String albumTitle) {
+        Fragment viewAlbumFragment = new ViewAlbumFragment();
+        Bundle data = new Bundle();
+        data.putString(ALBUM_ID_EXTRA, albumID);
+        data.putString(ALBUM_TITLE_EXTRA, albumTitle);
+        viewAlbumFragment.setArguments(data);
+        changeFragment(viewAlbumFragment, R.id.nav_view_album);
+    }
+
     public void goHome() {
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
         navigationView.setCheckedItem(R.id.nav_search_user);
@@ -183,7 +175,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         button.setTextColor(MainMenuActivity.resources.getColor(R.color.almostBlack));
     }
 
-    public static void addTextWatcher(final EditText editText, final Button button) {
+    public static void bingEditTextWithButton(final EditText editText, final Button button) {
+        inactiveButton(button);
         editText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing */ }

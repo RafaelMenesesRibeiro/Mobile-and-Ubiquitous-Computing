@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -26,8 +27,8 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
-import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_ID_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_TITLE_EXTRA;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
@@ -52,7 +53,14 @@ public class ViewUserAlbumsFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String catalogID = catalogIdList.get(position);
                 String catalogTitle = catalogTitleList.get(position);
-                goToShowAlbumActivity(catalogID, catalogTitle);
+
+                try {
+                    MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+                    mainMenuActivity.goToAlbum(catalogID, catalogTitle);
+                }
+                catch (NullPointerException | ClassCastException ex) {
+                    Toast.makeText(activity, "Could not present album", Toast.LENGTH_LONG).show();
+                }
             }
         });
         return view;
@@ -64,14 +72,6 @@ public class ViewUserAlbumsFragment extends Fragment {
             catalogIdList.add(entry.getKey());
             catalogTitleList.add(entry.getValue());
         }
-    }
-
-    private void goToShowAlbumActivity(String catalogID, String catalogTitle) {
-        Intent intent = new Intent(getContext(), MainMenuActivity.class);
-        intent.putExtra(START_SCREEN, ViewAlbumFragment.class.getName());
-        intent.putExtra(CATALOG_ID_EXTRA, catalogID);
-        intent.putExtra(TITLE_EXTRA, catalogTitle);
-        startActivity(intent);
     }
 
     public static Map<String, String> getUserMemberships(Activity activity) {

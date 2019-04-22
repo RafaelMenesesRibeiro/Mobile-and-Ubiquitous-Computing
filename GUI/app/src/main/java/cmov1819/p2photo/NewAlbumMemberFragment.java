@@ -9,7 +9,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -20,7 +19,6 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -33,9 +31,6 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
-import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
-
 public class NewAlbumMemberFragment extends Fragment {
     public static final String ALBUM_ID_EXTRA = "albumID";
     private ArrayList<String> albumIDs;
@@ -46,31 +41,23 @@ public class NewAlbumMemberFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_new_album_member, container, false);
-        final Button doneButton = view.findViewById(R.id.done);
+        populate(view);
+        return view;
+    }
+
+    private void populate(final View view) {
+        Button doneButton = view.findViewById(R.id.done);
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 addUserClicked(view);
             }
         });
-        MainMenuActivity.inactiveButton(doneButton);
-        final EditText editText = view.findViewById(R.id.toAddUsernameInputBox);
-        MainMenuActivity.addTextWatcher(editText, doneButton);
-        populate(view);
-        return view;
-    }
+        EditText editText = view.findViewById(R.id.toAddUsernameInputBox);
+        MainMenuActivity.bingEditTextWithButton(editText, doneButton);
 
-    private void populate(View view) {
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
-        ArrayList<String> albumNames = new ArrayList<>();
-        albumIDs = new ArrayList<>();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            albumIDs.add(entry.getKey());
-            albumNames.add(entry.getValue());
-        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, albumNames);
-        membershipDropdown.setAdapter(adapter);
+        albumIDs = AddPhotosFragment.setDropdownAdapterAngGetAlbumIDs(activity, membershipDropdown);
 
         String albumID;
         if (getArguments() != null && (albumID = getArguments().getString(ALBUM_ID_EXTRA)) != null) {
@@ -95,15 +82,13 @@ public class NewAlbumMemberFragment extends Fragment {
 
         try {
             addMember(albumID, username);
-
-            Fragment viewAlbumFragment = new ViewAlbumFragment();
-            Bundle data = new Bundle();
-            data.putString(CATALOG_ID_EXTRA, albumID);
-            data.putString(TITLE_EXTRA, albumName);
-            viewAlbumFragment.setArguments(data);
-
-            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.changeFragment(viewAlbumFragment, R.id.nav_view_album);
+            try {
+                MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+                mainMenuActivity.goToAlbum(albumID, albumName);
+            }
+            catch (NullPointerException | ClassCastException ex) {
+                Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
+            }
         }
         catch (FailedOperationException foex) {
             Toast.makeText(activity, "The add user to album operation failed. Try again later", Toast.LENGTH_LONG).show();
@@ -113,9 +98,6 @@ public class NewAlbumMemberFragment extends Fragment {
         }
         catch (UsernameException uex) {
             Toast.makeText(activity, "The add user to album operation failed. User does not exist", Toast.LENGTH_LONG).show();
-        }
-        catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
         }
     }
 

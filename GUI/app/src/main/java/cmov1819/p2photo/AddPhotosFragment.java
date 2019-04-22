@@ -24,9 +24,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Map;
 
-import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
-
 public class AddPhotosFragment extends Fragment {
     public static final String ALBUM_ID_EXTRA = "albumID";
     private Activity activity;
@@ -37,43 +34,32 @@ public class AddPhotosFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         this.activity = getActivity();
-        final View inflaterView = inflater.inflate(R.layout.fragment_add_photos, container, false);
-        view = inflaterView;
+        final View inflaterView = view = inflater.inflate(R.layout.fragment_add_photos, container, false);
+        populate(inflaterView);
+        return inflaterView;
+    }
 
-        Button chooseButton = inflaterView.findViewById(R.id.choosePhoto);
+    private void populate(final View view) {
+        Button chooseButton = view.findViewById(R.id.choosePhoto);
         chooseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 choosePhotoClicked();
             }
         });
-        Button done = inflaterView.findViewById(R.id.done);
-        done.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addPhotosClicked(inflaterView);
-            }
-        });
-        populate(inflaterView);
-        return inflaterView;
-    }
-
-    private void populate(View view) {
-        ImageView imageView = view.findViewById(R.id.imageView);
-        imageView.setImageResource(R.drawable.img_not_available);
         Button doneButton = view.findViewById(R.id.done);
         MainMenuActivity.inactiveButton(doneButton);
+        doneButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addPhotosClicked(view);
+            }
+        });
+        ImageView imageView = view.findViewById(R.id.imageView);
+        imageView.setImageResource(R.drawable.img_not_available);
 
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
-        ArrayList<String> albumNames = new ArrayList<>();
-        albumIDs = new ArrayList<>();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            albumIDs.add(entry.getKey());
-            albumNames.add(entry.getValue());
-        }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, albumNames);
-        membershipDropdown.setAdapter(adapter);
+        albumIDs = setDropdownAdapterAngGetAlbumIDs(activity, membershipDropdown);
 
         String albumID;
         if (getArguments() != null && (albumID = getArguments().getString(ALBUM_ID_EXTRA)) != null) {
@@ -128,18 +114,25 @@ public class AddPhotosFragment extends Fragment {
             return;
         }
 
-        Fragment viewAlbumFragment = new ViewAlbumFragment();
-        Bundle data = new Bundle();
-        data.putString(CATALOG_ID_EXTRA, albumID);
-        data.putString(TITLE_EXTRA, albumName);
-        viewAlbumFragment.setArguments(data);
-
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.changeFragment(viewAlbumFragment, R.id.nav_view_album);
+            mainMenuActivity.goToAlbum(albumID, albumName);
         }
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public static ArrayList<String> setDropdownAdapterAngGetAlbumIDs(Activity activity, Spinner dropdownMenu) {
+        Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
+        ArrayList<String> albumNames = new ArrayList<>();
+        ArrayList<String> albumIDs = new ArrayList<>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            albumIDs.add(entry.getKey());
+            albumNames.add(entry.getValue());
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, albumNames);
+        dropdownMenu.setAdapter(adapter);
+        return albumIDs;
     }
 }
