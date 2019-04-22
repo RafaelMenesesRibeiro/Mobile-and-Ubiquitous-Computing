@@ -164,14 +164,9 @@ public class ViewAlbumFragment extends Fragment {
     }
 
     private void addUserClicked() {
-        Fragment newAlbumMemberFragment = new NewAlbumMemberFragment();
-        Bundle newAlbumMemberData = new Bundle();
-        newAlbumMemberData.putString(NewAlbumMemberFragment.ALBUM_ID_EXTRA, albumID);
-        newAlbumMemberFragment.setArguments(newAlbumMemberData);
-
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.changeFragment(newAlbumMemberFragment, R.id.nav_new_album_member);
+            mainMenuActivity.goToAddUser(albumID);
         }
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(getContext(), "Could not present add new member screen", Toast.LENGTH_LONG).show();
@@ -179,14 +174,9 @@ public class ViewAlbumFragment extends Fragment {
     }
 
     private void addPhotoClicked() {
-        Fragment addPhotoFragment = new AddPhotosFragment();
-        Bundle addPhotoData = new Bundle();
-        addPhotoData.putString(AddPhotosFragment.ALBUM_ID_EXTRA, albumID);
-        addPhotoFragment.setArguments(addPhotoData);
-
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.changeFragment(addPhotoFragment, R.id.nav_add_photos);
+            mainMenuActivity.goToAddPhoto(albumID);
         }
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(getContext(), "Could not present add new photo screen", Toast.LENGTH_LONG).show();

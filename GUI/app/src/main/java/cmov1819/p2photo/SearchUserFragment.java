@@ -58,15 +58,8 @@ public class SearchUserFragment extends Fragment {
         }
         try {
             Map<String, ArrayList> usernames = searchUser(username);
-            ArrayList<String> usersList = new ArrayList<>(usernames.keySet());
-
-            Fragment listUsersFragment = new ListUsersFragment();
-            Bundle data = new Bundle();
-            data.putStringArrayList(USERS_EXTRA, usersList);
-            listUsersFragment.setArguments(data);
-
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.changeFragment(listUsersFragment, R.id.nav_search_user);
+            mainMenuActivity.goToListUsers(new ArrayList<>(usernames.keySet()));
         }
         catch (NoResultsException nrex) {
             Toast.makeText(activity, "No results were found", Toast.LENGTH_LONG).show();

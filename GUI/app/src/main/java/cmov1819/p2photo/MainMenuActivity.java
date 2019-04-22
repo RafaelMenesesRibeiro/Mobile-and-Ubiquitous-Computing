@@ -18,6 +18,8 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
@@ -28,6 +30,7 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 
+import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_ID_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.NO_ALBUM_SELECTED;
 import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_TITLE_EXTRA;
@@ -119,6 +122,10 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         }
     }
 
+    /**********************************************************
+     * LOGOUT HELPER
+     ***********************************************************/
+
     public void logout() throws FailedOperationException {
         String username = SessionManager.getUsername(this);
         Log.i("MSG", "Logout: " + username);
@@ -144,9 +151,37 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         }
     }
 
-    public void changeFragment(Fragment fragment, int menuItemID) {
+    /**********************************************************
+     * SCREEN CHANGE HELPERS
+     ***********************************************************/
+
+    private void changeFragment(Fragment fragment, int menuItemID) {
         navigationView.setCheckedItem(menuItemID);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    }
+
+    public void goToListUsers(ArrayList<String> usersList) {
+        Fragment listUsersFragment = new ListUsersFragment();
+        Bundle data = new Bundle();
+        data.putStringArrayList(USERS_EXTRA, usersList);
+        listUsersFragment.setArguments(data);
+        changeFragment(listUsersFragment, R.id.nav_search_user);
+    }
+
+    public void goToAddPhoto(String albumID) {
+        Fragment addPhotoFragment = new AddPhotosFragment();
+        Bundle addPhotoData = new Bundle();
+        addPhotoData.putString(AddPhotosFragment.ALBUM_ID_EXTRA, albumID);
+        addPhotoFragment.setArguments(addPhotoData);
+        changeFragment(addPhotoFragment, R.id.nav_add_photos);
+    }
+
+    public void goToAddUser(String albumID) {
+        Fragment newAlbumMemberFragment = new NewAlbumMemberFragment();
+        Bundle newAlbumMemberData = new Bundle();
+        newAlbumMemberData.putString(NewAlbumMemberFragment.ALBUM_ID_EXTRA, albumID);
+        newAlbumMemberFragment.setArguments(newAlbumMemberData);
+        changeFragment(newAlbumMemberFragment, R.id.nav_new_album_member);
     }
 
     public void goToAlbum(String albumID, String albumTitle) {
@@ -162,6 +197,10 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
         navigationView.setCheckedItem(R.id.nav_search_user);
     }
+
+    /**********************************************************
+     * BUTTON ACTIVATION / INACTIVATION HELPERS
+     ***********************************************************/
 
     public static void activateButton(Button button) {
         button.setEnabled(true);
