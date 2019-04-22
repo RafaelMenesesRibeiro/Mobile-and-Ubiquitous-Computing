@@ -5,8 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,22 +55,7 @@ public class NewAlbumMemberFragment extends Fragment {
         });
         MainMenuActivity.inactiveButton(doneButton);
         final EditText editText = view.findViewById(R.id.toAddUsernameInputBox);
-        editText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing */ }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (editText.getText().toString().isEmpty()) {
-                    MainMenuActivity.InactiveButton(doneButton);
-                    return;
-                }
-                MainMenuActivity.ActivateButton(doneButton);
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) { /* Do nothing */ }
-        });
+        MainMenuActivity.addTextWatcher(editText, doneButton);
         populate(view);
         return view;
     }

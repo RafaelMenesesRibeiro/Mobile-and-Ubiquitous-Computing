@@ -32,7 +32,6 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.MainMenuActivity.HOME_SCREEN;
 import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
