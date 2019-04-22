@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.util.IOUtils;
@@ -44,6 +46,8 @@ import java.util.List;
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
 import cmov1819.p2photo.NewAlbumFragment;
+import cmov1819.p2photo.R;
+import cmov1819.p2photo.adapters.ImageGridAdapter;
 import okhttp3.MediaType;
 
 @SuppressLint("StaticFieldLeak")
@@ -142,8 +146,15 @@ public class GoogleDriveMediator {
                         } catch (IOException | JSONException exc) {
                             setError(context, exc.getMessage());
                         }
-                        Bitmap[] displayablePhotosArray =
-                                displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
+                        Bitmap[] displayablePhotosArray = displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
+                        GridView grid = view.findViewById(R.id.albumGrid);
+                        grid.setAdapter(new ImageGridAdapter(context, displayablePhotosArray));
+                        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                Toast.makeText(context, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
                 }.execute(accessToken);
             }

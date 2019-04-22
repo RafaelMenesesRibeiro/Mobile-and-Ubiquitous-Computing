@@ -156,23 +156,10 @@ public class ViewAlbumFragment extends Fragment {
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
-        // TODO - GET CATALOG SLICE LIST FROM WEBSERVER
-        ArrayList<String> catalogSlicesList = new ArrayList<>();
-        for (String catalogSliceId : catalogSlicesList) {
-            googleDriveMediator.retrieveCatalogSlice(getContext(), view, catalogSliceId, authStateManager.getAuthState());
+        for (String[] sliceInfo : slicesURLList) {
+            googleDriveMediator.retrieveCatalogSlice(getContext(), view, sliceInfo[1], authStateManager.getAuthState());
+            return;
         }
-
-        Integer[] imageIdsArray = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img6};
-        /*
-        GridView grid = view.findViewById(R.id.albumGrid);
-        grid.setAdapter(new ImageGridAdapter(activity, imageBitmaps));
-        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(activity, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
-            }
-        });
-        */
     }
 
     private void addUserClicked() {
