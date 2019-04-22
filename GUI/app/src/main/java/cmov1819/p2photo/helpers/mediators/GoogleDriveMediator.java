@@ -197,11 +197,11 @@ public class GoogleDriveMediator {
      *  HELPERS
      **********************************************************/
 
-    private List<String> buildParentsList(String folderId) {
-        if (folderId == null) {
+    private List<String> buildParentsList(String parents) {
+        if (parents == null) {
             return Collections.singletonList("root");
         } else {
-            return Collections.singletonList(folderId);
+            return Collections.singletonList(parents);
         }
     }
 
