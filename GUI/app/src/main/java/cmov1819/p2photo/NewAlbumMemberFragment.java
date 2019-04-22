@@ -29,8 +29,8 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.NoMembershipException;
 import cmov1819.p2photo.exceptions.UsernameException;
-import cmov1819.p2photo.helpers.QueryManager;
-import cmov1819.p2photo.helpers.SessionManager;
+import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;

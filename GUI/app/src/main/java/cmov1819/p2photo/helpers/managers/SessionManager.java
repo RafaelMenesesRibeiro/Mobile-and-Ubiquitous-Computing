@@ -1,10 +1,9 @@
-package cmov1819.p2photo.helpers;
+package cmov1819.p2photo.helpers.managers;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
-
 import java.util.Set;
 
 public class SessionManager {

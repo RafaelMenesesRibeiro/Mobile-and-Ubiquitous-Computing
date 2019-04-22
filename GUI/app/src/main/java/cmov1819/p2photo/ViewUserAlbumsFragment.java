@@ -22,14 +22,17 @@ import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
-import cmov1819.p2photo.helpers.QueryManager;
+import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
 import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
-import static cmov1819.p2photo.helpers.SessionManager.getUsername;
+import static android.widget.Toast.LENGTH_SHORT;
+import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
+import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG_TITLE;
+import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class ViewUserAlbumsFragment extends Fragment {
     private Activity activity;

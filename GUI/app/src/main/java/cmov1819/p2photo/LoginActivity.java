@@ -30,13 +30,13 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.AuthStateManager;
-import cmov1819.p2photo.helpers.QueryManager;
-import cmov1819.p2photo.helpers.SessionManager;
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
-import static cmov1819.p2photo.helpers.SessionManager.updateUsername;
+import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
     private static final String LOGIN_TAG = "LOGIN";
@@ -55,7 +55,9 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
+
         this.authStateManager = AuthStateManager.getInstance(this);
+
         final Button loginButton = findViewById(R.id.LoginButton);
         final Button signUpButton = findViewById(R.id.SignUpBottom);
         final EditText usernameInput = findViewById(R.id.usernameInputBox);

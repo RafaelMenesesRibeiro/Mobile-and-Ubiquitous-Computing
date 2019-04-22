@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import net.openid.appauth.AuthState;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,8 +21,11 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.QueryManager;
-import cmov1819.p2photo.helpers.SessionManager;
+import cmov1819.p2photo.exceptions.GoogleDriveException;
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 
 import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.NO_ALBUM_SELECTED;
@@ -32,6 +36,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private GoogleDriveMediator driveMediator;
+    private AuthStateManager authStateManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +54,11 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
+
+        // TODO KILL THIS PROP CODE THAT ONLY SERVES TO TEST API CALLS
+        this.authStateManager = AuthStateManager.getInstance(this);
+        this.driveMediator = GoogleDriveMediator.getInstance();
+        driveMediator.newCatalog(this, "thooooor", authStateManager.getAuthState());
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {

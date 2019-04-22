@@ -1,4 +1,4 @@
-package cmov1819.p2photo.helpers;
+package cmov1819.p2photo.helpers.managers;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -26,8 +26,8 @@ import cmov1819.p2photo.msgtypes.BasicResponse;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static cmov1819.p2photo.helpers.SessionManager.getSessionID;
-import static cmov1819.p2photo.helpers.SessionManager.updateSessionID;
+import static cmov1819.p2photo.helpers.managers.SessionManager.getSessionID;
+import static cmov1819.p2photo.helpers.managers.SessionManager.updateSessionID;
 
 public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     private static final String COOKIES_HEADER = "Set-Cookie";
