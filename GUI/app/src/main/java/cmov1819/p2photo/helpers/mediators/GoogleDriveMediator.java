@@ -165,30 +165,6 @@ public class GoogleDriveMediator {
         return file;
     }
 
-    private JSONObject newDirectory(String folderName, String parentFolder) throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("title", folderName);
-        jsonObject.put("mimeType", TYPE_GOOGLE_DRIVE_FOLDER);
-
-        if (!parentFolder.equals("root")) {
-            jsonObject.put("parents", String.format("[{ \"id\" : \"%s\" }]", parentFolder));
-        }
-
-        return jsonObject;
-    }
-
-    private JSONObject newFile(String fileName, String parentFolder) throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("title", fileName);
-        jsonObject.put("mimeType", TYPE_TXT);
-
-        if (!parentFolder.equals("root")) {
-            jsonObject.put("parents", String.format("[{ \"id\" : \"%s\" }]", parentFolder));
-        }
-
-        return jsonObject;
-    }
-
     /**********************************************************
      *  HELPERS
      **********************************************************/
