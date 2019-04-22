@@ -13,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -26,12 +25,9 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static android.widget.Toast.LENGTH_SHORT;
 import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
 import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.SLICES_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
-import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
 import static cmov1819.p2photo.helpers.SessionManager.getUsername;
 
@@ -39,7 +35,6 @@ public class ViewUserAlbumsFragment extends Fragment {
     private Activity activity;
     private ArrayList<String> catalogIdList;
     private ArrayList<String> catalogTitleList;
-    protected static ArrayList<String> slicesURLList = new ArrayList<>();
 
     @Nullable
     @Override
@@ -57,16 +52,7 @@ public class ViewUserAlbumsFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String catalogID = catalogIdList.get(position);
                 String catalogTitle = catalogTitleList.get(position);
-                String toast = "Loading: " + catalogTitle + "...";
-                Toast.makeText(getContext(), toast, LENGTH_SHORT).show();
-                setSliceURLList(catalogIdList.get(position));
-
-                if (!ViewUserAlbumsFragment.slicesURLList.isEmpty())  {
-                    goToShowAlbumActivity(catalogID, catalogTitle);
-                }
-                else {
-                    Toast.makeText(getContext(), "Album is empty", LENGTH_SHORT).show();
-                }
+                goToShowAlbumActivity(catalogID, catalogTitle);
             }
         });
         return view;
@@ -80,31 +66,11 @@ public class ViewUserAlbumsFragment extends Fragment {
         }
     }
 
-    private void setSliceURLList(String catalogId) {
-        String url = getString(
-                R.string.view_album_endpoint) +
-                "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogId;
-
-        try {
-            RequestData requestData = new RequestData(getActivity(), GET_CATALOG, url);
-            ResponseData responseData = new QueryManager().execute(requestData).get();
-            if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
-                SuccessResponse payload = (SuccessResponse) responseData.getPayload();
-                ViewUserAlbumsFragment.slicesURLList = (ArrayList<String>) payload.getResult();
-            }
-        }
-        catch (ExecutionException | InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            Log.i("ERROR", "VIEW USER ALBUMS: " + ex.getMessage());
-        }
-    }
-
     private void goToShowAlbumActivity(String catalogID, String catalogTitle) {
         Intent intent = new Intent(getContext(), MainMenuActivity.class);
         intent.putExtra(START_SCREEN, ViewAlbumFragment.class.getName());
         intent.putExtra(CATALOG_ID_EXTRA, catalogID);
         intent.putExtra(TITLE_EXTRA, catalogTitle);
-        intent.putStringArrayListExtra(SLICES_EXTRA, slicesURLList);
         startActivity(intent);
     }
 

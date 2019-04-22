@@ -17,21 +17,30 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+
+import cmov1819.p2photo.dataobjects.RequestData;
+import cmov1819.p2photo.dataobjects.ResponseData;
+import cmov1819.p2photo.helpers.QueryManager;
+import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
+import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
+import static cmov1819.p2photo.helpers.SessionManager.getUsername;
 
 public class ViewAlbumFragment extends Fragment {
     public static final String CATALOG_ID_EXTRA = "catalogID";
     public static final String TITLE_EXTRA = "title";
-    public static final String SLICES_EXTRA = "slices";
     public static final String NO_ALBUM_SELECTED = "NO_ALBUM_SELECTED_ERROR";
 
     private Activity activity;
     private ArrayList<String> albumNames;
     private ArrayList<String> albumIDs;
-    private String catalogID;
+    private String albumID;
 
     @Nullable
     @Override
@@ -44,14 +53,14 @@ public class ViewAlbumFragment extends Fragment {
         addUserButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addUserClicked();
+                addUserClicked(view);
             }
         });
         Button addPhotoButton = view.findViewById(R.id.addPhotoButton);
         addPhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addPhotoClicked();
+                addPhotoClicked(view);
             }
         });
 
@@ -64,9 +73,10 @@ public class ViewAlbumFragment extends Fragment {
                 RelativeLayout relativeLayout = view.findViewById(R.id.albumViewContainer);
                 relativeLayout.setVisibility(View.VISIBLE);
 
+                // TODO - CHECK IF POPULATE RETURNED TRUE OR ELSE NULLPTR. //
                 Spinner dropdownMenu = view.findViewById(R.id.membershipDropdownMenu);
                 int index = dropdownMenu.getSelectedItemPosition();
-                catalogID = albumIDs.get(index);
+                albumID = albumIDs.get(index);
                 String catalogName = albumNames.get(index);
                 populateGrid(view, catalogName, new ArrayList<String>());
             }
@@ -74,56 +84,54 @@ public class ViewAlbumFragment extends Fragment {
         return view;
     }
 
-    private void populate(View view) {
+    private boolean populate(View view) {
         if (getArguments() == null) {
             Log.i("ERROR", "VIEW ALBUM: arguments passed to fragment are null");
-            return;
+            return false;
         }
 
-        catalogID = getArguments().getString(CATALOG_ID_EXTRA);
-        if (catalogID == null) {
+        albumID = getArguments().getString(CATALOG_ID_EXTRA);
+        if (albumID == null) {
             Log.i("ERROR", "VIEW ALBUM: catalogID is null.");
-            return;
+            return false;
         }
-        if (catalogID.equals(NO_ALBUM_SELECTED)) {
+
+        Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
+        albumNames = new ArrayList<>();
+        albumIDs = new ArrayList<>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            albumIDs.add(entry.getKey());
+            albumNames.add(entry.getValue());
+        }
+
+        if (albumID.equals(NO_ALBUM_SELECTED)) {
             RelativeLayout relativeLayout = view.findViewById(R.id.albumViewContainer);
             relativeLayout.setVisibility(View.INVISIBLE);
             ConstraintLayout constraintLayout = view.findViewById(R.id.dropdownContainer);
             constraintLayout.setVisibility(View.VISIBLE);
 
             Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-            Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
-            albumNames = new ArrayList<>();
-            albumIDs = new ArrayList<>();
-            for (Map.Entry<String, String> entry : map.entrySet()) {
-                albumIDs.add(entry.getKey());
-                albumNames.add(entry.getValue());
-            }
             ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, albumNames);
             membershipDropdown.setAdapter(adapter);
-            return;
+            return true;
         }
 
         String catalogTitle = getArguments().getString(TITLE_EXTRA);
-        ArrayList<String> slicesURLList = getArguments().getStringArrayList(SLICES_EXTRA);
         if (catalogTitle == null) {
             Log.i("ERROR", "VIEW ALBUM: catalogTitle is null.");
-            return;
+            return false;
         }
-        if (slicesURLList == null) {
-            Log.i("ERROR", "VIEW ALBUM: slicesURLList is null.");
-            return;
-        }
-
+        List<String> slicesURLList = getSlicesURLList(albumID);
         populateGrid(view, catalogTitle, slicesURLList);
+        return true;
     }
 
-    private void populateGrid(View view, String catalogTitle, ArrayList<String> slicesURLList) {
+    private void populateGrid(View view, String catalogTitle, List<String> slicesURLList) {
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
         if (slicesURLList.isEmpty()) {
-            Toast.makeText(getContext(), "UPS IM EMPTY", LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Album is empty.", LENGTH_LONG).show();
             return;
         }
 
@@ -141,10 +149,10 @@ public class ViewAlbumFragment extends Fragment {
         });*/
     }
 
-    private void addUserClicked() {
+    private void addUserClicked(View view) {
         Fragment newAlbumMemberFragment = new NewAlbumMemberFragment();
         Bundle newAlbumMemberData = new Bundle();
-        newAlbumMemberData.putString(NewAlbumMemberFragment.ALBUM_ID_EXTRA, catalogID);
+        newAlbumMemberData.putString(NewAlbumMemberFragment.ALBUM_ID_EXTRA, albumID);
         newAlbumMemberFragment.setArguments(newAlbumMemberData);
 
         try {
@@ -156,10 +164,10 @@ public class ViewAlbumFragment extends Fragment {
         }
     }
 
-    private void addPhotoClicked() {
+    private void addPhotoClicked(View view) {
         Fragment addPhotoFragment = new AddPhotosFragment();
         Bundle addPhotoData = new Bundle();
-        addPhotoData.putString(AddPhotosFragment.ALBUM_ID_EXTRA, catalogID);
+        addPhotoData.putString(AddPhotosFragment.ALBUM_ID_EXTRA, albumID);
         addPhotoFragment.setArguments(addPhotoData);
 
         try {
@@ -169,5 +177,25 @@ public class ViewAlbumFragment extends Fragment {
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(getContext(), "Could not present add new photo screen", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public List<String> getSlicesURLList(String catalogID) {
+        String url = getString(
+                R.string.view_album_endpoint) +
+                "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
+
+        try {
+            RequestData requestData = new RequestData(getActivity(), GET_CATALOG, url);
+            ResponseData responseData = new QueryManager().execute(requestData).get();
+            if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
+                SuccessResponse payload = (SuccessResponse) responseData.getPayload();
+                return (ArrayList<String>) payload.getResult();
+            }
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            Log.i("ERROR", "VIEW ALBUM: " + ex.getMessage());
+        }
+        return new ArrayList<>();
     }
 }
