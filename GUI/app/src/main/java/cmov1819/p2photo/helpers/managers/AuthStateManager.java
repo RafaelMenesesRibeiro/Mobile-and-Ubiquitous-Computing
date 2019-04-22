@@ -25,6 +25,7 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
 
 import cmov1819.p2photo.LoginActivity;
 
@@ -187,9 +188,9 @@ public class AuthStateManager {
                 this.REDIRECT_URI
         );
         builder.setScopes(ImmutableSet.of(
-                "email", "profile", "openid",
-                "https://www.googleapis.com/auth/drive.file",
-                "https://www.googleapis.com/auth/drive.appdata"
+                    "email", "profile", "openid",
+                    "https://www.googleapis.com/auth/drive.file",
+                    "https://www.googleapis.com/auth/drive.appdata"
                 )
         );
         return builder.build();
