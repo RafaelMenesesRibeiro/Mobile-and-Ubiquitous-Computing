@@ -226,5 +226,4 @@ public class GoogleDriveMediator {
         Log.w(GOOGLE_DRIVE_TAG, message);
         context.startActivity(new Intent(context, LoginActivity.class));
     }
-
 }
