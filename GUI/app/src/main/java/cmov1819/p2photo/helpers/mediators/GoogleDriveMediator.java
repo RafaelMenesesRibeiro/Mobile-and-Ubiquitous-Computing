@@ -90,7 +90,7 @@ public class GoogleDriveMediator {
         return instance;
     }
 
-    public void newCatalog(final Context context, final String catalogTitle, final AuthState authState) {
+    public void newCatalog(final Context context, final String title, final AuthState authState) {
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
@@ -104,22 +104,25 @@ public class GoogleDriveMediator {
                         else {
                             credential.setAccessToken(tokens[0]);
 
-                            File createFolderResult = createFolder(catalogTitle, tokens[0]);
-                            if (createFolderResult == null) {
+                            File catalogFolderFile = createFolder(title, tokens[0]);
+
+                            if (catalogFolderFile == null) {
                                 setWarning(context,"Null response received from Google REST API.");
-                            }
-                            else {
-                                String parentFolderId = createFolderResult.getId();
-                                Log.i(GOOGLE_DRIVE_TAG, String.format("Created %s folder with success", parentFolderId));
-
+                            } else {
+                                Log.i(GOOGLE_DRIVE_TAG, "Created folder with success");
+                                String catalogFolderId = catalogFolderFile.getId();
                                 JSONObject catalogJson = new JSONObject();
-                                catalogJson.put("title", catalogTitle);
+                                catalogJson.put("title", title);
                                 catalogJson.put("p2photoId", "SOMETHING IDK WHAT FOR");
-                                catalogJson.put("googleDriveId", parentFolderId);
+                                catalogJson.put("googleDriveId", catalogFolderId);
                                 catalogJson.put("photos", new ArrayList<String>());
-                                InputStream targetStream = new ByteArrayInputStream(catalogJson.toString(4).getBytes(Charset.forName("UTF-8")));
 
-                                return createFile(parentFolderId, "catalog.json", new InputStreamContent(TYPE_JSON, targetStream));
+                                InputStream targetStream = new ByteArrayInputStream(
+                                        catalogJson.toString(4).getBytes(Charset.forName("UTF-8"))
+                                );
+                                AbstractInputStreamContent catalogFile = new InputStreamContent(TYPE_JSON, targetStream);
+
+                                return createFile(catalogFolderId, "catalog.json", catalogFile);
                             }
                         }
                     } catch (JSONException | IOException exc) {
