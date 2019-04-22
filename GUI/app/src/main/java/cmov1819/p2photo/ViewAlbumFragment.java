@@ -11,8 +11,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import cmov1819.p2photo.adapters.ImageGridAdapter;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.helpers.managers.QueryManager;
@@ -143,23 +146,22 @@ public class ViewAlbumFragment extends Fragment {
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
+        // TODO - Replace by actual downloaded images. //
+        /*
         if (slicesURLList.isEmpty()) {
             Toast.makeText(getContext(), "Album is empty.", LENGTH_LONG).show();
             return;
         }
-
-        // TODO - IMPLEMENT THIS ASAP. //
-        /*
-        GridView grid = findViewById(R.id.albumGrid);
-
-        grid.setAdapter(new ImageGridAdapter(this, imageIdsArray));
+        */
+        Integer[] imageIdsArray = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img1};
+        GridView grid = view.findViewById(R.id.albumGrid);
+        grid.setAdapter(new ImageGridAdapter(activity, imageIdsArray));
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(ViewAlbumFragment.this, "IMAGE WAS CLICKED: " + position,
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
             }
-        });*/
+        });
     }
 
     private void addUserClicked(View view) {
