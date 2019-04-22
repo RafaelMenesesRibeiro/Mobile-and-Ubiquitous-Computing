@@ -105,7 +105,7 @@ public class GoogleDriveMediator {
                                 }
                             }
                         } catch (JSONException | IOException exc) {
-                            setError(context,  exc.getMessage());
+                            setError(context, exc.getMessage());
                         }
                         return null;
                     }
