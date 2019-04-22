@@ -22,7 +22,6 @@ public class ListUsersFragment extends Fragment {
 
         ArrayList<String> usersList = new ArrayList<>();
         usersList.add("No users found.");
-
         ArrayList<String> users;
         if (getArguments() != null && (users = getArguments().getStringArrayList(USERS_EXTRA)) != null) {
              usersList = users;

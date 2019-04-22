@@ -80,6 +80,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/viewAlbumLabel"
         android:layout_marginBottom="20dp"
+        android:layout_marginTop="-30dp"
         >
 
         <TextView
@@ -99,6 +100,7 @@
             android:id="@+id/albumGrid"
             android:layout_width="match_parent"
             android:layout_height="400dp"
+            android:layout_above="@+id/addPhotoButton"
             android:layout_below="@+id/albumTitleLabel"
             android:layout_gravity="center"
             android:layout_marginTop="10dp"

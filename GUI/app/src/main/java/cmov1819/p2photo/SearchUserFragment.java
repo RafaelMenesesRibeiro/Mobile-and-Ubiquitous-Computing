@@ -38,13 +38,15 @@ public class SearchUserFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_search_user, container, false);
-        Button searchButton = view.findViewById(R.id.done);
-        searchButton.setOnClickListener(new View.OnClickListener() {
+        Button doneButton = view.findViewById(R.id.done);
+        doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 searchUserClicked(view);
             }
         });
+        EditText editText = view.findViewById(R.id.usernameInputBox);
+        MainMenuActivity.bingEditTextWithButton(editText, doneButton);
         return view;
     }
 
@@ -55,33 +57,26 @@ public class SearchUserFragment extends Fragment {
             return;
         }
         try {
-            Map<String, ArrayList> usernames = searchUser(username, true);
-            ArrayList<String> usersList = new ArrayList<>(usernames.keySet());
-
-            Fragment listUsersFragment = new ListUsersFragment();
-            Bundle data = new Bundle();
-            data.putStringArrayList(USERS_EXTRA, usersList);
-            listUsersFragment.setArguments(data);
-
+            Map<String, ArrayList> usernames = searchUser(username);
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.changeFragment(listUsersFragment, R.id.nav_search_user);
+            mainMenuActivity.goToListUsers(new ArrayList<>(usernames.keySet()));
         }
         catch (NoResultsException nrex) {
             Toast.makeText(activity, "No results were found", Toast.LENGTH_LONG).show();
         }
         catch (FailedOperationException foex) {
-            Toast.makeText(activity, R.string.find_user_unsuccessful + "Try again later", Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, "No users found", Toast.LENGTH_LONG).show();
         }
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(activity, "Could not present users list", Toast.LENGTH_LONG).show();
         }
     }
 
-    public Map<String, ArrayList> searchUser(String usernameToFind, boolean bringAlbums)
+    public Map<String, ArrayList> searchUser(String usernameToFind)
             throws FailedOperationException, NoResultsException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
         String url = getString(R.string.p2photo_host) + getString(R.string.find_users_operation) +
-                    "?searchPattern=" + usernameToFind + "&bringAlbums=" + bringAlbums
+                    "?searchPattern=" + usernameToFind + "&bringAlbums=" + true
                     + "&calleeUsername=" + SessionManager.getUsername(activity);
 
         try {
@@ -92,35 +87,25 @@ public class SearchUserFragment extends Fragment {
                 Log.i("STATUS", "The find users operation was successful");
 
                 SuccessResponse payload = (SuccessResponse) result.getPayload();
-                Object object = payload.getResult();
-
-                if (bringAlbums) {
-                    LinkedHashMap<String, ArrayList> map = (LinkedHashMap<String, ArrayList>) object;
-                    Log.i("MSG", "Users and respective albums: " + map.toString());
-                    if (map.size() == 0) {
-                        throw new NoResultsException();
-                    }
-                    return map;
+                LinkedHashMap<String, ArrayList> map = (LinkedHashMap<String, ArrayList>) payload.getResult();
+                Log.i("MSG", "Users and respective albums: " + map.toString());
+                if (map.size() == 0) {
+                    throw new NoResultsException();
                 }
-                else {
-                    ArrayList<String> usernames = (ArrayList<String>) object;
-                    if (usernames.isEmpty()) {
-                        throw new NoResultsException();
-                    }
-                    LinkedHashMap<String, ArrayList> map = new LinkedHashMap<>();
-                    for (String username : usernames) {
-                        map.put(username, new ArrayList());
-                    }
-                    return map;
-                }
+                return map;
             }
             else {
-                Log.i("STATUS", R.string.find_user_unsuccessful + "Server response code: " + code);
+                Log.i("ERROR", "SEARCH USER: " + getString(R.string.find_user_unsuccessful) + "Server response code: " + code);
                 throw new FailedOperationException("URL: " + url);
             }
         }
-        catch (ExecutionException | InterruptedException | ClassCastException ex) {
+        catch (ClassCastException ccex) {
+            Log.i("ERROR", "SEARCH USER: " + getString(R.string.find_user_unsuccessful) + "Caught Class Cast Exception.");
+            throw new NoResultsException(ccex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
+            Log.i("ERROR", "SEARCH USER: " + getString(R.string.find_user_unsuccessful));
             throw new FailedOperationException(ex.getMessage());
         }
     }
