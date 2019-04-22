@@ -150,16 +150,6 @@ public class GoogleDriveMediator {
                         } catch (IOException | JSONException exc) {
                             setError(context, exc.getMessage());
                         }
-
-                        Bitmap[] displayablePhotosArray = displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
-                        GridView grid = view.findViewById(R.id.albumGrid);
-                        grid.setAdapter(new ImageGridAdapter(context, displayablePhotosArray));
-                        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                Toast.makeText(context, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
-                            }
-                        });
                     }
                 }.execute(accessToken);
             }
@@ -260,7 +250,7 @@ public class GoogleDriveMediator {
                                     setWarning(context,"Null response received from Google REST API.");
                                 } else {
                                     try {
-                                        JSONObject catalog = new JSONObject(readFileContents(googleDriveCatalogId));
+                                        JSONObject catalog = new JSONObject(readTxtFileContents(googleDriveCatalogId));
                                         JSONArray photos = catalog.getJSONArray("photos");
                                         photos.put(googlePhotoFile.getId());
                                         catalog.put("photos", photos);
