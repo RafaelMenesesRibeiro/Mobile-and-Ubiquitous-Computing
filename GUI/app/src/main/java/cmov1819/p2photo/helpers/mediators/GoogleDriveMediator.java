@@ -146,6 +146,7 @@ public class GoogleDriveMediator {
                         } catch (IOException | JSONException exc) {
                             setError(context, exc.getMessage());
                         }
+
                         Bitmap[] displayablePhotosArray = displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
                         GridView grid = view.findViewById(R.id.albumGrid);
                         grid.setAdapter(new ImageGridAdapter(context, displayablePhotosArray));
