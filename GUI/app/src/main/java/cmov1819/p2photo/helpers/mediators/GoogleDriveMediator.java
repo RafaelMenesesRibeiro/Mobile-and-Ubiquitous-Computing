@@ -101,7 +101,7 @@ public class GoogleDriveMediator {
                             else {
                                 credential.setAccessToken(tokens[0]);
 
-                                File catalogFolderFile = createFolder(title, tokens[0]);
+                                File catalogFolderFile = createFolder(null, title);
 
                                 if (catalogFolderFile == null) {
                                     setWarning(context,"Null response received from Google REST API.");
