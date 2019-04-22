@@ -12,7 +12,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
-import net.openid.appauth.AuthState;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +20,6 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.exceptions.GoogleDriveException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
@@ -103,13 +101,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
                 break;
             case R.id.nav_view_user_albums:
-                Fragment viewUserAlbumsFragment = new ViewUserAlbumsFragment();
-                Bundle viewUserAlbumsData = new Bundle();
-                // TODO - Fetch this in ViewUserAlbumsFragment. //
-                ArrayList<String> items = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
-                viewUserAlbumsData.putStringArrayList("catalogs", items);
-                viewUserAlbumsFragment.setArguments(viewUserAlbumsData);
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewUserAlbumsFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewUserAlbumsFragment()).commit();
                 break;
             case R.id.nav_logout:
                 try {

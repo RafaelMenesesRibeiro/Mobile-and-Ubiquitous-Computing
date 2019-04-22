@@ -135,7 +135,7 @@ public class ViewAlbumFragment extends Fragment {
             return;
         }
 
-        // TODO - @FranciscoBarros //
+        // TODO - IMPLEMENT THIS ASAP. //
         /*
         GridView grid = findViewById(R.id.albumGrid);
 
