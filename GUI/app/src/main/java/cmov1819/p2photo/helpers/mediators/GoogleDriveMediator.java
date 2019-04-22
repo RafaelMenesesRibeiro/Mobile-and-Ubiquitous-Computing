@@ -156,10 +156,8 @@ public class GoogleDriveMediator {
                 .setName(fileName)
                 .setMimeType(TYPE_TXT);
 
-        //InputStream targetStream = new ByteArrayInputStream(fileContent.getBytes(Charset.forName("UTF-8")));
-        //AbstractInputStreamContent fileContentStream = new InputStreamContent(TYPE_JSON, targetStream);
-
-        ByteArrayContent contentStream = ByteArrayContent.fromString(TYPE_JSON, fileContent);
+        InputStream targetStream = new ByteArrayInputStream(fileContent.getBytes(Charset.forName("UTF-8")));
+        AbstractInputStreamContent contentStream = new InputStreamContent(TYPE_JSON, targetStream);
 
         File googleFile = driveService.files()
                 .create(metadata, contentStream)
