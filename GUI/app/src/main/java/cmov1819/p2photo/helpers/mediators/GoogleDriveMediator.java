@@ -37,6 +37,8 @@ import java.util.List;
 
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
+import cmov1819.p2photo.MainMenuActivity;
+import cmov1819.p2photo.NewAlbumFragment;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import okhttp3.MediaType;
 
@@ -192,7 +194,7 @@ public class GoogleDriveMediator {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
-                            // TODO Rafael: Call WebServer Endpoint that maps createTextFile.getId() with p2photoCatalogId
+                            NewAlbumFragment.googleDriveSliceID = file.getId();
                         }
                     }
                 }.execute(accessToken);
