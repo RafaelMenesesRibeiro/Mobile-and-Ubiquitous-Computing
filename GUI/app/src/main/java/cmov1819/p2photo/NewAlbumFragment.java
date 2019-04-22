@@ -82,6 +82,7 @@ public class NewAlbumFragment extends Fragment {
             JSONObject requestBody = new JSONObject();
             requestBody.put("catalogTitle", albumName);
             requestBody.put("sliceUrl", "http://www.acloudprovider.com/a_album_slice"); // TODO - Implement adding slice to Cloud Provider. //
+            requestBody.put("googleDriveSliceID", " ");
             requestBody.put("calleeUsername", SessionManager.getUsername(activity));
             RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_ALBUM, url, requestBody);
 
