@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -114,7 +115,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
 
     private static boolean is400Response(HttpURLConnection connection) throws IOException {
         return (connection.getResponseCode() >= HttpURLConnection.HTTP_BAD_REQUEST &&
-                connection.getResponseCode() < HttpURLConnection.HTTP_SERVER_ERROR);
+                connection.getResponseCode() <= HttpURLConnection.HTTP_SERVER_ERROR);
     }
 
     private static InputStreamReader getBufferedReaderFromHttpURLConnection(
