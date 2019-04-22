@@ -1,6 +1,7 @@
 package cmov1819.p2photo.adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -11,16 +12,17 @@ import android.widget.ImageView;
  */
 public class ImageGridAdapter extends BaseAdapter {
     private Context context;
-    private Integer imageIdsArray[];
+    //private Integer imageIdsArray[];
+    private Bitmap imageBitmaps[];
 
-    public ImageGridAdapter(Context context, Integer imageIdsArray[]) {
+    public ImageGridAdapter(Context context, Bitmap[] imageBitmaps) {
         this.context = context;
-        this.imageIdsArray = imageIdsArray;
+        this.imageBitmaps = imageBitmaps;
     }
 
     @Override
     public int getCount() {
-        return imageIdsArray.length;
+        return imageBitmaps.length;
     }
 
     @Override
@@ -39,7 +41,8 @@ public class ImageGridAdapter extends BaseAdapter {
 
         if (convertView == null) {
             imageView = new ImageView(context);
-        } else {
+        }
+        else {
             imageView = (ImageView) convertView;
         }
 
@@ -47,7 +50,8 @@ public class ImageGridAdapter extends BaseAdapter {
         imageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         imageView.setAdjustViewBounds(true);
         imageView.setPadding(16, 16, 16, 16);
-        imageView.setImageResource(imageIdsArray[position]);
+        imageView.setImageBitmap(imageBitmaps[position]);
+        //imageView.setImageResource(imageIdsArray[position]);
         return imageView;
     }
 }
