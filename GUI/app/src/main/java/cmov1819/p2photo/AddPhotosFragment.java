@@ -28,19 +28,32 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
+
 public class AddPhotosFragment extends Fragment {
     public static final String ALBUM_ID_EXTRA = "albumID";
-    private Activity activity;
+
     private View view;
+
+    private GoogleDriveMediator googleDriveMediator;
+    private AuthStateManager authStateManager;
+
     private ArrayList<String> albumIDs;
+    private Activity activity;
     private File selectedImage;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         this.activity = getActivity();
+        this.authStateManager = AuthStateManager.getInstance(this.getContext());
+        this.googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
+
         final View inflaterView = view = inflater.inflate(R.layout.fragment_add_photos, container, false);
+
         populate(inflaterView);
+
         return inflaterView;
     }
 
@@ -125,10 +138,25 @@ public class AddPhotosFragment extends Fragment {
         Spinner dropdown = view.findViewById(R.id.membershipDropdownMenu);
         String albumID = albumIDs.get(dropdown.getSelectedItemPosition());
         String albumName = dropdown.getSelectedItem().toString();
-        File imageFile = selectedImage;
-        /* TODO - Call method in GoogleDriveManager that:
-        *  - uploads the photo to Google Drive;
-        *  - adds the photo's URL to user's catalog file
+        File androidFilePath = selectedImage;
+
+        /* TODO Raphael:
+        * If we want to store photos in their folders along side their catalog.json file, we need to
+        * the googleDriveCatalogJsonId as well as the googleDriveCatalogFolderId. These can be stored seperatly on the
+        * database or they can be stored together using concatenation of strings splited by :p2pspliter:.
+        * The alternative is to store googleDriveCatalogJsonId inside googleDriveCatalogFolderId, but store all photos
+        * in the root folder of the user. In this case we only need to store googleDriveCatalogJsonId in the database
+        */
+        googleDriveMediator.newPhoto(
+                getContext(),
+                null,
+                androidFilePath.getName(),
+                GoogleDriveMediator.TYPE_PNG,
+                androidFilePath,
+                authStateManager.getAuthState()
+        );
+
+        /* TODO - Call method in GoogleDriveManager that: adds the photo's URL to user's catalog file
         */
         boolean isSuccess = true;
 
