@@ -188,9 +188,9 @@ public class AuthStateManager {
                 this.REDIRECT_URI
         );
         builder.setScopes(ImmutableSet.of(
-                "email", "profile", "openid",
-                "https://www.googleapis.com/auth/drive.file",
-                "https://www.googleapis.com/auth/drive.appdata"
+                    "email", "profile", "openid",
+                    "https://www.googleapis.com/auth/drive.file",
+                    "https://www.googleapis.com/auth/drive.appdata"
                 )
         );
         return builder.build();
