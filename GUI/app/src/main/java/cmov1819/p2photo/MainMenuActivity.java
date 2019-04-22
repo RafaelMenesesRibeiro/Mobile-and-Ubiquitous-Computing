@@ -171,13 +171,13 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         navigationView.setCheckedItem(R.id.nav_search_user);
     }
 
-    public static void ActivateButton(Button button) {
+    public static void activateButton(Button button) {
         button.setEnabled(true);
         button.setBackgroundColor(MainMenuActivity.resources.getColor(R.color.colorButtonActive));
         button.setTextColor(MainMenuActivity.resources.getColor(R.color.white));
     }
 
-    public static void InactiveButton(Button button) {
+    public static void inactiveButton(Button button) {
         button.setEnabled(false);
         button.setBackgroundColor(MainMenuActivity.resources.getColor(R.color.colorButtonInactive));
         button.setTextColor(MainMenuActivity.resources.getColor(R.color.almostBlack));

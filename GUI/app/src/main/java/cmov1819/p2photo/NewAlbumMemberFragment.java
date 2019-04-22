@@ -55,7 +55,7 @@ public class NewAlbumMemberFragment extends Fragment {
                 addUserClicked(view);
             }
         });
-        MainMenuActivity.InactiveButton(doneButton);
+        MainMenuActivity.inactiveButton(doneButton);
         final EditText editText = view.findViewById(R.id.toAddUsernameInputBox);
         editText.addTextChangedListener(new TextWatcher() {
             @Override

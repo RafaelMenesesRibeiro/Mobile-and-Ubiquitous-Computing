@@ -41,7 +41,7 @@ public class NewAlbumFragment extends Fragment {
         activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_new_album, container, false);
         final Button doneButton = view.findViewById(R.id.done);
-        MainMenuActivity.InactiveButton(doneButton);
+        MainMenuActivity.inactiveButton(doneButton);
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

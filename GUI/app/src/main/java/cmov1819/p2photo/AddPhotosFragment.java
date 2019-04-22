@@ -62,7 +62,7 @@ public class AddPhotosFragment extends Fragment {
         ImageView imageView = view.findViewById(R.id.imageView);
         imageView.setImageResource(R.drawable.img_not_available);
         Button doneButton = view.findViewById(R.id.done);
-        MainMenuActivity.InactiveButton(doneButton);
+        MainMenuActivity.inactiveButton(doneButton);
 
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
         Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
@@ -101,7 +101,7 @@ public class AddPhotosFragment extends Fragment {
                 imageView.setImageBitmap(bitmap);
 
                 Button doneButton = view.findViewById(R.id.done);
-                MainMenuActivity.ActivateButton(doneButton);
+                MainMenuActivity.activateButton(doneButton);
             }
             catch (FileNotFoundException | NullPointerException ex) {
                 imageView.setImageResource(R.drawable.img_not_available);
