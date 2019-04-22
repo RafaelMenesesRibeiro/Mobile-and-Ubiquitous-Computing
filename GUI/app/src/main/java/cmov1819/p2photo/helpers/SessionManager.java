@@ -4,10 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
-import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.Set;
 
 public class SessionManager {

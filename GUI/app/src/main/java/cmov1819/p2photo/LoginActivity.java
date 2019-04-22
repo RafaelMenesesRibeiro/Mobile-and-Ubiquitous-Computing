@@ -2,9 +2,7 @@ package cmov1819.p2photo;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -21,7 +19,6 @@ import net.openid.appauth.AuthorizationService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.util.HashMap;
 import java.util.HashSet;

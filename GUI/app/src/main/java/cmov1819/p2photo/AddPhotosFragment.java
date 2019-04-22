@@ -18,8 +18,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
 
-import org.apache.http.util.Asserts;
-
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
