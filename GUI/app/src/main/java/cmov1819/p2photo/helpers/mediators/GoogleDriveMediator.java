@@ -40,6 +40,7 @@ import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.NewAlbumFragment;
+import cmov1819.p2photo.ViewAlbumFragment;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import okhttp3.MediaType;
 
@@ -139,7 +140,7 @@ public class GoogleDriveMediator {
                             setError(context, "Could not generate ArrayList<Strings> slicePhotosList.");
                         }
 
-                        // TODO Pass this ArrayList<String> to some place that can iterate urls and download images
+                        ViewAlbumFragment.
                     }
 
                 }.execute(accessToken);
