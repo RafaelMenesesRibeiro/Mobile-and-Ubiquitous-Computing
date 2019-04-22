@@ -31,6 +31,7 @@ import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static final String START_SCREEN = "initialScreen";
+    public static final String HOME_SCREEN = SearchUserFragment.class.getName();
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
@@ -72,8 +73,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
                 return;
             }
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
-            navigationView.setCheckedItem(R.id.nav_search_user);
+            goHome();
         }
     }
 
@@ -157,5 +157,10 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     public void changeFragment(Fragment fragment, int menuItemID) {
         navigationView.setCheckedItem(menuItemID);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    }
+
+    public void goHome() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
+        navigationView.setCheckedItem(R.id.nav_search_user);
     }
 }

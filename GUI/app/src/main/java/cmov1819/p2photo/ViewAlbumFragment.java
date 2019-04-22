@@ -1,6 +1,7 @@
 package cmov1819.p2photo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -29,6 +30,8 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
+import static cmov1819.p2photo.MainMenuActivity.HOME_SCREEN;
+import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
@@ -47,7 +50,18 @@ public class ViewAlbumFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_view_album, container, false);
-        populate(view);
+        boolean couldPopulate = populate(view);
+        if (!couldPopulate) {
+            try {
+                MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+                mainMenuActivity.goHome();
+            }
+            catch (ClassCastException ex) {
+                Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
+                mainMenuActivityIntent.putExtra(START_SCREEN, HOME_SCREEN);
+                startActivity(mainMenuActivityIntent);
+            }
+        }
 
         Button addUserButton = view.findViewById(R.id.addUserButton);
         addUserButton.setOnClickListener(new View.OnClickListener() {
@@ -73,7 +87,6 @@ public class ViewAlbumFragment extends Fragment {
                 RelativeLayout relativeLayout = view.findViewById(R.id.albumViewContainer);
                 relativeLayout.setVisibility(View.VISIBLE);
 
-                // TODO - CHECK IF POPULATE RETURNED TRUE OR ELSE NULLPTR. //
                 Spinner dropdownMenu = view.findViewById(R.id.membershipDropdownMenu);
                 int index = dropdownMenu.getSelectedItemPosition();
                 albumID = albumIDs.get(index);
