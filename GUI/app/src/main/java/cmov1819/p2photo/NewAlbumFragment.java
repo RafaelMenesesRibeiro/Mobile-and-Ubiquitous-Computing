@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,12 +40,30 @@ public class NewAlbumFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_new_album, container, false);
-        Button doneButton = view.findViewById(R.id.done);
+        final Button doneButton = view.findViewById(R.id.done);
+        MainMenuActivity.InactiveButton(doneButton);
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 newAlbumClicked(view);
             }
+        });
+        final EditText editText = view.findViewById(R.id.nameInputBox);
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing */ }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (editText.getText().toString().isEmpty()) {
+                    MainMenuActivity.InactiveButton(doneButton);
+                    return;
+                }
+                MainMenuActivity.ActivateButton(doneButton);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { /* Do nothing */ }
         });
         return view;
     }
@@ -98,7 +118,7 @@ public class NewAlbumFragment extends Fragment {
                 return (String) payload.getResult();
             }
             else {
-                Log.i("STATUS", "The new album operation was unsuccessful. Server response code: " + code);
+                Log.i("STATUS", "The new album operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage());
                 throw new FailedOperationException();
             }
         }

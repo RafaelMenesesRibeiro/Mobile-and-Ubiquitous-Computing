@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,12 +40,30 @@ public class SearchUserFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_search_user, container, false);
-        Button searchButton = view.findViewById(R.id.done);
-        searchButton.setOnClickListener(new View.OnClickListener() {
+        final Button doneButton = view.findViewById(R.id.done);
+        MainMenuActivity.InactiveButton(doneButton);
+        doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 searchUserClicked(view);
             }
+        });
+        final EditText editText = view.findViewById(R.id.usernameInputBox);
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing */ }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (editText.getText().toString().isEmpty()) {
+                    MainMenuActivity.InactiveButton(doneButton);
+                    return;
+                }
+                MainMenuActivity.ActivateButton(doneButton);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { /* Do nothing */ }
         });
         return view;
     }
@@ -70,7 +90,7 @@ public class SearchUserFragment extends Fragment {
             Toast.makeText(activity, "No results were found", Toast.LENGTH_LONG).show();
         }
         catch (FailedOperationException foex) {
-            Toast.makeText(activity, R.string.find_user_unsuccessful + "Try again later", Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, getString(R.string.find_user_unsuccessful) + "Try again later", Toast.LENGTH_LONG).show();
         }
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(activity, "Could not present users list", Toast.LENGTH_LONG).show();
@@ -115,7 +135,7 @@ public class SearchUserFragment extends Fragment {
                 }
             }
             else {
-                Log.i("STATUS", R.string.find_user_unsuccessful + "Server response code: " + code);
+                Log.i("STATUS", getString(R.string.find_user_unsuccessful) + "Server response code: " + code);
                 throw new FailedOperationException("URL: " + url);
             }
         }

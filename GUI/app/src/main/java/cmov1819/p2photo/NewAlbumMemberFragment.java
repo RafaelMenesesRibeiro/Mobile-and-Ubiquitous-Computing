@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,12 +48,30 @@ public class NewAlbumMemberFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_new_album_member, container, false);
-        Button doneButton = view.findViewById(R.id.done);
+        final Button doneButton = view.findViewById(R.id.done);
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 addUserClicked(view);
             }
+        });
+        MainMenuActivity.InactiveButton(doneButton);
+        final EditText editText = view.findViewById(R.id.toAddUsernameInputBox);
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing */ }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (editText.getText().toString().isEmpty()) {
+                    MainMenuActivity.InactiveButton(doneButton);
+                    return;
+                }
+                MainMenuActivity.ActivateButton(doneButton);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { /* Do nothing */ }
         });
         populate(view);
         return view;
@@ -138,14 +158,14 @@ public class NewAlbumMemberFragment extends Fragment {
             else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
-                Log.i("STATUS", R.string.add_user_unsuccessful + reason);
+                Log.i("STATUS", getString(R.string.add_user_unsuccessful) + reason);
                 throw new FailedOperationException(reason);
             }
             else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
                 if (reason.equals(getString(R.string.no_membership))) {
-                    Log.i("STATUS", R.string.add_user_unsuccessful + "Callee does not belong to album " + albumID);
+                    Log.i("STATUS", getString(R.string.add_user_unsuccessful) + "Callee does not belong to album " + albumID);
                     throw new NoMembershipException(reason);
                 }
             }
@@ -153,7 +173,7 @@ public class NewAlbumMemberFragment extends Fragment {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
                 if (reason.equals(getString(R.string.no_user))) {
-                    Log.i("STATUS", R.string.add_user_unsuccessful + "Username does not exist " + username);
+                    Log.i("STATUS", getString(R.string.add_user_unsuccessful) + "Username does not exist " + username);
                     throw new UsernameException(reason);
                 }
             }
