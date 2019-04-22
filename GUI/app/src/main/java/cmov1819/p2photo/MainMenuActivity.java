@@ -13,6 +13,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
+import net.openid.appauth.AuthState;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
@@ -20,13 +22,16 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.exceptions.GoogleDriveException;
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
-import cmov1819.p2photo.helpers.mediators.P2PhotoGoogleDriveMediator;
+import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private DrawerLayout drawerLayout;
-    private P2PhotoGoogleDriveMediator driveMediator;
+    private GoogleDriveMediator driveMediator;
+    private AuthStateManager authStateManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +50,9 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         toggle.syncState();
 
         // TODO KILL THIS PROP CODE THAT ONLY SERVES TO TEST API CALLS
-        this.driveMediator = P2PhotoGoogleDriveMediator.getInstance(this);
-        driveMediator.newCatatalog(this, "helloworld2.0");
+        this.authStateManager = AuthStateManager.getInstance(this);
+        this.driveMediator = GoogleDriveMediator.getInstance();
+        driveMediator.newCatalog(this, "thooooor", authStateManager.getAuthState());
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
