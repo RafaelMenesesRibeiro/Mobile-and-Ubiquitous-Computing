@@ -16,6 +16,7 @@ import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.Permission;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -179,6 +180,10 @@ public class GoogleDriveMediator {
                                 if (catalogJsonFile == null) {
                                     setWarning(context,"Null catalog.json file received from Google REST API.");
                                 }
+
+                                Permission userPermission = new Permission().setType("anyone").setRole("reader");
+                                driveService.permissions().create(catalogJsonFile.getId(), userPermission).setFields("id").execute();
+                                catalogJsonFile = driveService.files().get(catalogJsonFile.getId()).setFields("id, webContentLink").execute();
 
                                 return catalogJsonFile;
                             }
