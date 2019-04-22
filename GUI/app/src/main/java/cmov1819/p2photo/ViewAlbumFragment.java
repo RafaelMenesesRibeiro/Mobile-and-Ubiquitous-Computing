@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -156,8 +157,10 @@ public class ViewAlbumFragment extends Fragment {
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
-        for (String[] sliceInfo : slicesURLList) {
-            googleDriveMediator.retrieveCatalogSlice(getContext(), view, sliceInfo[1], authStateManager.getAuthState());
+        Iterator it = slicesURLList.iterator();
+        while(it.hasNext()) {
+            ArrayList<String> sliceInfo = (ArrayList<String>) it.next();
+            googleDriveMediator.retrieveCatalogSlice(getContext(), view, sliceInfo.get(1), authStateManager.getAuthState());
             return;
         }
     }
