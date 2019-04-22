@@ -18,7 +18,6 @@ import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
@@ -32,8 +31,8 @@ import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.NO_ALBUM_SELECTED;
 import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_TITLE_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.NO_ALBUM_SELECTED;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static final String START_SCREEN = "initialScreen";
@@ -66,7 +65,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
         // TODO KILL THIS PROP CODE THAT ONLY SERVES TO TEST API CALLS
         this.authStateManager = AuthStateManager.getInstance(this);
-        this.driveMediator = GoogleDriveMediator.getInstance();
+        this.driveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
         driveMediator.newCatalog(this, "thooooor", authStateManager.getAuthState());
 
         // Does not redraw the fragment when the screen rotates.

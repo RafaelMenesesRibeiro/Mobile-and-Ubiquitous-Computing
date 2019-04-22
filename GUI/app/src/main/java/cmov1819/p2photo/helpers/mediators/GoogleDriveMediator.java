@@ -6,9 +6,16 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.google.api.client.auth.oauth2.Credential;
+import com.google.api.client.auth.oauth2.TokenResponse;
+import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
+import com.google.api.client.http.AbstractInputStreamContent;
+import com.google.api.client.http.FileContent;
+import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.File;
 
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
@@ -17,9 +24,15 @@ import net.openid.appauth.AuthorizationService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
@@ -60,22 +73,20 @@ public class GoogleDriveMediator {
 
 
     private static GoogleDriveMediator instance;
+    private static Credential credential;
     private static Drive driveService;
 
-    private GoogleDriveMediator() {
-        try {
-            driveService = new Drive.Builder(
-                    GoogleNetHttpTransport.newTrustedTransport(),
-                    JacksonFactory.getDefaultInstance(),
-                    null).setApplicationName(APPLICATION_NAME).build();
-        } catch (GeneralSecurityException | IOException exc) {
-            Log.e(GOOGLE_DRIVE_TAG, exc.getCause().toString());
-        }
+    private GoogleDriveMediator(String accessToken) {
+        credential = new GoogleCredential().setAccessToken(accessToken);
+        driveService = new Drive.Builder(
+                new com.google.api.client.http.javanet.NetHttpTransport(),
+                JacksonFactory.getDefaultInstance(),
+                credential).setApplicationName(APPLICATION_NAME).build();
     }
 
-    public static GoogleDriveMediator getInstance() {
+    public static GoogleDriveMediator getInstance(String accessToken) {
         if (instance == null)
-            instance = new GoogleDriveMediator();
+            instance = new GoogleDriveMediator(accessToken);
         return instance;
     }
 
@@ -83,51 +94,40 @@ public class GoogleDriveMediator {
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
-                new AsyncTask<String, Void, JSONObject>() {
-                    @Override
-                    protected JSONObject doInBackground(String... tokens) {
-                        try {
-                            if (error != null) {
-                                suggestReauthentication(context, error.getMessage());
-                            }
-                            else {
-                                JSONObject createFolderResult = createFolder(catalogTitle, tokens[0]);
-                                if (createFolderResult == null) {
-                                    setWarning(context,"Null response received from Google REST API.");
-                                }
-                                else if (createFolderResult.has("error")) {
-                                    processErrorCodes(context, createFolderResult);
-                                }
-                                else {
-                                    String parentFolderId = createFolderResult.getString("id");
-                                    Log.i(GOOGLE_DRIVE_TAG, String.format("Created %s folder with success", parentFolderId));
-                                    return createFile(parentFolderId, "catalog.json", tokens[0]);
-                                }
-                            }
-                        } catch (JSONException | IOException exc) {
-                            setError(context, exc.getMessage());
+            new AsyncTask<String, Void, File>() {
+                @Override
+                protected File doInBackground(String... tokens) {
+                    try {
+                        if (error != null) {
+                            suggestReauthentication(context, error.getMessage());
                         }
-                        return null;
-                    }
+                        else {
+                            credential.setAccessToken(tokens[0]);
 
-                    @Override
-                    protected void onPostExecute(JSONObject createFileResult) {
-                        try {
-                            if (createFileResult == null) {
+                            File createFolderResult = createFolder(catalogTitle, tokens[0]);
+                            if (createFolderResult == null) {
                                 setWarning(context,"Null response received from Google REST API.");
                             }
-                            else if (createFileResult.has("error")) {
-                                processErrorCodes(context, createFileResult);
-                            }
                             else {
-                                String fileId = createFileResult.getString("id");
-                                Log.i(GOOGLE_DRIVE_TAG, String.format("Created %s file with success", fileId));
+                                String parentFolderId = createFolderResult.getId();
+                                Log.i(GOOGLE_DRIVE_TAG, String.format("Created %s folder with success", parentFolderId));
+
+                                JSONObject catalogJson = new JSONObject();
+                                catalogJson.put("title", catalogTitle);
+                                catalogJson.put("p2photoId", "SOMETHING IDK WHAT FOR");
+                                catalogJson.put("googleDriveId", parentFolderId);
+                                catalogJson.put("photos", new ArrayList<String>());
+                                InputStream targetStream = new ByteArrayInputStream(catalogJson.toString(4).getBytes(Charset.forName("UTF-8")));
+
+                                return createFile(parentFolderId, "catalog.json", new InputStreamContent(TYPE_JSON, targetStream));
                             }
-                        } catch (JSONException jsone) {
-                            setError(context, jsone.getMessage());
                         }
+                    } catch (JSONException | IOException exc) {
+                        setError(context, exc.getMessage());
                     }
-                }.execute(accessToken);
+                    return null;
+                }
+            }.execute(accessToken);
             }
         });
     }
@@ -136,40 +136,33 @@ public class GoogleDriveMediator {
      * JSON OBJECT CONSTRUCTORS AND REQUESTS
      **********************************************************/
 
-    private JSONObject createFolder(String folderName, String token) throws IOException, JSONException {
-        // CREATE FOLDER REQUEST
+    private File createFolder(String folderName, String token) throws IOException {
+
         Log.i(GOOGLE_DRIVE_TAG, ">>> Initiating GoogleDriveMediator#createFolder request");
-        OkHttpClient okHttpClient = new OkHttpClient();
-        RequestBody body = RequestBody.create(JSON_TYPE, newDirectory(folderName).toString());
-        Request createFolderRequest = new Request.Builder()
-                .url(FILE_UPLOAD_ENDPOINT)
-                .post(body)
-                .addHeader(AUTHORIZATION_HEADER, "Bearer " + token)
-                .build();
-        Response createFolderResponse = okHttpClient.newCall(createFolderRequest).execute();
-        if (createFolderResponse.body() == null) {
-            return null;
-        }
-        String createFolderResponseString = createFolderResponse.body().string();
-        return new JSONObject(createFolderResponseString);
+        File fileMetadata = new File();
+        fileMetadata.setName(folderName);
+        fileMetadata.setMimeType("application/vnd.google-apps.folder");
+        File file = driveService.files().create(fileMetadata)
+                .setFields("id")
+                .execute();
+
+        Log.i(GOOGLE_DRIVE_TAG, "Folder ID: " + file.getId());
+
+        return file;
     }
 
-    private JSONObject createFile(String parentFolderId, String fileName, String token) throws IOException, JSONException {
+    private File createFile(String parentFolderId, String fileName, AbstractInputStreamContent fileContent) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Initiating GoogleDriveMediator#createFile request");
-        OkHttpClient okHttpClient = new OkHttpClient();
-        RequestBody body = RequestBody.create(JSON_TYPE, newFile(fileName, parentFolderId).toString());
-        Request request = new Request.Builder()
-                .url(FILE_UPLOAD_ENDPOINT)
-                .post(body)
-                .addHeader(AUTHORIZATION_HEADER, "Bearer " + token)
-                .build();
-        Response createFileResponse = okHttpClient.newCall(request).execute();
-        if (createFileResponse.body() == null) {
-            return null;
-        }
-        String jsonBody = createFileResponse.body().string();
-        Log.i(GOOGLE_DRIVE_TAG, "createFile response: " + jsonBody);
-        return new JSONObject(jsonBody);
+
+        File fileMetadata = new File();
+        fileMetadata.setName(fileName);
+        fileMetadata.setParents(Collections.singletonList(parentFolderId));
+        File file = driveService.files().create(fileMetadata, fileContent)
+                .setFields("id, parents")
+                .execute();
+
+        Log.i(GOOGLE_DRIVE_TAG, "File ID: " + file.getId());
+        return file;
     }
 
     private JSONObject newDirectory(String folderName, String parentFolder) throws JSONException {
