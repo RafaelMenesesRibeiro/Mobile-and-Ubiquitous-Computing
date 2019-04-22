@@ -42,36 +42,33 @@ public class ViewUserAlbumsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         View view = inflater.inflate(R.layout.fragment_view_user_albums, container, false);
+        populate(view);
+        return view;
+    }
+
+    private void populate(View view) {
+        catalogIdList = new ArrayList<>();
+        catalogTitleList = new ArrayList<>();
+        Map<String, String> memberships = getUserMemberships(activity);
+        for (Map.Entry<String, String> entry : memberships.entrySet()) {
+            catalogIdList.add(entry.getKey());
+            catalogTitleList.add(entry.getValue());
+        }
 
         ListView userAlbumsListView = view.findViewById(R.id.userAlbumsList);
-        this.catalogIdList = new ArrayList<>();
-        this.catalogTitleList = new ArrayList<>();
-        buildCatalogArrays();
         userAlbumsListView.setAdapter(new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, catalogTitleList));
         userAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String catalogID = catalogIdList.get(position);
-                String catalogTitle = catalogTitleList.get(position);
-
                 try {
                     MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-                    mainMenuActivity.goToAlbum(catalogID, catalogTitle);
+                    mainMenuActivity.goToAlbum(catalogIdList.get(position), catalogTitleList.get(position));
                 }
                 catch (NullPointerException | ClassCastException ex) {
                     Toast.makeText(activity, "Could not present album", Toast.LENGTH_LONG).show();
                 }
             }
         });
-        return view;
-    }
-
-    private void buildCatalogArrays() {
-        Map<String, String> memberships = getUserMemberships(activity);
-        for (Map.Entry<String, String> entry : memberships.entrySet()) {
-            catalogIdList.add(entry.getKey());
-            catalogTitleList.add(entry.getValue());
-        }
     }
 
     public static Map<String, String> getUserMemberships(Activity activity) {
