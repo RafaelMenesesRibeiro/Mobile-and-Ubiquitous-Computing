@@ -83,7 +83,11 @@ public class GoogleDriveMediator {
         return instance;
     }
 
-    public void newCatalog(final Context context, final String title, final AuthState authState) {
+    public void newCatalog(final Context context,
+                           final String title,
+                           final String p2photoId,
+                           final AuthState authState) {
+
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
@@ -97,15 +101,17 @@ public class GoogleDriveMediator {
                             }
                             else {
                                 credential.setAccessToken(tokens[0]);
+
                                 File catalogFolderFile = createFolder(title, tokens[0]);
 
                                 if (catalogFolderFile == null) {
                                     setWarning(context,"Null response received from Google REST API.");
                                     return null;
                                 }
-                                Log.i(GOOGLE_DRIVE_TAG, "Created folder with success");
+
                                 String catalogFolderId = catalogFolderFile.getId();
-                                String catalogJsonContent = newCatalogJsonFile(title, "prop", catalogFolderId);
+                                String catalogJsonContent = newCatalogJsonFile(title, p2photoId, catalogFolderId);
+
                                 return createTextFile(catalogFolderId,"catalog.json", catalogJsonContent);
                             }
                         } catch (JSONException | IOException exc) {
