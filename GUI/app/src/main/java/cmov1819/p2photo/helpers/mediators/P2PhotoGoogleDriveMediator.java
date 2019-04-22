@@ -3,7 +3,6 @@ package cmov1819.p2photo.helpers.mediators;
 import android.content.Context;
 import android.widget.Toast;
 
-import java.util.Hashtable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -18,17 +17,13 @@ public class P2PhotoGoogleDriveMediator {
     private GoogleDriveManager googleDriveMgr;
     private AtomicInteger requestCounter;
 
-    private Hashtable<Integer, DriveResultsData> requestsMap;
+    public static ConcurrentHashMap<Integer, DriveResultsData> requestsMap;
 
     private P2PhotoGoogleDriveMediator(Context context) {
         this.authStateMgr = AuthStateManager.getInstance(context);
         this.googleDriveMgr = GoogleDriveManager.getInstance();
         this.requestCounter = new AtomicInteger(0);
-        this.requestsMap = new Hashtable<>();
-    }
-
-    public static P2PhotoGoogleDriveMediator getInstance() {
-        return instance;
+        P2PhotoGoogleDriveMediator.requestsMap = new ConcurrentHashMap<>();
     }
 
     public static P2PhotoGoogleDriveMediator getInstance(final Context context) {
@@ -69,20 +64,4 @@ public class P2PhotoGoogleDriveMediator {
         return requestId;
     }
 
-    public void putResult(Integer key, DriveResultsData value) {
-        requestsMap.put(key, value);
-    }
-
-    public DriveResultsData getResult(Integer key) {
-        return requestsMap.get(key);
-    }
-
-    public DriveResultsData removeResult(Integer key) {
-        return requestsMap.remove(key);
-    }
-
-    public void replaceResult(Integer key, DriveResultsData value) {
-        requestsMap.remove(key);
-        requestsMap.put(key, value);
-    }
 }

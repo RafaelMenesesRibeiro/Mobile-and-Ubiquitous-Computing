@@ -63,8 +63,6 @@ public class GoogleDriveManager {
     private static GoogleDriveManager instance;
     private static Drive driveService;
 
-    private P2PhotoGoogleDriveMediator p2photoMediator;
-
     private GoogleDriveManager() {
         try {
             driveService = new Drive.Builder(
@@ -75,7 +73,6 @@ public class GoogleDriveManager {
             Log.e(GOOGLE_DRIVE_TAG, "Could not instanciate <GoogleNetHttpTransport>, aborting");
             System.exit(-1);
         }
-        this.p2photoMediator = P2PhotoGoogleDriveMediator.getInstance();
     }
 
     public static GoogleDriveManager getInstance() {
@@ -105,7 +102,7 @@ public class GoogleDriveManager {
                             processErrorCodes(context, requestId, response);
                         } else {
                             Log.i(GOOGLE_DRIVE_TAG, "Created folder with success");
-                            p2photoMediator.getResult(requestId).setFolderId(response.getString("id"));
+                            P2PhotoGoogleDriveMediator.requestsMap.get(requestId).setFolderId(response.getString("id"));
                         }
                     }
                 } catch (TimeoutException toe) {
@@ -142,8 +139,8 @@ public class GoogleDriveManager {
                             processErrorCodes(context, requestId, response);
                         } else {
                             Log.i(GOOGLE_DRIVE_TAG, "Created file with success");
-                            p2photoMediator.getResult(requestId).setFileId(response.getString("id"));
-                            p2photoMediator.getResult(requestId).setFileUrl(response.getString("url"));
+                            P2PhotoGoogleDriveMediator.requestsMap.get(requestId).setFileId(response.getString("id"));
+                            P2PhotoGoogleDriveMediator.requestsMap.get(requestId).setFileUrl(response.getString("url"));
                         }
                     }
                 } catch (TimeoutException toe) {
@@ -176,38 +173,34 @@ public class GoogleDriveManager {
 
     private void setError(Context context, Integer requestId, String message) {
         Log.e(GOOGLE_DRIVE_TAG, "createFolder or processErrorCodes accessed unexisting fields");
-        DriveResultsData driveResultsData = p2photoMediator.getResult(requestId);
+        DriveResultsData driveResultsData = P2PhotoGoogleDriveMediator.requestsMap.get(requestId);
         driveResultsData.setHasError(true);
         driveResultsData.setMessage(message);
         driveResultsData.setSuggestRetry(false);
-        p2photoMediator.replaceResult(requestId, driveResultsData);
     }
 
     private void setWarning(Context context, Integer requestId, String message) {
         Log.w(GOOGLE_DRIVE_TAG, message);
-        DriveResultsData driveResultsData = p2photoMediator.getResult(requestId);
+        DriveResultsData driveResultsData = P2PhotoGoogleDriveMediator.requestsMap.get(requestId);
         driveResultsData.setHasError(true);
         driveResultsData.setMessage(message);
         driveResultsData.setSuggestRetry(false);
-        p2photoMediator.replaceResult(requestId, driveResultsData);
     }
 
     private void suggestRetry(Context context, Integer requestId, String message) {
         Log.w(GOOGLE_DRIVE_TAG, "Google Drive REST API timed out");
-        DriveResultsData driveResultsData = p2photoMediator.getResult(requestId);
+        DriveResultsData driveResultsData = P2PhotoGoogleDriveMediator.requestsMap.get(requestId);
         driveResultsData.setHasError(true);
         driveResultsData.setMessage(message);
         driveResultsData.setSuggestRetry(true);
-        p2photoMediator.replaceResult(requestId, driveResultsData);
     }
 
     private void suggestReauthentication(Context context, Integer requestId, String message) {
         Log.w(GOOGLE_DRIVE_TAG, message);
-        DriveResultsData driveResultsData = p2photoMediator.getResult(requestId);
+        DriveResultsData driveResultsData = P2PhotoGoogleDriveMediator.requestsMap.get(requestId);
         driveResultsData.setHasError(true);
         driveResultsData.setMessage(message);
         driveResultsData.setSuggestedIntent(new Intent(context, LoginActivity.class));
-        p2photoMediator.replaceResult(requestId, driveResultsData);
     }
 
     private static JSONObject newDirectory(String folderName) throws JSONException {
