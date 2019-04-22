@@ -1,6 +1,8 @@
 package cmov1819.p2photo;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -12,6 +14,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
+import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,10 +41,14 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     private GoogleDriveMediator driveMediator;
     private AuthStateManager authStateManager;
 
+    private static Resources resources;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+
+        MainMenuActivity.resources = getResources();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -162,5 +169,17 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     public void goHome() {
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
         navigationView.setCheckedItem(R.id.nav_search_user);
+    }
+
+    public static void ActivateButton(Button button) {
+        button.setEnabled(true);
+        button.setBackgroundColor(MainMenuActivity.resources.getColor(R.color.colorButtonActive));
+        button.setTextColor(MainMenuActivity.resources.getColor(R.color.white));
+    }
+
+    public static void InactiveButton(Button button) {
+        button.setEnabled(false);
+        button.setBackgroundColor(MainMenuActivity.resources.getColor(R.color.colorButtonInactive));
+        button.setTextColor(MainMenuActivity.resources.getColor(R.color.almostBlack));
     }
 }
