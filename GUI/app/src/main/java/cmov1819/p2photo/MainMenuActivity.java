@@ -1,6 +1,7 @@
 package cmov1819.p2photo;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -10,42 +11,46 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
-
-import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
-
-import net.openid.appauth.AuthState;
+import android.widget.Button;
+import android.widget.EditText;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.exceptions.GoogleDriveException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 
-import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
+import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_ID_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_TITLE_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.NO_ALBUM_SELECTED;
-import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static final String START_SCREEN = "initialScreen";
+    public static final String HOME_SCREEN = SearchUserFragment.class.getName();
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
     private GoogleDriveMediator driveMediator;
     private AuthStateManager authStateManager;
 
+    private static Resources resources;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+
+        MainMenuActivity.resources = getResources();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -65,20 +70,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
-            Intent intent = getIntent();
-            if (intent.getStringExtra(START_SCREEN).equals(ViewAlbumFragment.class.getName())) {
-                String catalogID = intent.getStringExtra(CATALOG_ID_EXTRA);
-                String catalogTitle = intent.getStringExtra(TITLE_EXTRA);
-                Fragment viewAlbumFragment = new ViewAlbumFragment();
-                Bundle data = new Bundle();
-                data.putString(CATALOG_ID_EXTRA, catalogID);
-                data.putString(TITLE_EXTRA, catalogTitle);
-                viewAlbumFragment.setArguments(data);
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
-                return;
-            }
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
-            navigationView.setCheckedItem(R.id.nav_search_user);
+            goHome();
         }
     }
 
@@ -98,21 +90,10 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewAlbumMemberFragment()).commit();
                 break;
             case R.id.nav_view_album:
-                Fragment viewAlbumFragment = new ViewAlbumFragment();
-                Bundle viewAlbumData = new Bundle();
-                viewAlbumData.putString(CATALOG_ID_EXTRA, NO_ALBUM_SELECTED);
-                viewAlbumData.putString(TITLE_EXTRA, NO_ALBUM_SELECTED);
-                viewAlbumFragment.setArguments(viewAlbumData);
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();
+                goToAlbum(NO_ALBUM_SELECTED, NO_ALBUM_SELECTED);
                 break;
             case R.id.nav_view_user_albums:
-                Fragment viewUserAlbumsFragment = new ViewUserAlbumsFragment();
-                Bundle viewUserAlbumsData = new Bundle();
-                // TODO - Fetch this in ViewUserAlbumsFragment. //
-                ArrayList<String> items = new ArrayList<>(Arrays.asList("239287741","401094244","519782246"));
-                viewUserAlbumsData.putStringArrayList("catalogs", items);
-                viewUserAlbumsFragment.setArguments(viewUserAlbumsData);
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewUserAlbumsFragment).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewUserAlbumsFragment()).commit();
                 break;
             case R.id.nav_logout:
                 try {
@@ -140,6 +121,10 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         }
     }
 
+    /**********************************************************
+     * LOGOUT HELPER
+     ***********************************************************/
+
     public void logout() throws FailedOperationException {
         String username = SessionManager.getUsername(this);
         Log.i("MSG", "Logout: " + username);
@@ -165,8 +150,86 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         }
     }
 
-    public void changeFragment(Fragment fragment, int menuItemID) {
+    /**********************************************************
+     * SCREEN CHANGE HELPERS
+     ***********************************************************/
+
+    private void changeFragment(Fragment fragment, int menuItemID) {
         navigationView.setCheckedItem(menuItemID);
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, fragment).commit();
+    }
+
+    public void goToListUsers(ArrayList<String> usersList) {
+        Fragment listUsersFragment = new ListUsersFragment();
+        Bundle data = new Bundle();
+        data.putStringArrayList(USERS_EXTRA, usersList);
+        listUsersFragment.setArguments(data);
+        changeFragment(listUsersFragment, R.id.nav_search_user);
+    }
+
+    public void goToAddPhoto(String albumID) {
+        Fragment addPhotoFragment = new AddPhotosFragment();
+        Bundle addPhotoData = new Bundle();
+        addPhotoData.putString(AddPhotosFragment.ALBUM_ID_EXTRA, albumID);
+        addPhotoFragment.setArguments(addPhotoData);
+        changeFragment(addPhotoFragment, R.id.nav_add_photos);
+    }
+
+    public void goToAddUser(String albumID) {
+        Fragment newAlbumMemberFragment = new NewAlbumMemberFragment();
+        Bundle newAlbumMemberData = new Bundle();
+        newAlbumMemberData.putString(NewAlbumMemberFragment.ALBUM_ID_EXTRA, albumID);
+        newAlbumMemberFragment.setArguments(newAlbumMemberData);
+        changeFragment(newAlbumMemberFragment, R.id.nav_new_album_member);
+    }
+
+    public void goToAlbum(String albumID, String albumTitle) {
+        Fragment viewAlbumFragment = new ViewAlbumFragment();
+        Bundle data = new Bundle();
+        data.putString(ALBUM_ID_EXTRA, albumID);
+        data.putString(ALBUM_TITLE_EXTRA, albumTitle);
+        viewAlbumFragment.setArguments(data);
+        changeFragment(viewAlbumFragment, R.id.nav_view_album);
+    }
+
+    public void goHome() {
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
+        navigationView.setCheckedItem(R.id.nav_search_user);
+    }
+
+    /**********************************************************
+     * BUTTON ACTIVATION / INACTIVATION HELPERS
+     ***********************************************************/
+
+    public static void activateButton(Button button) {
+        button.setEnabled(true);
+        button.setBackgroundColor(MainMenuActivity.resources.getColor(R.color.colorButtonActive));
+        button.setTextColor(MainMenuActivity.resources.getColor(R.color.white));
+    }
+
+    public static void inactiveButton(Button button) {
+        button.setEnabled(false);
+        button.setBackgroundColor(MainMenuActivity.resources.getColor(R.color.colorButtonInactive));
+        button.setTextColor(MainMenuActivity.resources.getColor(R.color.almostBlack));
+    }
+
+    public static void bingEditTextWithButton(final EditText editText, final Button button) {
+        inactiveButton(button);
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing */ }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (editText.getText().toString().isEmpty()) {
+                    MainMenuActivity.inactiveButton(button);
+                    return;
+                }
+                MainMenuActivity.activateButton(button);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { /* Do nothing */ }
+        });
     }
 }

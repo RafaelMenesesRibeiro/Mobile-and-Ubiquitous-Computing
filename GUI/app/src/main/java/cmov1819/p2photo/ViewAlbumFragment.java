@@ -1,6 +1,7 @@
 package cmov1819.p2photo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,8 +11,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -23,18 +26,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
+import cmov1819.p2photo.adapters.ImageGridAdapter;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static android.widget.Toast.LENGTH_LONG;
+import static cmov1819.p2photo.MainMenuActivity.HOME_SCREEN;
+import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class ViewAlbumFragment extends Fragment {
-    public static final String CATALOG_ID_EXTRA = "catalogID";
-    public static final String TITLE_EXTRA = "title";
+    public static final String ALBUM_ID_EXTRA = "catalogID";
+    public static final String ALBUM_TITLE_EXTRA = "title";
     public static final String NO_ALBUM_SELECTED = "NO_ALBUM_SELECTED_ERROR";
 
     private Activity activity;
@@ -47,20 +52,31 @@ public class ViewAlbumFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_view_album, container, false);
-        populate(view);
+        boolean couldPopulate = populate(view);
+        if (!couldPopulate) {
+            try {
+                MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+                mainMenuActivity.goHome();
+            }
+            catch (ClassCastException ex) {
+                Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
+                mainMenuActivityIntent.putExtra(START_SCREEN, HOME_SCREEN);
+                startActivity(mainMenuActivityIntent);
+            }
+        }
 
         Button addUserButton = view.findViewById(R.id.addUserButton);
         addUserButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addUserClicked(view);
+                addUserClicked();
             }
         });
         Button addPhotoButton = view.findViewById(R.id.addPhotoButton);
         addPhotoButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addPhotoClicked(view);
+                addPhotoClicked();
             }
         });
 
@@ -73,12 +89,11 @@ public class ViewAlbumFragment extends Fragment {
                 RelativeLayout relativeLayout = view.findViewById(R.id.albumViewContainer);
                 relativeLayout.setVisibility(View.VISIBLE);
 
-                // TODO - CHECK IF POPULATE RETURNED TRUE OR ELSE NULLPTR. //
                 Spinner dropdownMenu = view.findViewById(R.id.membershipDropdownMenu);
                 int index = dropdownMenu.getSelectedItemPosition();
                 albumID = albumIDs.get(index);
                 String catalogName = albumNames.get(index);
-                populateGrid(view, catalogName, new ArrayList<String>());
+                populateGrid(view, catalogName, getSlicesURLList(albumID));
             }
         });
         return view;
@@ -90,7 +105,7 @@ public class ViewAlbumFragment extends Fragment {
             return false;
         }
 
-        albumID = getArguments().getString(CATALOG_ID_EXTRA);
+        albumID = getArguments().getString(ALBUM_ID_EXTRA);
         if (albumID == null) {
             Log.i("ERROR", "VIEW ALBUM: catalogID is null.");
             return false;
@@ -116,7 +131,7 @@ public class ViewAlbumFragment extends Fragment {
             return true;
         }
 
-        String catalogTitle = getArguments().getString(TITLE_EXTRA);
+        String catalogTitle = getArguments().getString(ALBUM_TITLE_EXTRA);
         if (catalogTitle == null) {
             Log.i("ERROR", "VIEW ALBUM: catalogTitle is null.");
             return false;
@@ -130,49 +145,38 @@ public class ViewAlbumFragment extends Fragment {
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
+        // TODO - Replace by actual downloaded images. //
+        /*
         if (slicesURLList.isEmpty()) {
             Toast.makeText(getContext(), "Album is empty.", LENGTH_LONG).show();
             return;
         }
-
-        // TODO - @FranciscoBarros //
-        /*
-        GridView grid = findViewById(R.id.albumGrid);
-
-        grid.setAdapter(new ImageGridAdapter(this, imageIdsArray));
+        */
+        Integer[] imageIdsArray = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img1};
+        GridView grid = view.findViewById(R.id.albumGrid);
+        grid.setAdapter(new ImageGridAdapter(activity, imageIdsArray));
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(ViewAlbumFragment.this, "IMAGE WAS CLICKED: " + position,
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
             }
-        });*/
+        });
     }
 
-    private void addUserClicked(View view) {
-        Fragment newAlbumMemberFragment = new NewAlbumMemberFragment();
-        Bundle newAlbumMemberData = new Bundle();
-        newAlbumMemberData.putString(NewAlbumMemberFragment.ALBUM_ID_EXTRA, albumID);
-        newAlbumMemberFragment.setArguments(newAlbumMemberData);
-
+    private void addUserClicked() {
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.changeFragment(newAlbumMemberFragment, R.id.nav_new_album_member);
+            mainMenuActivity.goToAddUser(albumID);
         }
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(getContext(), "Could not present add new member screen", Toast.LENGTH_LONG).show();
         }
     }
 
-    private void addPhotoClicked(View view) {
-        Fragment addPhotoFragment = new AddPhotosFragment();
-        Bundle addPhotoData = new Bundle();
-        addPhotoData.putString(AddPhotosFragment.ALBUM_ID_EXTRA, albumID);
-        addPhotoFragment.setArguments(addPhotoData);
-
+    private void addPhotoClicked() {
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.changeFragment(addPhotoFragment, R.id.nav_add_photos);
+            mainMenuActivity.goToAddPhoto(albumID);
         }
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(getContext(), "Could not present add new photo screen", Toast.LENGTH_LONG).show();

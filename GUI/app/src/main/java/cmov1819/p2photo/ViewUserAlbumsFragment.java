@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -26,12 +27,9 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
-import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_ID_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_TITLE_EXTRA;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
-import static android.widget.Toast.LENGTH_SHORT;
-import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
-import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG_TITLE;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class ViewUserAlbumsFragment extends Fragment {
@@ -44,37 +42,33 @@ public class ViewUserAlbumsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
         View view = inflater.inflate(R.layout.fragment_view_user_albums, container, false);
-
-        ListView userAlbumsListView = view.findViewById(R.id.userAlbumsList);
-        this.catalogIdList = new ArrayList<>();
-        this.catalogTitleList = new ArrayList<>();
-        buildCatalogArrays();
-        userAlbumsListView.setAdapter(new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, catalogTitleList));
-        userAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String catalogID = catalogIdList.get(position);
-                String catalogTitle = catalogTitleList.get(position);
-                goToShowAlbumActivity(catalogID, catalogTitle);
-            }
-        });
+        populate(view);
         return view;
     }
 
-    private void buildCatalogArrays() {
+    private void populate(View view) {
+        catalogIdList = new ArrayList<>();
+        catalogTitleList = new ArrayList<>();
         Map<String, String> memberships = getUserMemberships(activity);
         for (Map.Entry<String, String> entry : memberships.entrySet()) {
             catalogIdList.add(entry.getKey());
             catalogTitleList.add(entry.getValue());
         }
-    }
 
-    private void goToShowAlbumActivity(String catalogID, String catalogTitle) {
-        Intent intent = new Intent(getContext(), MainMenuActivity.class);
-        intent.putExtra(START_SCREEN, ViewAlbumFragment.class.getName());
-        intent.putExtra(CATALOG_ID_EXTRA, catalogID);
-        intent.putExtra(TITLE_EXTRA, catalogTitle);
-        startActivity(intent);
+        ListView userAlbumsListView = view.findViewById(R.id.userAlbumsList);
+        userAlbumsListView.setAdapter(new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, catalogTitleList));
+        userAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                try {
+                    MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+                    mainMenuActivity.goToAlbum(catalogIdList.get(position), catalogTitleList.get(position));
+                }
+                catch (NullPointerException | ClassCastException ex) {
+                    Toast.makeText(activity, "Could not present album", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 
     public static Map<String, String> getUserMemberships(Activity activity) {
