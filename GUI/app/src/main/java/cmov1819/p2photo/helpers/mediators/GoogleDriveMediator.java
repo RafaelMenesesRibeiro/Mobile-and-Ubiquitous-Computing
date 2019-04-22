@@ -111,7 +111,7 @@ public class GoogleDriveMediator {
                                 catalogJson.put("photos", new ArrayList<String>());
                                 String catalogJsonContent = catalogJson.toString(4);
 
-                                return createTextFile(catalogFolderId, "catalog.json", catalogJsonContent);
+                                return createTextFile(catalogFolderId,"catalog.json", catalogJsonContent);
                             }
                         }
                     } catch (JSONException | IOException exc) {
@@ -128,7 +128,7 @@ public class GoogleDriveMediator {
      * JSON OBJECT CONSTRUCTORS AND REQUESTS
      **********************************************************/
 
-    private String createFolder(String parentId,
+    private File createFolder(String parentId,
                                 String folderName) throws IOException {
 
         Log.i(GOOGLE_DRIVE_TAG, ">>> Creating folder...");
@@ -143,12 +143,10 @@ public class GoogleDriveMediator {
                 .setFields("id")
                 .execute();
 
-        if (googleFile == null) { return null; }
-
-        return googleFile.getId();
+        return googleFile;
     }
 
-    private String createTextFile(String parentId,
+    private File createTextFile(String parentId,
                                   String fileName,
                                   String fileContent) throws IOException {
 
@@ -169,17 +167,14 @@ public class GoogleDriveMediator {
                 .setFields("id, parents")
                 .execute();
 
-        if (googleFile == null) { return null; }
-
-        return googleFile.getId();
+        return googleFile;
     }
 
-    private String createImgFile(String parentId,
-                                 String filePath,
-                                 String fileName,
-                                 String fileContent,
-                                 String mimeType
-                                 ) throws IOException {
+    private File createImgFile(String parentId,
+                               String filePath,
+                               String fileName,
+                               String fileContent,
+                               String mimeType) throws IOException {
 
         Log.i(GOOGLE_DRIVE_TAG, ">>> Creating image file with content type: " + mimeType + "...");
 
@@ -195,9 +190,7 @@ public class GoogleDriveMediator {
                 .setFields("id, parents")
                 .execute();
 
-        if (googleFile == null) { return null; }
-
-        return googleFile.getId();
+        return googleFile;
     }
 
     /**********************************************************
