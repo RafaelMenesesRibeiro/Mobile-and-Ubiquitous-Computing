@@ -28,8 +28,6 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
-
 public class SearchUserFragment extends Fragment {
     private Activity activity;
 
