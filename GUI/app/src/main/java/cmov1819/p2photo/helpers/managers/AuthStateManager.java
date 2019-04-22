@@ -9,6 +9,8 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.google.common.collect.ImmutableSet;
+
 import net.openid.appauth.AuthState;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationRequest;
@@ -23,6 +25,7 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
 
 import cmov1819.p2photo.LoginActivity;
 
@@ -184,14 +187,12 @@ public class AuthStateManager {
                 ResponseTypeValues.CODE,
                 this.REDIRECT_URI
         );
-        builder.setScopes(new ArrayList<>(Arrays.asList(
-                "email", "profile", "openid",
-                "https://www.googleapis.com/auth/drive.photos.readonly",
-                "https://www.googleapis.com/auth/drive.metadata.readonly",
-                "https://www.googleapis.com/auth/drive.readonly",
-                "https://www.googleapis.com/auth/drive.file",
-                "https://www.googleapis.com/auth/drive.appdata"
-        )));
+        builder.setScopes(ImmutableSet.of(
+                    "email", "profile", "openid",
+                    "https://www.googleapis.com/auth/drive.file",
+                    "https://www.googleapis.com/auth/drive.appdata"
+                )
+        );
         return builder.build();
     }
 

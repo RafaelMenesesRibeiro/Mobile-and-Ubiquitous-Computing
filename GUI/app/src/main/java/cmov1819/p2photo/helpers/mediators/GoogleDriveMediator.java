@@ -191,12 +191,4 @@ public class GoogleDriveMediator {
         Log.w(GOOGLE_DRIVE_TAG, message);
         context.startActivity(new Intent(context, LoginActivity.class));
     }
-
-    private static JSONObject newDirectory(String folderName) throws JSONException {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("title", folderName);
-        jsonObject.put("mimeType", TYPE_GOOGLE_DRIVE_FOLDER);
-        return jsonObject;
-    }
-
 }
