@@ -1,6 +1,5 @@
 package cmov1819.p2photo;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -12,12 +11,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.EditText;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
@@ -181,5 +181,24 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         button.setEnabled(false);
         button.setBackgroundColor(MainMenuActivity.resources.getColor(R.color.colorButtonInactive));
         button.setTextColor(MainMenuActivity.resources.getColor(R.color.almostBlack));
+    }
+
+    public static void addTextWatcher(final EditText editText, final Button button) {
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing */ }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (editText.getText().toString().isEmpty()) {
+                    MainMenuActivity.inactiveButton(button);
+                    return;
+                }
+                MainMenuActivity.activateButton(button);
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) { /* Do nothing */ }
+        });
     }
 }
