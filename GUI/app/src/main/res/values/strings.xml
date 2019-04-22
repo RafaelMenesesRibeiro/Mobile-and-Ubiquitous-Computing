@@ -53,4 +53,8 @@
     <string name="loading_complete">Loading complete…</string>
     <string name="no_membership">invalid membership - user does not belong to referenced album</string>
     <string name="no_user">invalid username - does not exist in p2photo databases</string>
+
+    <!-- Error messages -->
+    <string name="add_user_unsuccessful">The add user to album operation was unsuccessful. </string>
+    <string name="find_user_unsuccessful">The find users operation failed. </string>
 </resources>

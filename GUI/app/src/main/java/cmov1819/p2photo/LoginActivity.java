@@ -20,8 +20,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -159,7 +159,7 @@ public class LoginActivity extends AppCompatActivity {
         tryLogin(usernameValue, passwordValue);
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
-        HashMap<String, String> albumMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
+        Map<String, String> albumMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
         Set<String> albumIDs = albumMemberships.keySet();
         SessionManager.updateAlbumMembershipsIDs(this, albumIDs);
         Set<String> albumNames = new HashSet<>(albumMemberships.values());

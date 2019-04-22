@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +17,6 @@ import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -27,11 +27,16 @@ import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_SHORT;
+import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
+import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.SLICES_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
 import static cmov1819.p2photo.helpers.SessionManager.getUsername;
 
 public class ViewUserAlbumsFragment extends Fragment {
+    private Activity activity;
     private ArrayList<String> catalogIdList;
     private ArrayList<String> catalogTitleList;
     protected static ArrayList<String> slicesURLList = new ArrayList<>();
@@ -39,16 +44,14 @@ public class ViewUserAlbumsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        activity = getActivity();
         View view = inflater.inflate(R.layout.fragment_view_user_albums, container, false);
 
         ListView userAlbumsListView = view.findViewById(R.id.userAlbumsList);
-
         this.catalogIdList = new ArrayList<>();
         this.catalogTitleList = new ArrayList<>();
-
         buildCatalogArrays();
-
-        userAlbumsListView.setAdapter(newArrayAdapter(catalogTitleList));
+        userAlbumsListView.setAdapter(new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, catalogTitleList));
         userAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -62,48 +65,25 @@ public class ViewUserAlbumsFragment extends Fragment {
                     goToShowAlbumActivity(catalogID, catalogTitle);
                 }
                 else {
-                    Toast.makeText(getContext(), "BAD", LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Album is empty", LENGTH_SHORT).show();
                 }
             }
         });
-
         return view;
     }
 
     private void buildCatalogArrays() {
-        HashMap<String, String> memberships = getUserMemberships(getActivity());
+        Map<String, String> memberships = getUserMemberships(activity);
         for (Map.Entry<String, String> entry : memberships.entrySet()) {
             catalogIdList.add(entry.getKey());
             catalogTitleList.add(entry.getValue());
         }
-
-        /*
-        ArrayList<String> intentCatalogIdList = getArguments().getStringArrayList("catalogs");
-        String baseUrl =
-                getString(R.string.view_album_details_endpoint) + "?calleeUsername=" + getUsername(getActivity());
-        for (String catalogId : intentCatalogIdList) {
-            String url = baseUrl + "&catalogId=" + catalogId;
-            tryAdd(catalogId, new RequestData(getActivity(), GET_CATALOG_TITLE, url));
-        }
-        */
-    }
-
-    private void tryAdd(String catalogId, RequestData requestData) {
-        try {
-            ResponseData result = new QueryManager().execute(requestData).get();
-            if (result.getServerCode() == HttpURLConnection.HTTP_OK) {
-                SuccessResponse response = (SuccessResponse) result.getPayload();
-                this.catalogIdList.add(catalogId);
-                this.catalogTitleList.add((String) response.getResult());
-            }
-        } catch (ExecutionException | InterruptedException e) { /*continue;*/ }
     }
 
     private void setSliceURLList(String catalogId) {
         String url = getString(
                 R.string.view_album_endpoint) +
-                "?calleeUsername=" + getUsername(getActivity()) +
-                "&catalogId=" + catalogId;
+                "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogId;
 
         try {
             RequestData requestData = new RequestData(getActivity(), GET_CATALOG, url);
@@ -112,25 +92,23 @@ public class ViewUserAlbumsFragment extends Fragment {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
                 ViewUserAlbumsFragment.slicesURLList = (ArrayList<String>) payload.getResult();
             }
-        } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            Log.i("ERROR", "VIEW USER ALBUMS: " + ex.getMessage());
         }
     }
 
     private void goToShowAlbumActivity(String catalogID, String catalogTitle) {
         Intent intent = new Intent(getContext(), MainMenuActivity.class);
-        intent.putExtra("initialScreen", ViewAlbumFragment.class.getName());
-        intent.putExtra("catalogID", catalogID);
-        intent.putExtra("title", catalogTitle);
-        intent.putStringArrayListExtra("slices", slicesURLList);
+        intent.putExtra(START_SCREEN, ViewAlbumFragment.class.getName());
+        intent.putExtra(CATALOG_ID_EXTRA, catalogID);
+        intent.putExtra(TITLE_EXTRA, catalogTitle);
+        intent.putStringArrayListExtra(SLICES_EXTRA, slicesURLList);
         startActivity(intent);
     }
 
-    private ArrayAdapter<String> newArrayAdapter(ArrayList<String> items) {
-        return new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, items);
-    }
-
-    public static HashMap<String, String> getUserMemberships(Activity activity) {
+    public static Map<String, String> getUserMemberships(Activity activity) {
         String url = activity.getString(R.string.get_memberships_endpoint) + "?calleeUsername=" + getUsername(activity);
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         try {
@@ -142,8 +120,9 @@ public class ViewUserAlbumsFragment extends Fragment {
                 map = (LinkedHashMap<String, String>) object;
             }
         }
-        catch (ClassCastException | ExecutionException | InterruptedException e) {
-            e.printStackTrace();
+        catch (ClassCastException | ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            Log.i("ERROR", "VIEW USER ALBUMS: " + ex.getMessage());
         }
         return map;
     }

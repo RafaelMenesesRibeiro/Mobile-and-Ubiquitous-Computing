@@ -18,23 +18,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import static android.widget.Toast.LENGTH_LONG;
 
 public class ViewAlbumFragment extends Fragment {
-    private final Integer imageIdsArray[] = {
-            R.drawable.img1,
-            R.drawable.img2,
-            R.drawable.img3,
-            R.drawable.img4,
-            R.drawable.img5,
-            R.drawable.img6,
-            R.drawable.img7,
-            R.drawable.img8,
-            R.drawable.img9,
-    };
+    public static final String CATALOG_ID_EXTRA = "catalogID";
+    public static final String TITLE_EXTRA = "title";
+    public static final String SLICES_EXTRA = "slices";
+
+    private Activity activity;
     private ArrayList<String> albumNames;
     private ArrayList<String> albumIDs;
     private String catalogID;
@@ -42,6 +35,7 @@ public class ViewAlbumFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        activity = getActivity();
         final View view = inflater.inflate(R.layout.fragment_view_album, container, false);
         populate(view);
 
@@ -85,7 +79,7 @@ public class ViewAlbumFragment extends Fragment {
             return;
         }
 
-        catalogID = getArguments().getString("catalogID");
+        catalogID = getArguments().getString(CATALOG_ID_EXTRA);
         if (catalogID == null) {
             Log.i("ERROR", "VIEW ALBUM: catalogID is null.");
             return;
@@ -97,21 +91,20 @@ public class ViewAlbumFragment extends Fragment {
             constraintLayout.setVisibility(View.VISIBLE);
 
             Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-            HashMap<String, String> map = ViewUserAlbumsFragment.getUserMemberships(getActivity());
+            Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
             albumNames = new ArrayList<>();
             albumIDs = new ArrayList<>();
             for (Map.Entry<String, String> entry : map.entrySet()) {
                 albumIDs.add(entry.getKey());
                 albumNames.add(entry.getValue());
             }
-            ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_dropdown_item, albumNames);
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, albumNames);
             membershipDropdown.setAdapter(adapter);
-
             return;
         }
 
-        String catalogTitle = getArguments().getString("title");
-        ArrayList<String> slicesURLList = getArguments().getStringArrayList("slices");
+        String catalogTitle = getArguments().getString(TITLE_EXTRA);
+        ArrayList<String> slicesURLList = getArguments().getStringArrayList(SLICES_EXTRA);
         if (catalogTitle == null) {
             Log.i("ERROR", "VIEW ALBUM: catalogTitle is null.");
             return;
@@ -150,11 +143,10 @@ public class ViewAlbumFragment extends Fragment {
     private void addUserClicked() {
         Fragment newAlbumMemberFragment = new NewAlbumMemberFragment();
         Bundle newAlbumMemberData = new Bundle();
-        newAlbumMemberData.putString("albumID", catalogID);
+        newAlbumMemberData.putString(NewAlbumMemberFragment.ALBUM_ID_EXTRA, catalogID);
         newAlbumMemberFragment.setArguments(newAlbumMemberData);
 
         try {
-            Activity activity = getActivity();
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
             mainMenuActivity.changeFragment(newAlbumMemberFragment, R.id.nav_new_album_member);
         }
@@ -166,11 +158,10 @@ public class ViewAlbumFragment extends Fragment {
     private void addPhotoClicked() {
         Fragment addPhotoFragment = new AddPhotosFragment();
         Bundle addPhotoData = new Bundle();
-        addPhotoData.putString("albumID", catalogID);
+        addPhotoData.putString(AddPhotosFragment.ALBUM_ID_EXTRA, catalogID);
         addPhotoFragment.setArguments(addPhotoData);
 
         try {
-            Activity activity = getActivity();
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
             mainMenuActivity.changeFragment(addPhotoFragment, R.id.nav_add_photos);
         }

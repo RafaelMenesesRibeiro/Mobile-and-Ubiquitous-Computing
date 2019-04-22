@@ -20,10 +20,10 @@ import android.widget.Spinner;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 public class AddPhotosFragment extends Fragment {
+    public static final String ALBUM_ID_EXTRA = "albumID";
     private Activity activity;
     private View view;
 
@@ -31,25 +31,25 @@ public class AddPhotosFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         this.activity = getActivity();
-        final View view = inflater.inflate(R.layout.fragment_add_photos, container, false);
-        this.view = view;
+        final View inflaterView = inflater.inflate(R.layout.fragment_add_photos, container, false);
+        view = inflaterView;
 
-        Button chooseButton = view.findViewById(R.id.choosePhoto);
+        Button chooseButton = inflaterView.findViewById(R.id.choosePhoto);
         chooseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                choosePhotoClicked(view);
+                choosePhotoClicked();
             }
         });
-        Button done = view.findViewById(R.id.done);
+        Button done = inflaterView.findViewById(R.id.done);
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addPhotosClicked(view);
+                addPhotosClicked(inflaterView);
             }
         });
-        populate(view);
-        return view;
+        populate(inflaterView);
+        return inflaterView;
     }
 
     private void populate(View view) {
@@ -57,7 +57,7 @@ public class AddPhotosFragment extends Fragment {
         imageView.setImageResource(R.drawable.img_not_available);
 
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        HashMap<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
+        Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
         ArrayList<String> albumNames = new ArrayList<>();
         ArrayList<String> albumIDs = new ArrayList<>();
         for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -68,7 +68,7 @@ public class AddPhotosFragment extends Fragment {
         membershipDropdown.setAdapter(adapter);
 
         String albumID;
-        if (getArguments() != null && (albumID = getArguments().getString("albumID")) != null) {
+        if (getArguments() != null && (albumID = getArguments().getString(ALBUM_ID_EXTRA)) != null) {
             int index = albumIDs.indexOf(albumID);
             if (index != -1) {
                 membershipDropdown.setSelection(index);
@@ -76,7 +76,7 @@ public class AddPhotosFragment extends Fragment {
         }
     }
 
-    public void choosePhotoClicked(View view) {
+    public void choosePhotoClicked() {
         Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(intent, 0);
     }
