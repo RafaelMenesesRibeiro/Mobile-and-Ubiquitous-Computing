@@ -136,8 +136,7 @@ public class GoogleDriveMediator {
                             setError(context, "Could not generate ArrayList<Strings> slicePhotosList.");
                         }
 
-                        // TODO Pass this ArrayList<String> slicePhotosList to some place that can iterate urls and
-                        //  download images
+                        // TODO Pass this ArrayList<String> to some place that can iterate urls and download images
                     }
 
                 }.execute(accessToken);
