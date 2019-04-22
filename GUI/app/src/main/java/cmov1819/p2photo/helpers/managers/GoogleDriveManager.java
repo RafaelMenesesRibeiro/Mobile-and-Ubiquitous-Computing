@@ -73,6 +73,7 @@ public class GoogleDriveManager {
                     null).setApplicationName(APPLICATION_NAME).build();
         } catch (GeneralSecurityException | IOException exc) {
             Log.e(GOOGLE_DRIVE_TAG, "Could not instanciate <GoogleNetHttpTransport>, aborting");
+            System.exit(-1);
         }
         this.p2photoMediator = P2PhotoGoogleDriveMediator.getInstance();
     }
