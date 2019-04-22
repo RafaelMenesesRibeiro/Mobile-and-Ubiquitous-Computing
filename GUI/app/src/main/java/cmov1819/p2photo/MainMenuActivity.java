@@ -24,6 +24,7 @@ import cmov1819.p2photo.helpers.QueryManager;
 import cmov1819.p2photo.helpers.SessionManager;
 
 import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.NO_ALBUM_SELECTED;
 import static cmov1819.p2photo.ViewAlbumFragment.SLICES_EXTRA;
 import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
 
@@ -88,8 +89,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             case R.id.nav_view_album:
                 Fragment viewAlbumFragment = new ViewAlbumFragment();
                 Bundle viewAlbumData = new Bundle();
-                viewAlbumData.putString(CATALOG_ID_EXTRA, "NO_ALBUM_SELECTED_ERROR");
-                viewAlbumData.putString(TITLE_EXTRA, "NO_ALBUM_SELECTED_ERROR");
+                viewAlbumData.putString(CATALOG_ID_EXTRA, NO_ALBUM_SELECTED);
+                viewAlbumData.putString(TITLE_EXTRA, NO_ALBUM_SELECTED);
                 viewAlbumData.putStringArrayList(SLICES_EXTRA, new ArrayList<String>());
                 viewAlbumFragment.setArguments(viewAlbumData);
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, viewAlbumFragment).commit();

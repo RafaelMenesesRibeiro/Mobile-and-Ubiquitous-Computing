@@ -26,6 +26,7 @@ public class ViewAlbumFragment extends Fragment {
     public static final String CATALOG_ID_EXTRA = "catalogID";
     public static final String TITLE_EXTRA = "title";
     public static final String SLICES_EXTRA = "slices";
+    public static final String NO_ALBUM_SELECTED = "NO_ALBUM_SELECTED_ERROR";
 
     private Activity activity;
     private ArrayList<String> albumNames;
@@ -84,7 +85,7 @@ public class ViewAlbumFragment extends Fragment {
             Log.i("ERROR", "VIEW ALBUM: catalogID is null.");
             return;
         }
-        if (catalogID.equals("NO_ALBUM_SELECTED_ERROR")) {
+        if (catalogID.equals(NO_ALBUM_SELECTED)) {
             RelativeLayout relativeLayout = view.findViewById(R.id.albumViewContainer);
             relativeLayout.setVisibility(View.INVISIBLE);
             ConstraintLayout constraintLayout = view.findViewById(R.id.dropdownContainer);
