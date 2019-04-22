@@ -7,10 +7,9 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.api.client.auth.oauth2.Credential;
-import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.AbstractInputStreamContent;
+import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -27,20 +26,14 @@ import org.json.JSONObject;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 @SuppressLint("StaticFieldLeak")
 public class GoogleDriveMediator {
@@ -139,48 +132,84 @@ public class GoogleDriveMediator {
      * JSON OBJECT CONSTRUCTORS AND REQUESTS
      **********************************************************/
 
-    private File createFolder(String folderName, String token) throws IOException {
+    private String createFolder(String parentId,
+                                String folderName) throws IOException {
 
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Initiating GoogleDriveMediator#createFolder request");
-        File fileMetadata = new File();
-        fileMetadata.setName(folderName);
-        fileMetadata.setMimeType("application/vnd.google-apps.folder");
-        File file = driveService.files().create(fileMetadata)
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Creating folder...");
+
+        File fileMetaData = new File()
+                .setParents(buildParentsList(parentId))
+                .setName(folderName)
+                .setMimeType(TYPE_GOOGLE_DRIVE_FOLDER);
+
+        File googleFile = driveService.files()
+                .create(fileMetaData)
                 .setFields("id")
                 .execute();
 
-        Log.i(GOOGLE_DRIVE_TAG, "Folder ID: " + file.getId());
+        if (googleFile == null) { return null; }
 
-        return file;
+        return googleFile.getId();
     }
 
-    private File createFile(String parentFolderId, String fileName, AbstractInputStreamContent fileContent) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Initiating GoogleDriveMediator#createFile request");
+    private String createTextFile(String parentId,
+                                  String fileName,
+                                  String fileContent) throws IOException {
 
-        File fileMetadata = new File();
-        fileMetadata.setName(fileName);
-        fileMetadata.setParents(Collections.singletonList(parentFolderId));
-        File file = driveService.files().create(fileMetadata, fileContent)
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Creating text file...");
+
+        File metadata = new File()
+                .setParents(buildParentsList(parentId))
+                .setName(fileName)
+                .setMimeType(TYPE_TXT);
+
+        ByteArrayContent contentStream = ByteArrayContent.fromString(TYPE_TXT, fileContent);
+
+        File googleFile = driveService.files()
+                .create(metadata, contentStream)
                 .setFields("id, parents")
                 .execute();
 
-        Log.i(GOOGLE_DRIVE_TAG, "File ID: " + file.getId());
-        return file;
+        if (googleFile == null) { return null; }
+
+        return googleFile.getId();
+    }
+
+    private String createImgFile(String parentId,
+                                 String filePath,
+                                 String fileName,
+                                 String fileContent,
+                                 String mimeType
+                                 ) throws IOException {
+
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Creating image file with content type: " + mimeType + "...");
+
+        File metadata = new File()
+                .setParents(buildParentsList(parentId))
+                .setName(fileName)
+                .setMimeType(mimeType);
+
+        FileContent mediaContent = new FileContent(mimeType, new java.io.File(filePath));
+
+        File googleFile = driveService.files()
+                .create(metadata, mediaContent)
+                .setFields("id, parents")
+                .execute();
+
+        if (googleFile == null) { return null; }
+
+        return googleFile.getId();
     }
 
     /**********************************************************
      *  HELPERS
      **********************************************************/
 
-    public void processErrorCodes(Context context, JSONObject jsonResponse) throws JSONException {
-        String message = jsonResponse.getString("message");
-        int code = jsonResponse.getInt("code");
-        if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-            suggestReauthentication(context, message);
-        } else if (code == HttpURLConnection.HTTP_FORBIDDEN && message.startsWith("The user has not granted the app")) {
-            suggestReauthentication(context, message);
+    private List<String> buildParentsList(String folderId) {
+        if (folderId == null) {
+            return Collections.singletonList("root");
         } else {
-            setError(context,"Received unexpected error code from Google API.");
+            return Collections.singletonList(folderId);
         }
     }
 
