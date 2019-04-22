@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
@@ -33,6 +34,7 @@ import java.util.List;
 
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import okhttp3.MediaType;
 
 @SuppressLint("StaticFieldLeak")
@@ -104,18 +106,83 @@ public class GoogleDriveMediator {
                                 File catalogFolderFile = createFolder(null, title);
 
                                 if (catalogFolderFile == null) {
-                                    setWarning(context,"Null response received from Google REST API.");
+                                    setWarning(context,"Null catalog folder file received from Google REST API.");
                                     return null;
                                 }
 
                                 String catalogFolderId = catalogFolderFile.getId();
                                 String catalogJsonContent = newCatalogJsonFile(title, p2photoId, catalogFolderId);
+                                File catalogJsonFile = createTextFile(catalogFolderId,"catalog.json", catalogJsonContent);
 
-                                return createTextFile(catalogFolderId,"catalog.json", catalogJsonContent);
+                                if (catalogJsonFile == null) {
+                                    setWarning(context,"Null catalog.json file received from Google REST API.");
+                                }
+
+                                return catalogJsonFile;
                             }
                         } catch (JSONException | IOException exc) {
                             setError(context, exc.getMessage());
                             return null;
+                        }
+                    }
+
+                    @Override
+                    protected void onPostExecute(File file) {
+                        if (file == null) {
+                            Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
+                            // TODO Rafael: Call WebServer Endpoint that maps createTextFile.getId() with p2photoCatalogId
+                        }
+                    }
+                }.execute(accessToken);
+            }
+        });
+    }
+
+    public void newPhoto(final Context context,
+                         final String googleDriveCatalogId,
+                         final String photoName,
+                         final String mimeType,
+                         final java.io.File androidFilePath,
+                         final AuthState authState) {
+
+        authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
+            @Override
+            public void execute(String accessToken, String idToken, final AuthorizationException error) {
+                new AsyncTask<String, Void, File>() {
+                    @Override
+                    protected File doInBackground(String... tokens) {
+                        try {
+                            if (error != null) {
+                                suggestReauthentication(context, error.getMessage());
+                                return null;
+                            }
+                            else {
+                                credential.setAccessToken(tokens[0]);
+
+                                File googlePhotoFile = createImgFile(
+                                        googleDriveCatalogId, photoName, mimeType, androidFilePath
+                                );
+
+                                if (googlePhotoFile == null) {
+                                    setWarning(context,"Null response received from Google REST API.");
+                                }
+
+                                return googlePhotoFile;
+                            }
+                        } catch (IOException exc) {
+                            setError(context, exc.getMessage());
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected void onPostExecute(File file) {
+                        if (file == null) {
+                            Toast.makeText(context, "Couldn't upload photo", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(context, "Upload complete", Toast.LENGTH_LONG).show();
                         }
                     }
                 }.execute(accessToken);
@@ -166,11 +233,10 @@ public class GoogleDriveMediator {
 
         return googleFile;
     }
-
     private File createImgFile(String parentId,
-                               String filePath,
                                String fileName,
-                               String mimeType) throws IOException {
+                               String mimeType,
+                               java.io.File filePath) throws IOException {
 
         Log.i(GOOGLE_DRIVE_TAG, ">>> Creating image file with content type: " + mimeType + "...");
 
@@ -179,7 +245,7 @@ public class GoogleDriveMediator {
                 .setName(fileName)
                 .setMimeType(mimeType);
 
-        FileContent mediaContent = new FileContent(mimeType, new java.io.File(filePath));
+        FileContent mediaContent = new FileContent(mimeType, filePath);
 
         File googleFile = driveService.files()
                 .create(metadata, mediaContent)
@@ -187,6 +253,11 @@ public class GoogleDriveMediator {
                 .execute();
 
         return googleFile;
+    }
+
+    @Deprecated
+    private File createImgFile(String parentId, String fileName, String mimeType, String filePath) throws IOException {
+        return createImgFile(parentId, fileName, mimeType, new java.io.File(filePath));
     }
 
     /**********************************************************
