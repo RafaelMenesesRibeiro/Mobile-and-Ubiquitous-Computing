@@ -156,14 +156,7 @@ public class AddPhotosFragment extends Fragment {
                 authStateManager.getAuthState()
         );
 
-        /* TODO - Call method in GoogleDriveManager that: adds the photo's URL to user's catalog file
-        */
-        boolean isSuccess = true;
-
-        if (!isSuccess) {
-            Toast.makeText(activity, "Could not upload photo", Toast.LENGTH_LONG).show();
-            return;
-        }
+        // TODO - Call method in GoogleDriveManager that: adds the photo's URL to user's catalog file
 
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
