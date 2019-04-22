@@ -3,14 +3,19 @@ package cmov1819.p2photo.helpers.mediators;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.GridView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.util.IOUtils;
 import com.google.api.client.auth.oauth2.Credential;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.http.AbstractInputStreamContent;
-import com.google.api.client.http.ByteArrayContent;
 import com.google.api.client.http.FileContent;
 import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -32,9 +37,11 @@ import org.json.JSONStringer;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,9 +49,9 @@ import java.util.List;
 
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
-import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.NewAlbumFragment;
-import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.R;
+import cmov1819.p2photo.adapters.ImageGridAdapter;
 import okhttp3.MediaType;
 
 @SuppressLint("StaticFieldLeak")
@@ -95,6 +102,7 @@ public class GoogleDriveMediator {
     }
 
     public void retrieveCatalogSlice(final Context context,
+                                     final View view,
                                      final String googleDriveCatalogId,
                                      final AuthState authState) {
 
@@ -112,7 +120,7 @@ public class GoogleDriveMediator {
 
                             credential.setAccessToken(tokens[0]);
                             // Retrieve the metadata as a File object.
-                            String readContents = readFileContents(googleDriveCatalogId);
+                            String readContents = readTxtFileContents(googleDriveCatalogId);
 
                             if (readContents.equals("")) {
                                 setWarning(context, "catalog.json file not found or malformed");
@@ -129,23 +137,30 @@ public class GoogleDriveMediator {
 
                     @Override
                     protected void onPostExecute(JSONObject jsonObject) {
-                        ArrayList<String> slicePhotosList = new ArrayList<>();
-
+                        ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
                         try {
                             JSONArray jsonArray = jsonObject.getJSONArray("photos");
                             if (jsonArray != null) {
                                 int photoCount = jsonArray.length();
-                                for (int photo=0; photo < photoCount; photo++){
-                                    slicePhotosList.add(jsonArray.getString(photo));
+                                for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
+                                    String photoId = jsonArray.getString(photoIdx);
+                                    displayablePhotosList.add(readImageFile(photoId, TYPE_PNG));
                                 }
                             }
-                        } catch (JSONException jsone) {
-                            setError(context, "Could not generate ArrayList<Strings> slicePhotosList.");
+                        } catch (IOException | JSONException exc) {
+                            setError(context, exc.getMessage());
                         }
 
-                        // TODO Pass this ArrayList<String> to some place that can iterate urls and download images
+                        Bitmap[] displayablePhotosArray = displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
+                        GridView grid = view.findViewById(R.id.albumGrid);
+                        grid.setAdapter(new ImageGridAdapter(context, displayablePhotosArray));
+                        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                                Toast.makeText(context, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
+                            }
+                        });
                     }
-
                 }.execute(accessToken);
             }
         });
@@ -350,10 +365,13 @@ public class GoogleDriveMediator {
         return googleFile;
     }
 
-    private String readFileContents(String googleDriveCatalogId) throws IOException {
+    private String readTxtFileContents(String googleDriveCatalogId) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading file contents...");
         // Stream the file contents to a String.
-        InputStream inputStream = driveService.files().get(googleDriveCatalogId).executeMediaAsInputStream();
+        InputStream inputStream = driveService.files()
+                .get(googleDriveCatalogId)
+                .executeMediaAsInputStream();
+
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
         StringBuilder stringBuilder = new StringBuilder();
@@ -361,6 +379,31 @@ public class GoogleDriveMediator {
             stringBuilder.append(line);
         }
         return stringBuilder.toString();
+    }
+
+    private Bitmap readImageFile(String fileId, String mimeType) throws IOException {
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
+
+        InputStream inputStream = driveService.files()
+                .export(fileId, mimeType)
+                .executeMediaAsInputStream();
+
+        byte[] bitmapBytes = IOUtils.toByteArray(inputStream);
+
+        return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+    }
+
+    private Bitmap downloadImageFIle(String fileId, String mimeType) throws IOException {
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        driveService.files()
+                .export(fileId, mimeType)
+                .executeMediaAndDownloadTo(outputStream);
+
+        byte[] bitmapBytes = outputStream.toByteArray();
+
+        return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
     /**********************************************************

@@ -2,6 +2,8 @@ package cmov1819.p2photo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,6 +24,7 @@ import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -29,7 +32,9 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.adapters.ImageGridAdapter;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.MainMenuActivity.HOME_SCREEN;
@@ -45,12 +50,19 @@ public class ViewAlbumFragment extends Fragment {
     private Activity activity;
     private ArrayList<String> albumNames;
     private ArrayList<String> albumIDs;
+
+    private GoogleDriveMediator googleDriveMediator;
+    private AuthStateManager authStateManager;
+
     private String albumID;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
+        this.authStateManager = AuthStateManager.getInstance(this.getContext());
+        this.googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
+
         final View view = inflater.inflate(R.layout.fragment_view_album, container, false);
         boolean couldPopulate = populate(view);
         if (!couldPopulate) {
@@ -145,22 +157,12 @@ public class ViewAlbumFragment extends Fragment {
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
-        // TODO - Replace by actual downloaded images. //
-        /*
-        if (slicesURLList.isEmpty()) {
-            Toast.makeText(getContext(), "Album is empty.", LENGTH_LONG).show();
+        Iterator it = slicesURLList.iterator();
+        while(it.hasNext()) {
+            ArrayList<String> sliceInfo = (ArrayList<String>) it.next();
+            googleDriveMediator.retrieveCatalogSlice(getContext(), view, sliceInfo.get(1), authStateManager.getAuthState());
             return;
         }
-        */
-        Integer[] imageIdsArray = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img1};
-        GridView grid = view.findViewById(R.id.albumGrid);
-        grid.setAdapter(new ImageGridAdapter(activity, imageIdsArray));
-        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(activity, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void addUserClicked() {
