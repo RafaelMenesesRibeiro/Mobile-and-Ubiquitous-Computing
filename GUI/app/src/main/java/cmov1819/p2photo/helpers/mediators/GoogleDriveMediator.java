@@ -109,13 +109,9 @@ public class GoogleDriveMediator {
                                 catalogJson.put("p2photoId", "SOMETHING IDK WHAT FOR");
                                 catalogJson.put("googleDriveId", catalogFolderId);
                                 catalogJson.put("photos", new ArrayList<String>());
+                                String catalogJsonContent = catalogJson.toString(4);
 
-                                InputStream targetStream = new ByteArrayInputStream(
-                                        catalogJson.toString(4).getBytes(Charset.forName("UTF-8"))
-                                );
-                                AbstractInputStreamContent catalogFile = new InputStreamContent(TYPE_JSON, targetStream);
-
-                                return createFile(catalogFolderId, "catalog.json", catalogFile);
+                                return createTextFile(catalogFolderId, "catalog.json", catalogJsonContent);
                             }
                         }
                     } catch (JSONException | IOException exc) {
@@ -163,7 +159,10 @@ public class GoogleDriveMediator {
                 .setName(fileName)
                 .setMimeType(TYPE_TXT);
 
-        ByteArrayContent contentStream = ByteArrayContent.fromString(TYPE_TXT, fileContent);
+        //InputStream targetStream = new ByteArrayInputStream(fileContent.getBytes(Charset.forName("UTF-8")));
+        //AbstractInputStreamContent fileContentStream = new InputStreamContent(TYPE_JSON, targetStream);
+
+        ByteArrayContent contentStream = ByteArrayContent.fromString(TYPE_JSON, fileContent);
 
         File googleFile = driveService.files()
                 .create(metadata, contentStream)
