@@ -1,7 +1,6 @@
 package cmov1819.p2photo;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,9 +25,6 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
-import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.ALBUM_TITLE_EXTRA;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 

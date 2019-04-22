@@ -1,10 +1,11 @@
 package cmov1819.p2photo;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -20,7 +21,10 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -29,6 +33,7 @@ public class AddPhotosFragment extends Fragment {
     private Activity activity;
     private View view;
     private ArrayList<String> albumIDs;
+    private File selectedImage;
 
     @Nullable
     @Override
@@ -82,26 +87,45 @@ public class AddPhotosFragment extends Fragment {
         if (resultCode == Activity.RESULT_OK) {
             Uri targetUri = data.getData();
             ImageView imageView = this.view.findViewById(R.id.imageView);
-            try {
-                Bitmap bitmap = BitmapFactory.decodeStream(activity.getContentResolver().openInputStream(targetUri));
-                imageView.setImageBitmap(bitmap);
+            Bitmap bitmap = null;
 
-                Button doneButton = view.findViewById(R.id.done);
-                MainMenuActivity.activateButton(doneButton);
+            try {
+                bitmap = BitmapFactory.decodeStream(activity.getContentResolver().openInputStream(targetUri));
+                imageView.setImageBitmap(bitmap);
             }
             catch (FileNotFoundException | NullPointerException ex) {
                 imageView.setImageResource(R.drawable.img_not_available);
-                Log.i("ERROR", "AddPhotos: Could not load selected image file " + targetUri);
+                Log.i("ERROR", "Add Photo: Could not load selected image file " + targetUri);
             }
+
+            try {
+                if (bitmap == null) {throw new IOException(); }
+                save(bitmap);
+            }
+            catch (IOException ioex) {
+                Log.i("ERROR", "Add Photo: Could not save selected image file " + targetUri);
+                return;
+            }
+
+            Button doneButton = view.findViewById(R.id.done);
+            MainMenuActivity.activateButton(doneButton);
         }
     }
+
+    private void save(Bitmap bitmap) throws IOException {
+        ContextWrapper cw = new ContextWrapper(getContext());
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        File imageFile = new File(directory,"image.png");
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, new FileOutputStream(imageFile));
+        selectedImage = imageFile;
+    }
+
 
     public void addPhotosClicked(View view) {
         Spinner dropdown = view.findViewById(R.id.membershipDropdownMenu);
         String albumID = albumIDs.get(dropdown.getSelectedItemPosition());
         String albumName = dropdown.getSelectedItem().toString();
-        ImageView imageView = view.findViewById(R.id.imageView);
-        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        File imageFile = selectedImage;
         /* TODO - Call method in GoogleDriveManager that:
         *  - uploads the photo to Google Drive;
         *  - adds the photo's URL to user's catalog file
@@ -109,8 +133,7 @@ public class AddPhotosFragment extends Fragment {
         boolean isSuccess = true;
 
         if (!isSuccess) {
-            Toast.makeText(activity, "Could not add photo", Toast.LENGTH_LONG).show();
-            imageView.setImageResource(R.drawable.img_not_available);
+            Toast.makeText(activity, "Could not upload photo", Toast.LENGTH_LONG).show();
             return;
         }
 
