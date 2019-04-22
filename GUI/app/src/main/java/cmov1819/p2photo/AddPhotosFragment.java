@@ -93,28 +93,28 @@ public class AddPhotosFragment extends Fragment {
         if (resultCode == Activity.RESULT_OK) {
             Uri targetUri = data.getData();
             ImageView imageView = this.view.findViewById(R.id.imageView);
+            Bitmap bitmap = null;
+
             try {
-                Bitmap bitmap = BitmapFactory.decodeStream(activity.getContentResolver().openInputStream(targetUri));
+                bitmap = BitmapFactory.decodeStream(activity.getContentResolver().openInputStream(targetUri));
                 imageView.setImageBitmap(bitmap);
-
-                try {
-                    save(bitmap);
-                    Bitmap bitmap2 = BitmapFactory.decodeFile(selectedImage.getAbsolutePath());
-                    imageView.setImageBitmap(bitmap2);
-                }
-                catch (IOException ioex) {
-                    Log.i("ERROR", "Add Photo: Could not upload selected image file " + targetUri);
-                    return;
-                }
-
-                Button doneButton = view.findViewById(R.id.done);
-                MainMenuActivity.activateButton(doneButton);
             }
             catch (FileNotFoundException | NullPointerException ex) {
                 imageView.setImageResource(R.drawable.img_not_available);
                 Log.i("ERROR", "Add Photo: Could not load selected image file " + targetUri);
-                ex.printStackTrace();
             }
+
+            try {
+                if (bitmap == null) {throw new IOException(); }
+                save(bitmap);
+            }
+            catch (IOException ioex) {
+                Log.i("ERROR", "Add Photo: Could not save selected image file " + targetUri);
+                return;
+            }
+
+            Button doneButton = view.findViewById(R.id.done);
+            MainMenuActivity.activateButton(doneButton);
         }
     }
 
@@ -131,8 +131,7 @@ public class AddPhotosFragment extends Fragment {
         Spinner dropdown = view.findViewById(R.id.membershipDropdownMenu);
         String albumID = albumIDs.get(dropdown.getSelectedItemPosition());
         String albumName = dropdown.getSelectedItem().toString();
-        ImageView imageView = view.findViewById(R.id.imageView);
-        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        File imageFile = selectedImage;
         /* TODO - Call method in GoogleDriveManager that:
         *  - uploads the photo to Google Drive;
         *  - adds the photo's URL to user's catalog file
@@ -140,8 +139,7 @@ public class AddPhotosFragment extends Fragment {
         boolean isSuccess = true;
 
         if (!isSuccess) {
-            Toast.makeText(activity, "Could not add photo", Toast.LENGTH_LONG).show();
-            imageView.setImageResource(R.drawable.img_not_available);
+            Toast.makeText(activity, "Could not upload photo", Toast.LENGTH_LONG).show();
             return;
         }
 
