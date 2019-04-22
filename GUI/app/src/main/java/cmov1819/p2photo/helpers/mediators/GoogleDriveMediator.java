@@ -104,8 +104,8 @@ public class GoogleDriveMediator {
                                     return createFile(parentFolderId, "catalog.json", tokens[0]);
                                 }
                             }
-                        } catch (JSONException | IOException jsone) {
-                            setError(context,  jsone.getMessage());
+                        } catch (JSONException | IOException exc) {
+                            setError(context,  exc.getMessage());
                         }
                         return null;
                     }
