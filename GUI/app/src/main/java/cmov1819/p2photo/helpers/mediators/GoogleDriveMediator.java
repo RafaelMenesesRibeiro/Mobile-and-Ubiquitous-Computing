@@ -41,7 +41,7 @@ public class GoogleDriveMediator {
     public static final String TYPE_GOOGLE_PHOTO = "application/vnd.google-apps.photo";
     public static final String TYPE_GOOGLE_UNKNOWN = "application/vnd.google-apps.unknown";
 
-    public static final String TYPE_JSON = "application/json";
+    public static final String TYPE_JSON = "application/json; charset=utf-8";
     public static final String TYPE_TXT = "text/plain";
     public static final String TYPE_JPEG = "image/jpeg";
     public static final String TYPE_PNG = "image/png";
@@ -49,13 +49,15 @@ public class GoogleDriveMediator {
     public static final String TYPE_GIF = "image/gif";
     public static final String TYPE_WEBP = "image/webp";
 
+    public static final MediaType JSON_TYPE = MediaType.parse(TYPE_JSON);
+
     public static final String FILE_UPLOAD_ENDPOINT = GOOGLE_API + "drive/v2/files";
+    public static final String MEDIA_FILE_UPLOAD_ENDPOINT = GOOGLE_API + "/upload/drive/v3/files?uploadType=media";
 
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String CONTENT_TYPE_HEADER = "Content-Type";
     public static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
-    public static final MediaType JSON_TYPE = MediaType.parse("application/json; charset=utf-8");
 
     private static GoogleDriveMediator instance;
     private static Drive driveService;
@@ -102,8 +104,8 @@ public class GoogleDriveMediator {
                                     return createFile(parentFolderId, "catalog.json", tokens[0]);
                                 }
                             }
-                        } catch (JSONException | IOException jsone) {
-                            setError(context,  jsone.getMessage());
+                        } catch (JSONException | IOException exc) {
+                            setError(context, exc.getMessage());
                         }
                         return null;
                     }
@@ -145,6 +147,9 @@ public class GoogleDriveMediator {
                 .addHeader(AUTHORIZATION_HEADER, "Bearer " + token)
                 .build();
         Response createFolderResponse = okHttpClient.newCall(createFolderRequest).execute();
+        if (createFolderResponse.body() == null) {
+            return null;
+        }
         String createFolderResponseString = createFolderResponse.body().string();
         return new JSONObject(createFolderResponseString);
     }
@@ -158,8 +163,11 @@ public class GoogleDriveMediator {
                 .post(body)
                 .addHeader(AUTHORIZATION_HEADER, "Bearer " + token)
                 .build();
-        Response response = okHttpClient.newCall(request).execute();;
-        String jsonBody = response.body().string();
+        Response createFileResponse = okHttpClient.newCall(request).execute();
+        if (createFileResponse.body() == null) {
+            return null;
+        }
+        String jsonBody = createFileResponse.body().string();
         Log.i(GOOGLE_DRIVE_TAG, "createFile response: " + jsonBody);
         return new JSONObject(jsonBody);
     }
