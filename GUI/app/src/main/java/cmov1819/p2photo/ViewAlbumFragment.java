@@ -29,7 +29,9 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.adapters.ImageGridAdapter;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.MainMenuActivity.HOME_SCREEN;
@@ -45,12 +47,19 @@ public class ViewAlbumFragment extends Fragment {
     private Activity activity;
     private ArrayList<String> albumNames;
     private ArrayList<String> albumIDs;
+
+    private GoogleDriveMediator googleDriveMediator;
+    private AuthStateManager authStateManager;
+
     private String albumID;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
+        this.authStateManager = AuthStateManager.getInstance(this.getContext());
+        this.googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
+
         final View view = inflater.inflate(R.layout.fragment_view_album, container, false);
         boolean couldPopulate = populate(view);
         if (!couldPopulate) {
@@ -145,14 +154,13 @@ public class ViewAlbumFragment extends Fragment {
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
-        // TODO - Replace by actual downloaded images. //
-        /*
-        if (slicesURLList.isEmpty()) {
-            Toast.makeText(getContext(), "Album is empty.", LENGTH_LONG).show();
-            return;
+        // TODO - GET CATALOG SLICE LIST FROM WEBSERVER
+        ArrayList<String> catalogSlicesList = new ArrayList<>();
+        for (String catalogSliceId : catalogSlicesList) {
+            googleDriveMediator.retrieveCatalogSlice(getContext(), view, catalogSliceId, authStateManager.getAuthState());
         }
-        */
-        Integer[] imageIdsArray = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img1};
+
+        Integer[] imageIdsArray = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img6};
         GridView grid = view.findViewById(R.id.albumGrid);
         grid.setAdapter(new ImageGridAdapter(activity, imageIdsArray));
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
