@@ -158,7 +158,14 @@ public class LoginActivity extends AppCompatActivity {
         EditText passwordEditText = findViewById(R.id.passwordInputBox);
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
-        tryLogin(usernameValue, passwordValue);
+        try {
+            tryLogin(usernameValue, passwordValue);
+        }
+        catch (FailedLoginException | FailedOperationException ex) {
+            usernameEditText.setText("");
+            passwordEditText.setText("");
+            return;
+        }
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
         Map<String, String> albumMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
@@ -191,13 +198,18 @@ public class LoginActivity extends AppCompatActivity {
             }
             else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 Log.i(LOGIN_TAG, "Login operation failed. The username or password are incorrect.");
-                Toast.makeText(getApplicationContext(), "Incorrect credential combination", LENGTH_LONG).show();
+                String msg = "Incorrect credential combination";
+                Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
+                throw new FailedLoginException(msg);
             }
             else {
                 Log.i(LOGIN_TAG,"Login operation failed. Server error with response code: " + code);
-                Toast.makeText(getApplicationContext(), "Unexpected error... Try again later", LENGTH_LONG).show();
+                String msg = "Unexpected error... Try again later";
+                Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
+                throw new FailedLoginException(msg);
             }
-        } catch (JSONException | ExecutionException | InterruptedException ex) {
+        }
+        catch (JSONException | ExecutionException | InterruptedException ex) {
             throw new FailedLoginException(ex.getMessage());
         }
     }
