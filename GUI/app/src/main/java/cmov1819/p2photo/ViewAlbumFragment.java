@@ -25,12 +25,12 @@ import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
-import cmov1819.p2photo.helpers.QueryManager;
+import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
-import static cmov1819.p2photo.helpers.SessionManager.getUsername;
+import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class ViewAlbumFragment extends Fragment {
     public static final String CATALOG_ID_EXTRA = "catalogID";
