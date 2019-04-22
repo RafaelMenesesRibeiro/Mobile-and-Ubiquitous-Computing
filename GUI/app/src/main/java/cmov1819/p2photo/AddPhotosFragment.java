@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -17,15 +18,20 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
+import static cmov1819.p2photo.ViewAlbumFragment.TITLE_EXTRA;
+
 public class AddPhotosFragment extends Fragment {
     public static final String ALBUM_ID_EXTRA = "albumID";
     private Activity activity;
     private View view;
+    private ArrayList<String> albumIDs;
 
     @Nullable
     @Override
@@ -59,7 +65,7 @@ public class AddPhotosFragment extends Fragment {
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
         Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
         ArrayList<String> albumNames = new ArrayList<>();
-        ArrayList<String> albumIDs = new ArrayList<>();
+        albumIDs = new ArrayList<>();
         for (Map.Entry<String, String> entry : map.entrySet()) {
             albumIDs.add(entry.getKey());
             albumNames.add(entry.getValue());
@@ -100,6 +106,35 @@ public class AddPhotosFragment extends Fragment {
     }
 
     public void addPhotosClicked(View view) {
-        // TODO - @FranciscoBarros //
+        Spinner dropdown = view.findViewById(R.id.membershipDropdownMenu);
+        String albumID = albumIDs.get(dropdown.getSelectedItemPosition());
+        String albumName = dropdown.getSelectedItem().toString();
+        ImageView imageView = view.findViewById(R.id.imageView);
+        Bitmap bitmap = ((BitmapDrawable) imageView.getDrawable()).getBitmap();
+        /* TODO - Call method in GoogleDriveManager that:
+        *  - uploads the photo to Google Drive;
+        *  - adds the photo's URL to user's catalog file
+        */
+        boolean isSuccess = true;
+
+        if (!isSuccess) {
+            Toast.makeText(activity, "Could not add photo", Toast.LENGTH_LONG).show();
+            imageView.setImageResource(R.drawable.img_not_available);
+            return;
+        }
+
+        Fragment viewAlbumFragment = new ViewAlbumFragment();
+        Bundle data = new Bundle();
+        data.putString(CATALOG_ID_EXTRA, albumID);
+        data.putString(TITLE_EXTRA, albumName);
+        viewAlbumFragment.setArguments(data);
+
+        try {
+            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+            mainMenuActivity.changeFragment(viewAlbumFragment, R.id.nav_view_album);
+        }
+        catch (NullPointerException | ClassCastException ex) {
+            Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
+        }
     }
 }
