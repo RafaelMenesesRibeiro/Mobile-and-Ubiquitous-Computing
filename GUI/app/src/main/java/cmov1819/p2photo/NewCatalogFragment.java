@@ -31,7 +31,6 @@ import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 public class NewCatalogFragment extends Fragment {
-    public static String googleDriveSliceID;
     private AuthStateManager authStateManager;
     private GoogleDriveMediator googleDriveMediator;
     private Activity activity;
@@ -89,33 +88,36 @@ public class NewCatalogFragment extends Fragment {
         try {
             JSONObject requestBody = new JSONObject();
             requestBody.put("catalogTitle", catalogTitle);
-            // TODO - Implement adding slice to Cloud Provider. //
-            requestBody.put("googleCatalogFileId", "http://www.acloudprovider.com/catalog_slice");
-            googleDriveMediator.newCatalog(
-                    getActivity(),
-                    catalogTitle,
-                    "TODO",
-                    authStateManager.getAuthState()
-            );
-            Thread.sleep(1000);
-            requestBody.put("googleDriveFileID", NewCatalogFragment.googleDriveSliceID);
             requestBody.put("calleeUsername", SessionManager.getUsername(activity));
             RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_CATALOG, url, requestBody);
-
             ResponseData result = new QueryManager().execute(requestData).get();
+
+            String catalogID;
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
                 Log.i("STATUS", "The new catalog operation was successful");
                 SuccessResponse payload = (SuccessResponse) result.getPayload();
-                return (String) payload.getResult();
+                catalogID = (String) payload.getResult();
             }
             else {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 Log.i("STATUS", "The new catalog operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason());
                 throw new FailedOperationException();
             }
+
+            googleDriveMediator.newCatalog(
+                    getActivity(),
+                    catalogTitle,
+                    catalogID,
+                    authStateManager.getAuthState()
+            );
+
+            return catalogID;
         }
-        catch (JSONException | ExecutionException | InterruptedException ex) {
+        catch (JSONException ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new FailedOperationException(ex.getMessage());
         }
