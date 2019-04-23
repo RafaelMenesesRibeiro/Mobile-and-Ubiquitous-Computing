@@ -19,15 +19,19 @@ CREATE TABLE IF NOT EXISTS sessions (
 	last_activity numeric(10) NOT NULL CHECK (last_activity > 0)
 );
 
-CREATE TABLE IF NOT EXISTS 	catalogs (
+CREATE TABLE IF NOT EXISTS catalogs (
 	catalog_id numeric(10) CHECK (catalog_id > 0) PRIMARY KEY,
 	catalog_title varchar(50) NOT NULL,
-	slices varchar NOT NULL,
-	gd_id varchar NOT NULL
+	slices text NOT NULL,
 );
 
 CREATE TABLE IF NOT EXISTS memberships (
     catalog_id numeric(10) REFERENCES catalogs(catalog_id),
     username varchar(50) REFERENCES users(username),
     PRIMARY KEY (catalog_id, username)
+);
+
+CREATE TABLE IF NOT EXISTS usercatalogs (
+	username varchar(50) PRIMARY KEY REFERENCES users(username),
+	google_catalog_id text NOT NULL,
 );
