@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
+import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.msgtypes.BasicResponse;
@@ -243,8 +244,8 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                                                RequestData requestData) throws IOException {
 
         connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        PostRequestData postData = (PostRequestData) requestData;
-        sendJSON(connection, postData.getParams());
+        PutRequestData putData = (PutRequestData) requestData;
+        sendJSON(connection, putData.getParams());
         connection.connect();
         BasicResponse payload = QueryManager.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
