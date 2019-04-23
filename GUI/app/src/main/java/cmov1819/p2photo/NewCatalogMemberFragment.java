@@ -31,7 +31,7 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
-public class NewAlbumMemberFragment extends Fragment {
+public class NewCatalogMemberFragment extends Fragment {
     public static final String CATALOG_ID_EXTRA = "catalogID";
     private ArrayList<String> catalogIDs;
     private Activity activity;
@@ -40,7 +40,7 @@ public class NewAlbumMemberFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
-        final View view = inflater.inflate(R.layout.fragment_new_album_member, container, false);
+        final View view = inflater.inflate(R.layout.fragment_new_catalog_member, container, false);
         populate(view);
         return view;
     }
@@ -57,7 +57,7 @@ public class NewAlbumMemberFragment extends Fragment {
         MainMenuActivity.bingEditTextWithButton(editText, doneButton);
 
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        catalogIDs = AddPhotosFragment.setDropdownAdapterAngGetAlbumIDs(activity, membershipDropdown);
+        catalogIDs = AddPhotosFragment.setDropdownAdapterAngGetCatalogIDs(activity, membershipDropdown);
 
         String catalogID;
         if (getArguments() != null && (catalogID = getArguments().getString(CATALOG_ID_EXTRA)) != null) {

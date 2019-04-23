@@ -30,7 +30,7 @@ import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-public class NewAlbumFragment extends Fragment {
+public class NewCatalogFragment extends Fragment {
     public static String googleDriveSliceID;
     private AuthStateManager authStateManager;
     private GoogleDriveMediator googleDriveMediator;
@@ -42,7 +42,7 @@ public class NewAlbumFragment extends Fragment {
         activity = getActivity();
         authStateManager = AuthStateManager.getInstance(this.getContext());
         googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
-        final View view = inflater.inflate(R.layout.fragment_new_album, container, false);
+        final View view = inflater.inflate(R.layout.fragment_new_catalog, container, false);
         populate(view);
         return view;
     }
@@ -90,7 +90,7 @@ public class NewAlbumFragment extends Fragment {
             JSONObject requestBody = new JSONObject();
             requestBody.put("catalogTitle", catalogTitle);
             // TODO - Implement adding slice to Cloud Provider. //
-            requestBody.put("googleCatalogFileId", "http://www.acloudprovider.com/a_album_slice");
+            requestBody.put("googleCatalogFileId", "http://www.acloudprovider.com/catalog_slice");
             googleDriveMediator.newCatalog(
                     getActivity(),
                     catalogTitle,
@@ -98,7 +98,7 @@ public class NewAlbumFragment extends Fragment {
                     authStateManager.getAuthState()
             );
             Thread.sleep(1000);
-            requestBody.put("googleDriveFileID", NewAlbumFragment.googleDriveSliceID);
+            requestBody.put("googleDriveFileID", NewCatalogFragment.googleDriveSliceID);
             requestBody.put("calleeUsername", SessionManager.getUsername(activity));
             RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_CATALOG, url, requestBody);
 

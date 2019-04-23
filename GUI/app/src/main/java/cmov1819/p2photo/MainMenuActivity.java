@@ -28,9 +28,9 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_ID_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.CATALOG_TITLE_EXTRA;
-import static cmov1819.p2photo.ViewAlbumFragment.NO_CATALOG_SELECTED;
+import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
+import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
+import static cmov1819.p2photo.ViewCatalogFragment.NO_CATALOG_SELECTED;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static final String START_SCREEN = "initialScreen";
@@ -69,7 +69,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
             case R.id.nav_create_catalog:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewAlbumFragment()).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewCatalogFragment()).commit();
                 break;
             case R.id.nav_search_user:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
@@ -78,13 +78,13 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new AddPhotosFragment()).commit();
                 break;
             case R.id.nav_new_catalog_member:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewAlbumMemberFragment()).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new NewCatalogMemberFragment()).commit();
                 break;
             case R.id.nav_view_catalog:
                 goToCatalog(NO_CATALOG_SELECTED, NO_CATALOG_SELECTED);
                 break;
             case R.id.nav_view_user_catalogs:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewUserAlbumsFragment()).commit();
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewUserCatalogsFragment()).commit();
                 break;
             case R.id.nav_logout:
                 try {
@@ -167,15 +167,15 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     }
 
     public void goToAddUser(String catalogID) {
-        Fragment newCatalogMemberFragment = new NewAlbumMemberFragment();
+        Fragment newCatalogMemberFragment = new NewCatalogMemberFragment();
         Bundle newCatalogMemberData = new Bundle();
-        newCatalogMemberData.putString(NewAlbumMemberFragment.CATALOG_ID_EXTRA, catalogID);
+        newCatalogMemberData.putString(NewCatalogMemberFragment.CATALOG_ID_EXTRA, catalogID);
         newCatalogMemberFragment.setArguments(newCatalogMemberData);
         changeFragment(newCatalogMemberFragment, R.id.nav_new_catalog_member);
     }
 
     public void goToCatalog(String catalogID, String catalogTitle) {
-        Fragment viewCatalogFragment = new ViewAlbumFragment();
+        Fragment viewCatalogFragment = new ViewCatalogFragment();
         Bundle data = new Bundle();
         data.putString(CATALOG_ID_EXTRA, catalogID);
         data.putString(CATALOG_TITLE_EXTRA, catalogTitle);

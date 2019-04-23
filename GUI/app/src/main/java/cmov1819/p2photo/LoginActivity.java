@@ -168,7 +168,7 @@ public class LoginActivity extends AppCompatActivity {
         }
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
-        Map<String, String> catalogMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
+        Map<String, String> catalogMemberships = ViewUserCatalogsFragment.getUserMemberships(this);
         Set<String> catalogIDs = catalogMemberships.keySet();
         SessionManager.updateCatalogMembershipsIDs(this, catalogIDs);
         Set<String> catalogTitles = new HashSet<>(catalogMemberships.values());

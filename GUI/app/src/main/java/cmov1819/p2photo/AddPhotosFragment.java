@@ -77,7 +77,7 @@ public class AddPhotosFragment extends Fragment {
         imageView.setImageResource(R.drawable.img_not_available);
 
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        catalogIDs = setDropdownAdapterAngGetAlbumIDs(activity, membershipDropdown);
+        catalogIDs = setDropdownAdapterAngGetCatalogIDs(activity, membershipDropdown);
 
         String catalogID;
         if (getArguments() != null && (catalogID = getArguments().getString(CATALOG_ID_EXTRA)) != null) {
@@ -168,8 +168,8 @@ public class AddPhotosFragment extends Fragment {
         }
     }
 
-    public static ArrayList<String> setDropdownAdapterAngGetAlbumIDs(Activity activity, Spinner dropdownMenu) {
-        Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
+    public static ArrayList<String> setDropdownAdapterAngGetCatalogIDs(Activity activity, Spinner dropdownMenu) {
+        Map<String, String> map = ViewUserCatalogsFragment.getUserMemberships(activity);
         ArrayList<String> catalogTitles = new ArrayList<>();
         ArrayList<String> catalogIDs = new ArrayList<>();
         for (Map.Entry<String, String> entry : map.entrySet()) {

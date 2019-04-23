@@ -28,7 +28,7 @@ import cmov1819.p2photo.msgtypes.SuccessResponse;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
-public class ViewUserAlbumsFragment extends Fragment {
+public class ViewUserCatalogsFragment extends Fragment {
     private Activity activity;
     private ArrayList<String> catalogIdList;
     private ArrayList<String> catalogTitleList;
@@ -37,7 +37,7 @@ public class ViewUserAlbumsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
-        View view = inflater.inflate(R.layout.fragment_view_user_albums, container, false);
+        View view = inflater.inflate(R.layout.fragment_view_user_catalogs, container, false);
         populate(view);
         return view;
     }

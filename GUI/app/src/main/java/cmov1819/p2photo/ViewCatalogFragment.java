@@ -39,7 +39,7 @@ import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
-public class ViewAlbumFragment extends Fragment {
+public class ViewCatalogFragment extends Fragment {
     public static final String CATALOG_ID_EXTRA = "catalogID";
     public static final String CATALOG_TITLE_EXTRA = "title";
     public static final String NO_CATALOG_SELECTED = "NO_CATALOG_SELECTED_ERROR";
@@ -59,7 +59,7 @@ public class ViewAlbumFragment extends Fragment {
         this.authStateManager = AuthStateManager.getInstance(this.getContext());
         this.googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
 
-        final View view = inflater.inflate(R.layout.fragment_view_album, container, false);
+        final View view = inflater.inflate(R.layout.fragment_view_catalog, container, false);
         boolean couldPopulate = populate(view);
         if (!couldPopulate) {
             try {
@@ -88,13 +88,13 @@ public class ViewAlbumFragment extends Fragment {
             }
         });
 
-        Button viewAlbumButton = view.findViewById(R.id.viewButton);
-        viewAlbumButton.setOnClickListener(new View.OnClickListener() {
+        Button viewCatalogButton = view.findViewById(R.id.viewButton);
+        viewCatalogButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ConstraintLayout constraintLayout = view.findViewById(R.id.dropdownContainer);
                 constraintLayout.setVisibility(View.INVISIBLE);
-                RelativeLayout relativeLayout = view.findViewById(R.id.albumViewContainer);
+                RelativeLayout relativeLayout = view.findViewById(R.id.catalogViewContainer);
                 relativeLayout.setVisibility(View.VISIBLE);
 
                 Spinner dropdownMenu = view.findViewById(R.id.membershipDropdownMenu);
@@ -109,17 +109,17 @@ public class ViewAlbumFragment extends Fragment {
 
     private boolean populate(View view) {
         if (getArguments() == null) {
-            Log.i("ERROR", "VIEW ALBUM: arguments passed to fragment are null");
+            Log.i("ERROR", "VIEW CATALOG: arguments passed to fragment are null");
             return false;
         }
 
         catalogID = getArguments().getString(CATALOG_ID_EXTRA);
         if (catalogID == null) {
-            Log.i("ERROR", "VIEW ALBUM: catalogID is null.");
+            Log.i("ERROR", "VIEW CATALOG: catalogID is null.");
             return false;
         }
 
-        Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
+        Map<String, String> map = ViewUserCatalogsFragment.getUserMemberships(activity);
         catalogTitles = new ArrayList<>();
         catalogIDs = new ArrayList<>();
         for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -128,7 +128,7 @@ public class ViewAlbumFragment extends Fragment {
         }
 
         if (catalogID.equals(NO_CATALOG_SELECTED)) {
-            RelativeLayout relativeLayout = view.findViewById(R.id.albumViewContainer);
+            RelativeLayout relativeLayout = view.findViewById(R.id.catalogViewContainer);
             relativeLayout.setVisibility(View.INVISIBLE);
             ConstraintLayout constraintLayout = view.findViewById(R.id.dropdownContainer);
             constraintLayout.setVisibility(View.VISIBLE);
@@ -141,7 +141,7 @@ public class ViewAlbumFragment extends Fragment {
 
         String catalogTitle = getArguments().getString(CATALOG_TITLE_EXTRA);
         if (catalogTitle == null) {
-            Log.i("ERROR", "VIEW ALBUM: catalogTitle is null.");
+            Log.i("ERROR", "VIEW CATALOG: catalogTitle is null.");
             return false;
         }
         List<String[]> googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(catalogID);
@@ -150,7 +150,7 @@ public class ViewAlbumFragment extends Fragment {
     }
 
     private void populateGrid(View view, String catalogTitle, List<String[]> googleSliceFileIdentifiersList) {
-        TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
+        TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
         // TODO - Replace by actual downloaded images. //
         /*
@@ -161,7 +161,7 @@ public class ViewAlbumFragment extends Fragment {
         */
 
         Integer[] imageIdsArray = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img1};
-        GridView grid = view.findViewById(R.id.albumGrid);
+        GridView grid = view.findViewById(R.id.catalogGrid);
         grid.setAdapter(new ImageGridAdapter(activity, imageIdsArray));
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -206,7 +206,7 @@ public class ViewAlbumFragment extends Fragment {
         }
         catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.i("ERROR", "VIEW ALBUM: " + ex.getMessage());
+            Log.i("ERROR", "VIEW CATALOG: " + ex.getMessage());
         }
         return new ArrayList<>();
     }
