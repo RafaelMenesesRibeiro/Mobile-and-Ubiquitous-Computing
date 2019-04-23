@@ -73,7 +73,7 @@ public class SearchUserFragment extends Fragment {
     public Map<String, ArrayList> searchUser(String usernameToFind)
             throws FailedOperationException, NoResultsException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
-        String url = getString(R.string.p2photo_host) + getString(R.string.find_users_operation) +
+        String url = getString(R.string.p2photo_host) + getString(R.string.search_users_operation) +
                     "?searchPattern=" + usernameToFind + "&bringAlbums=" + true
                     + "&calleeUsername=" + SessionManager.getUsername(activity);
 

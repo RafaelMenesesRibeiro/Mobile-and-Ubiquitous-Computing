@@ -8,7 +8,7 @@
     <string name="signup_operation">signup</string>
     <string name="login_operation">login</string>
     <string name="logout_operation">logout/</string>
-    <string name="find_users_operation">findUsers/</string>
+    <string name="search_users_operation">findUsers/</string>
     <string name="new_album_operation">newAlbum/</string>
     <string name="add_member_operation">newAlbumMember</string>
     <string name="view_album_details_endpoint">https://p2photo-production.herokuapp.com/viewAlbumDetails</string>
