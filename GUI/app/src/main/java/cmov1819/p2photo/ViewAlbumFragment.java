@@ -2,8 +2,6 @@ package cmov1819.p2photo;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -24,7 +22,6 @@ import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -105,7 +102,7 @@ public class ViewAlbumFragment extends Fragment {
                 int index = dropdownMenu.getSelectedItemPosition();
                 albumID = albumIDs.get(index);
                 String catalogName = albumNames.get(index);
-                populateGrid(view, catalogName, getSlicesURLList(albumID));
+                populateGrid(view, catalogName, getGoogleSliceFileIdentifiersList(albumID));
             }
         });
         return view;
@@ -148,17 +145,17 @@ public class ViewAlbumFragment extends Fragment {
             Log.i("ERROR", "VIEW ALBUM: catalogTitle is null.");
             return false;
         }
-        List<String[]> slicesURLList = getSlicesURLList(albumID);
-        populateGrid(view, catalogTitle, slicesURLList);
+        List<String[]> googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(albumID);
+        populateGrid(view, catalogTitle, googleSliceFileIdentifiersList);
         return true;
     }
 
-    private void populateGrid(View view, String catalogTitle, List<String[]> slicesURLList) {
+    private void populateGrid(View view, String catalogTitle, List<String[]> googleSliceFileIdentifiersList) {
         TextView catalogTitleTextView = view.findViewById(R.id.albumTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
         // TODO - Replace by actual downloaded images. //
         /*
-        if (slicesURLList.isEmpty()) {
+        if (googleSliceFileIdentifiersList.isEmpty()) {
             Toast.makeText(getContext(), "Album is empty.", LENGTH_LONG).show();
             return;
         }
@@ -196,8 +193,8 @@ public class ViewAlbumFragment extends Fragment {
         }
     }
 
-    public List<String[]> getSlicesURLList(String catalogID) {
-        String url = getString(R.string.p2photo_host) + getString(R.string.view_album_operation) +
+    public List<String[]> getGoogleSliceFileIdentifiersList(String catalogID) {
+        String url = getString(R.string.p2photo_host) + getString(R.string.view_catalog_operation) +
                 "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
 
         try {
