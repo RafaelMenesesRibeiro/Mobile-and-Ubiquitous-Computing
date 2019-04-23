@@ -152,7 +152,8 @@ public class ViewCatalogFragment extends Fragment {
     private void populateGrid(View view, String catalogTitle, List<String[]> googleSliceFileIdentifiersList) {
         TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
-        // TODO - Replace by actual downloaded images. //
+
+        // TODO Klogaaan  - Replace by actual downloaded images. //
         /*
         if (googleSliceFileIdentifiersList.isEmpty()) {
             Toast.makeText(getContext(), "Album is empty.", LENGTH_LONG).show();

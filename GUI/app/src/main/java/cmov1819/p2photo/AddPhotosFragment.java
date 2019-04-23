@@ -157,7 +157,7 @@ public class AddPhotosFragment extends Fragment {
                 authStateManager.getAuthState()
         );
 
-        // TODO - Call method in GoogleDriveManager that: adds the photo's URL to user's catalog file
+        // TODO Bambi - Call method in GoogleDriveManager that: adds the photo's URL to user's catalog file
 
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;

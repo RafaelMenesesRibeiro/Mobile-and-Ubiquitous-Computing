@@ -202,7 +202,7 @@ public class GoogleDriveMediator {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
                         }
                         else {
-                            // TODO - Call endpoint to add slice. //
+                            // TODO Klogan - Call endpoint to add slice. //
                             Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
                         }
                     }
