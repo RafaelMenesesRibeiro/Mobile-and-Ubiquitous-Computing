@@ -11,6 +11,7 @@ public class RequestData {
         GET_CATALOG_TITLE,
         GET_CATALOG,
         NEW_CATALOG,
+        NEW_CATALOG_SLICE,
         NEW_CATALOG_MEMBER,
         GET_MEMBERSHIPS
     }

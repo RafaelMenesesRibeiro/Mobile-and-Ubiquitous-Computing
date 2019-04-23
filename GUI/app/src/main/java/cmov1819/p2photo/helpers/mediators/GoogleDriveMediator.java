@@ -42,6 +42,8 @@ import java.util.List;
 
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
+import cmov1819.p2photo.NewCatalogFragment;
+import cmov1819.p2photo.ViewCatalogFragment;
 import okhttp3.MediaType;
 
 @SuppressLint("StaticFieldLeak")
@@ -202,7 +204,7 @@ public class GoogleDriveMediator {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
                         }
                         else {
-                            // TODO Klogan - Call endpoint to add slice. //
+                            NewCatalogFragment.newCatalogSlice(context, p2photoId, file.getId());
                             Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
                         }
                     }
