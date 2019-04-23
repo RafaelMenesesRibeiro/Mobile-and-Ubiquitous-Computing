@@ -83,7 +83,7 @@ public class NewCatalogFragment extends Fragment {
 
     private String newCatalog(String catalogTitle) {
         Log.i("MSG", "Create catalog: " + catalogTitle);
-        String url = getString(R.string.p2photo_host) + getString(R.string.new_catalog_operation);
+        String url = getString(R.string.p2photo_host) + getString(R.string.new_catalog);
 
         try {
             JSONObject requestBody = new JSONObject();

@@ -27,7 +27,7 @@
         <item
             android:id="@+id/nav_view_catalog"
             android:icon="@drawable/ic_image_black_24dp"
-            android:title="@string/view_catalog" />
+            android:title="@string/view_album" />
 
         <item
             android:id="@+id/nav_view_user_catalogs"
@@ -37,7 +37,8 @@
         <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/ic_logout_black_24dp"
-            android:title="@string/logout" />
+            android:title="Logout"
+            tools:ignore="HardcodedText" />
     </group>
 
 

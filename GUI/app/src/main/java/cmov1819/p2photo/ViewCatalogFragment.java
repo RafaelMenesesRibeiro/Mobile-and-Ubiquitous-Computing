@@ -193,7 +193,7 @@ public class ViewCatalogFragment extends Fragment {
     }
 
     public List<String[]> getGoogleSliceFileIdentifiersList(String catalogID) {
-        String url = getString(R.string.p2photo_host) + getString(R.string.view_catalog_operation) +
+        String url = getString(R.string.p2photo_host) + getString(R.string.view_catalog) +
                 "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
 
         try {

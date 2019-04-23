@@ -14,7 +14,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="@string/view_catalog"
+        android:text="@string/view_album"
         android:layout_centerHorizontal="true"
         />
 
@@ -68,7 +68,7 @@
             android:layout_alignParentBottom="true"
             android:layout_marginEnd="30dp"
             android:layout_marginRight="30dp"
-            android:text="@string/view_catalog"
+            android:text="@string/view_album"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

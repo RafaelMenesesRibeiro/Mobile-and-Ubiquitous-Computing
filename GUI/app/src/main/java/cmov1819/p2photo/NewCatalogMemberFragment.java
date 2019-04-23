@@ -104,7 +104,7 @@ public class NewCatalogMemberFragment extends Fragment {
     private void addMember(String catalogID, String username)
             throws FailedOperationException, NoMembershipException, UsernameException {
         Log.i("MSG", "Add User to Album: " + catalogID + ", " + username);
-        String url = getString(R.string.p2photo_host) + getString(R.string.new_catalog_member_operation);
+        String url = getString(R.string.p2photo_host) + getString(R.string.new_catalog_member);
 
         try {
             JSONObject requestBody = new JSONObject();

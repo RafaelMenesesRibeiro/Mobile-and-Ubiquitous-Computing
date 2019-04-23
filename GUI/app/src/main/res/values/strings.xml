@@ -4,17 +4,17 @@
 
     <!-- Operation Endpoints -->
     <string name="p2photo_host">https://p2photo.herokuapp.com/</string>
-    <string name="signup_operation">signup</string>
-    <string name="login_operation">login</string>
-    <string name="logout_operation">logout/</string>
-    <string name="find_users_operation">findUsers/</string>
-    <string name="new_catalog_operation">newCatalog/</string>
-    <string name="new_catalog_member_operation">newCatalogMember</string>
-    <string name="new_catalog_slice_file_identifier_operation">newCatalogSliceIdentifierCatalogId</string>
-    <string name="view_catalog_members_operation">viewCatalogMembers</string>
-    <string name="view_catalog_operation">viewCatalog</string>
-    <string name="view_catalog_details_operation">viewCatalogDetails</string>
-    <string name="get_memberships_operation">getMemberships</string>
+    <string name="signup">signup</string>
+    <string name="login">login</string>
+    <string name="logout">logout</string>
+    <string name="find_users">findUsers</string>
+    <string name="new_catalog">newCatalog</string>
+    <string name="new_catalog_member">newCatalogMember</string>
+    <string name="new_catalog_slice">newCatalogSliceIdentifier/</string>
+    <string name="view_catalog_members">viewCatalogMembers</string>
+    <string name="view_catalog">viewCatalog</string>
+    <string name="view_catalog_details">viewCatalogDetails</string>
+    <string name="get_memberships">getMemberships</string>
 
     <!-- Server response error reasons -->
     <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>
@@ -40,14 +40,12 @@
     <string name="add_catalog_member">Add Album Member</string>
     <string name="input_member_username">Input the username to add</string>
     <!-- View Catalog Functionality -->
-    <string name="view_catalog">View Album</string>
+    <string name="view_album">View Album</string>
     <string name="add_member">Add Member</string>
     <string name="placeholder_catalog_name">placeholder-for-album-name</string>
     <string name="choose_catalog">Choose album to view</string>
     <!-- View User's Catalogs -->
     <string name="view_user_catalogs">User albums</string>
-    <!-- Logout -->
-    <string name="logout">Logout</string>
 
     <!-- Button Labels-->
     <string name="done">Done</string>

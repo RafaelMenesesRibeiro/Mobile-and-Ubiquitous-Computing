@@ -68,7 +68,7 @@ public class ViewUserCatalogsFragment extends Fragment {
     }
 
     public static Map<String, String> getUserMemberships(Activity activity) {
-        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_memberships_operation)
+        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_memberships)
                     + "?calleeUsername=" + getUsername(activity);
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         try {

@@ -115,7 +115,7 @@ public class LoginActivity extends AppCompatActivity {
             requestBody.put("username", usernameValue);
             requestBody.put("password", passwordValue);
 
-            String url = getString(R.string.p2photo_host) + getString(R.string.signup_operation);
+            String url = getString(R.string.p2photo_host) + getString(R.string.signup);
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.SIGNUP, url, requestBody);
 
             ResponseData result = new QueryManager().execute(requestData).get();
@@ -183,7 +183,7 @@ public class LoginActivity extends AppCompatActivity {
             requestBody.put("username", username);
             requestBody.put("password", password);
 
-            String url = getString(R.string.p2photo_host) + getString(R.string.login_operation);
+            String url = getString(R.string.p2photo_host) + getString(R.string.login);
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.LOGIN, url, requestBody);
             ResponseData result = new QueryManager().execute(requestData).get();
 
