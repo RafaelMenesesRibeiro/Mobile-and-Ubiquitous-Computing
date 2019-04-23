@@ -200,9 +200,10 @@ public class GoogleDriveMediator {
                     protected void onPostExecute(File file) {
                         if (file == null) {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
-                        } else {
+                        }
+                        else {
+                            // TODO - Call endpoint to add slice. //
                             Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
-                            String catalogJsonId = file.getId();
                         }
                     }
                 }.execute(accessToken);
