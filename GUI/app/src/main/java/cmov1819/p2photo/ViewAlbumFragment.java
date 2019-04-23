@@ -197,8 +197,7 @@ public class ViewAlbumFragment extends Fragment {
     }
 
     public List<String[]> getSlicesURLList(String catalogID) {
-        String url = getString(
-                R.string.view_album_endpoint) +
+        String url = getString(R.string.p2photo_host) + getString(R.string.view_album_operation) +
                 "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
 
         try {

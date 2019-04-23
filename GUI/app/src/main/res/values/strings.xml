@@ -1,9 +1,8 @@
 <resources>
-    <string name="navigation_drawer_open">Open navigation drawer</string>
-    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <!-- Labels -->
+    <string name="app_name">cmov1819.p2photo</string>
 
     <!-- Operation Endpoints -->
-    <string name="p2photo_domain">p2photo-production.herokuapp.com/</string>
     <string name="p2photo_host">https://p2photo-production.herokuapp.com/</string>
     <string name="signup_operation">signup</string>
     <string name="login_operation">login</string>
@@ -11,22 +10,29 @@
     <string name="search_users_operation">findUsers/</string>
     <string name="new_album_operation">newAlbum/</string>
     <string name="add_member_operation">newAlbumMember</string>
-    <string name="view_album_details_endpoint">https://p2photo-production.herokuapp.com/viewAlbumDetails</string>
-    <string name="view_album_endpoint">https://p2photo-production.herokuapp.com/viewAlbum</string>
-    <string name="get_memberships_endpoint">https://p2photo-production.herokuapp.com/getMemberships</string>
+    <string name="view_album_operation">viewAlbum</string>
+    <string name="get_memberships_operation">getMemberships</string>
 
-    <!-- Labels -->
-    <string name="app_name">cmov1819.p2photo</string>
+    <!-- Server response error reasons -->
+    <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>
+    <string name="bad_pass">invalid password - p2photo passwords must be 8 to 50 characters long</string>
+    <string name="loading_complete">Loading complete…</string>
+    <string name="no_membership">invalid membership - user does not belong to referenced album</string>
+    <string name="no_user">invalid username - does not exist in p2photo databases</string>
+
+    <!-- Error messages -->
+    <string name="add_user_unsuccessful">The add user to album operation was unsuccessful. </string>
+    <string name="find_user_unsuccessful">The find users operation failed. </string>
 
     <!-- Search User Functionality -->
     <string name="find_user">Find User</string>
     <string name="input_username">Input username to search</string>
-    <!-- Add Photos Functionality -->
-    <string name="choose_photo">Choose photo</string>
-    <string name="add_photo">Add Photo</string>
     <!-- New Album Functionality -->
     <string name="create_album">Create Album</string>
     <string name="input_album_name">Input new album name</string>
+    <!-- Add Photos Functionality -->
+    <string name="choose_photo">Choose photo</string>
+    <string name="add_photo">Add Photo</string>
     <!-- New Album Member Functionality -->
     <string name="add_album_member">Add Album Member</string>
     <string name="input_album_ID">Input the album ID</string>
@@ -47,14 +53,8 @@
     <string name="button_create">Create</string>
     <string name="button_add">Add</string>
 
-    <!-- Server response error reasons -->
-    <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>
-    <string name="bad_pass">invalid password - p2photo passwords must be 8 to 50 characters long</string>
-    <string name="loading_complete">Loading complete…</string>
-    <string name="no_membership">invalid membership - user does not belong to referenced album</string>
-    <string name="no_user">invalid username - does not exist in p2photo databases</string>
+    <!-- Nav bar Required Strings-->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 
-    <!-- Error messages -->
-    <string name="add_user_unsuccessful">The add user to album operation was unsuccessful. </string>
-    <string name="find_user_unsuccessful">The find users operation failed. </string>
 </resources>
