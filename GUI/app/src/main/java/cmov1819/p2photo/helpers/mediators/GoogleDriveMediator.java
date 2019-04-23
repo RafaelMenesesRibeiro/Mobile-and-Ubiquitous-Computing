@@ -212,7 +212,7 @@ public class GoogleDriveMediator {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
-                            NewAlbumFragment.googleDriveSliceID = file.getId();
+                            String catalogJsonId = file.getId();
                         }
                     }
                 }.execute(accessToken);
@@ -259,7 +259,7 @@ public class GoogleDriveMediator {
                                         AbstractInputStreamContent contentStream = new InputStreamContent(TYPE_JSON, targetStream);
 
                                         File metadata = new File()
-                                                .setName("catalog.json")
+                                                .setName("catalog")
                                                 .setMimeType(TYPE_TXT);
 
                                         driveService.files().update(googleDriveCatalogId, metadata, contentStream).execute();
