@@ -73,8 +73,8 @@ public class SearchUserFragment extends Fragment {
     public Map<String, ArrayList> searchUser(String usernameToFind)
             throws FailedOperationException, NoResultsException {
         Log.i("MSG", "Finding user " + usernameToFind + ".");
-        String url = getString(R.string.p2photo_host) + getString(R.string.find_users_operation) +
-                    "?searchPattern=" + usernameToFind + "&bringAlbums=" + true
+        String url = getString(R.string.p2photo_host) + getString(R.string.find_users) +
+                    "?searchPattern=" + usernameToFind + "&bringCatalogs=" + true
                     + "&calleeUsername=" + SessionManager.getUsername(activity);
 
         try {
@@ -86,7 +86,7 @@ public class SearchUserFragment extends Fragment {
 
                 SuccessResponse payload = (SuccessResponse) result.getPayload();
                 LinkedHashMap<String, ArrayList> map = (LinkedHashMap<String, ArrayList>) payload.getResult();
-                Log.i("MSG", "Users and respective albums: " + map.toString());
+                Log.i("MSG", "Users and respective catalogs: " + map.toString());
                 if (map.size() == 0) {
                     throw new NoResultsException();
                 }

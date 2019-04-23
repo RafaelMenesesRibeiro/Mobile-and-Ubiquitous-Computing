@@ -31,16 +31,16 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
-public class NewAlbumMemberFragment extends Fragment {
-    public static final String ALBUM_ID_EXTRA = "albumID";
-    private ArrayList<String> albumIDs;
+public class NewCatalogMemberFragment extends Fragment {
+    public static final String CATALOG_ID_EXTRA = "catalogID";
+    private ArrayList<String> catalogIDs;
     private Activity activity;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
-        final View view = inflater.inflate(R.layout.fragment_new_album_member, container, false);
+        final View view = inflater.inflate(R.layout.fragment_new_catalog_member, container, false);
         populate(view);
         return view;
     }
@@ -57,11 +57,11 @@ public class NewAlbumMemberFragment extends Fragment {
         MainMenuActivity.bingEditTextWithButton(editText, doneButton);
 
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        albumIDs = AddPhotosFragment.setDropdownAdapterAngGetAlbumIDs(activity, membershipDropdown);
+        catalogIDs = AddPhotosFragment.setDropdownAdapterAngGetCatalogIDs(activity, membershipDropdown);
 
-        String albumID;
-        if (getArguments() != null && (albumID = getArguments().getString(ALBUM_ID_EXTRA)) != null) {
-            int index = albumIDs.indexOf(albumID);
+        String catalogID;
+        if (getArguments() != null && (catalogID = getArguments().getString(CATALOG_ID_EXTRA)) != null) {
+            int index = catalogIDs.indexOf(catalogID);
             if (index != -1) {
                 membershipDropdown.setSelection(index);
             }
@@ -69,9 +69,9 @@ public class NewAlbumMemberFragment extends Fragment {
     }
 
     public void addUserClicked(View view) {
-        Spinner albumIDInput = view.findViewById(R.id.membershipDropdownMenu);
-        String albumID = albumIDs.get(albumIDInput.getSelectedItemPosition());
-        String albumName = albumIDInput.getSelectedItem().toString();
+        Spinner catalogIDInput = view.findViewById(R.id.membershipDropdownMenu);
+        String catalogID = catalogIDs.get(catalogIDInput.getSelectedItemPosition());
+        String catalogTitle = catalogIDInput.getSelectedItem().toString();
         EditText usernameInput = view.findViewById(R.id.toAddUsernameInputBox);
         String username = usernameInput.getText().toString();
 
@@ -81,10 +81,10 @@ public class NewAlbumMemberFragment extends Fragment {
         }
 
         try {
-            addMember(albumID, username);
+            addMember(catalogID, username);
             try {
                 MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-                mainMenuActivity.goToAlbum(albumID, albumName);
+                mainMenuActivity.goToCatalog(catalogID, catalogTitle);
             }
             catch (NullPointerException | ClassCastException ex) {
                 Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
@@ -101,18 +101,18 @@ public class NewAlbumMemberFragment extends Fragment {
         }
     }
 
-    private void addMember(String albumID, String username)
+    private void addMember(String catalogID, String username)
             throws FailedOperationException, NoMembershipException, UsernameException {
-        Log.i("MSG", "Add User to Album: " + albumID + ", " + username);
-        String url = getString(R.string.p2photo_host) + getString(R.string.add_member_operation);
+        Log.i("MSG", "Add User to Album: " + catalogID + ", " + username);
+        String url = getString(R.string.p2photo_host) + getString(R.string.new_catalog_member);
 
         try {
             JSONObject requestBody = new JSONObject();
-            requestBody.put("catalogId", albumID);
+            requestBody.put("catalogId", catalogID);
             requestBody.put("newMemberUsername", username);
             requestBody.put("calleeUsername", SessionManager.getUsername(activity));
             RequestData requestData = new PostRequestData(this.getActivity(),
-                    RequestData.RequestType.NEW_ALBUM_MEMBER, url, requestBody);
+                    RequestData.RequestType.NEW_CATALOG_MEMBER, url, requestBody);
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
@@ -130,7 +130,7 @@ public class NewAlbumMemberFragment extends Fragment {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
                 if (reason.equals(getString(R.string.no_membership))) {
-                    Log.i("STATUS", getString(R.string.add_user_unsuccessful) + "Callee does not belong to album " + albumID);
+                    Log.i("STATUS", getString(R.string.add_user_unsuccessful) + "Callee does not belong to album " + catalogID);
                     throw new NoMembershipException(reason);
                 }
             }

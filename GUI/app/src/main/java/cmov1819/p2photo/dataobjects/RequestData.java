@@ -10,8 +10,8 @@ public class RequestData {
         SEARCH_USERS,
         GET_CATALOG_TITLE,
         GET_CATALOG,
-        NEW_ALBUM,
-        NEW_ALBUM_MEMBER,
+        NEW_CATALOG,
+        NEW_CATALOG_MEMBER,
         GET_MEMBERSHIPS
     }
 

@@ -32,14 +32,14 @@ import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 
 public class AddPhotosFragment extends Fragment {
-    public static final String ALBUM_ID_EXTRA = "albumID";
+    public static final String CATALOG_ID_EXTRA = "catalogID";
 
     private View view;
 
     private GoogleDriveMediator googleDriveMediator;
     private AuthStateManager authStateManager;
 
-    private ArrayList<String> albumIDs;
+    private ArrayList<String> catalogIDs;
     private Activity activity;
     private File selectedImage;
 
@@ -77,11 +77,11 @@ public class AddPhotosFragment extends Fragment {
         imageView.setImageResource(R.drawable.img_not_available);
 
         Spinner membershipDropdown = view.findViewById(R.id.membershipDropdownMenu);
-        albumIDs = setDropdownAdapterAngGetAlbumIDs(activity, membershipDropdown);
+        catalogIDs = setDropdownAdapterAngGetCatalogIDs(activity, membershipDropdown);
 
-        String albumID;
-        if (getArguments() != null && (albumID = getArguments().getString(ALBUM_ID_EXTRA)) != null) {
-            int index = albumIDs.indexOf(albumID);
+        String catalogID;
+        if (getArguments() != null && (catalogID = getArguments().getString(CATALOG_ID_EXTRA)) != null) {
+            int index = catalogIDs.indexOf(catalogID);
             if (index != -1) {
                 membershipDropdown.setSelection(index);
             }
@@ -136,8 +136,8 @@ public class AddPhotosFragment extends Fragment {
 
     public void addPhotosClicked(View view) {
         Spinner dropdown = view.findViewById(R.id.membershipDropdownMenu);
-        String albumID = albumIDs.get(dropdown.getSelectedItemPosition());
-        String albumName = dropdown.getSelectedItem().toString();
+        String catalogID = catalogIDs.get(dropdown.getSelectedItemPosition());
+        String catalogTitle = dropdown.getSelectedItem().toString();
         File androidFilePath = selectedImage;
 
         /* TODO Raphael:
@@ -157,27 +157,27 @@ public class AddPhotosFragment extends Fragment {
                 authStateManager.getAuthState()
         );
 
-        // TODO - Call method in GoogleDriveManager that: adds the photo's URL to user's catalog file
+        // TODO Bambi - Call method in GoogleDriveManager that: adds the photo's URL to user's catalog file
 
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.goToAlbum(albumID, albumName);
+            mainMenuActivity.goToCatalog(catalogID, catalogTitle);
         }
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
         }
     }
 
-    public static ArrayList<String> setDropdownAdapterAngGetAlbumIDs(Activity activity, Spinner dropdownMenu) {
-        Map<String, String> map = ViewUserAlbumsFragment.getUserMemberships(activity);
-        ArrayList<String> albumNames = new ArrayList<>();
-        ArrayList<String> albumIDs = new ArrayList<>();
+    public static ArrayList<String> setDropdownAdapterAngGetCatalogIDs(Activity activity, Spinner dropdownMenu) {
+        Map<String, String> map = ViewUserCatalogsFragment.getUserMemberships(activity);
+        ArrayList<String> catalogTitles = new ArrayList<>();
+        ArrayList<String> catalogIDs = new ArrayList<>();
         for (Map.Entry<String, String> entry : map.entrySet()) {
-            albumIDs.add(entry.getKey());
-            albumNames.add(entry.getValue());
+            catalogIDs.add(entry.getKey());
+            catalogTitles.add(entry.getValue());
         }
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, albumNames);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, catalogTitles);
         dropdownMenu.setAdapter(adapter);
-        return albumIDs;
+        return catalogIDs;
     }
 }

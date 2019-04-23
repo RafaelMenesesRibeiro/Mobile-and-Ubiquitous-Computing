@@ -28,7 +28,7 @@ import cmov1819.p2photo.msgtypes.SuccessResponse;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
-public class ViewUserAlbumsFragment extends Fragment {
+public class ViewUserCatalogsFragment extends Fragment {
     private Activity activity;
     private ArrayList<String> catalogIdList;
     private ArrayList<String> catalogTitleList;
@@ -37,7 +37,7 @@ public class ViewUserAlbumsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
-        View view = inflater.inflate(R.layout.fragment_view_user_albums, container, false);
+        View view = inflater.inflate(R.layout.fragment_view_user_catalogs, container, false);
         populate(view);
         return view;
     }
@@ -51,14 +51,14 @@ public class ViewUserAlbumsFragment extends Fragment {
             catalogTitleList.add(entry.getValue());
         }
 
-        ListView userAlbumsListView = view.findViewById(R.id.userAlbumsList);
-        userAlbumsListView.setAdapter(new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, catalogTitleList));
-        userAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        ListView userCatalogsListView = view.findViewById(R.id.userCatalogsList);
+        userCatalogsListView.setAdapter(new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, catalogTitleList));
+        userCatalogsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 try {
                     MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-                    mainMenuActivity.goToAlbum(catalogIdList.get(position), catalogTitleList.get(position));
+                    mainMenuActivity.goToCatalog(catalogIdList.get(position), catalogTitleList.get(position));
                 }
                 catch (NullPointerException | ClassCastException ex) {
                     Toast.makeText(activity, "Could not present album", Toast.LENGTH_LONG).show();
@@ -68,7 +68,8 @@ public class ViewUserAlbumsFragment extends Fragment {
     }
 
     public static Map<String, String> getUserMemberships(Activity activity) {
-        String url = activity.getString(R.string.get_memberships_endpoint) + "?calleeUsername=" + getUsername(activity);
+        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_memberships)
+                    + "?calleeUsername=" + getUsername(activity);
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         try {
             RequestData requestData = new RequestData(activity, GET_MEMBERSHIPS, url);
@@ -81,7 +82,7 @@ public class ViewUserAlbumsFragment extends Fragment {
         }
         catch (ClassCastException | ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.i("ERROR", "VIEW USER ALBUMS: " + ex.getMessage());
+            Log.i("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
         }
         return map;
     }

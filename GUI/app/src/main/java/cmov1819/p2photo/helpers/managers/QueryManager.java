@@ -78,13 +78,13 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     connection.setDoOutput(false);
                     result = getCatalog(activity, connection);
                     break;
-                case NEW_ALBUM:
+                case NEW_CATALOG:
                     connection.setRequestMethod("POST");
-                    result = newAlbum(activity, connection, requestData);
+                    result = newCatalog(activity, connection, requestData);
                     break;
-                case NEW_ALBUM_MEMBER:
+                case NEW_CATALOG_MEMBER:
                     connection.setRequestMethod("POST");
-                    result = newAlbumMember(activity, connection, requestData);
+                    result = newCatalogMember(activity, connection, requestData);
                     break;
                 case GET_MEMBERSHIPS:
                     connection.setRequestMethod("GET");
@@ -220,8 +220,8 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
-    private ResponseData newAlbum(Activity activity, HttpURLConnection connection,
-                                  RequestData requestData) throws IOException {
+    private ResponseData newCatalog(Activity activity, HttpURLConnection connection,
+                                    RequestData requestData) throws IOException {
         String cookie = "sessionId=" + getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         PostRequestData postData = (PostRequestData) requestData;
@@ -231,8 +231,8 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
-    private ResponseData newAlbumMember(Activity activity, HttpURLConnection connection,
-                                        RequestData requestData) throws IOException {
+    private ResponseData newCatalogMember(Activity activity, HttpURLConnection connection,
+                                          RequestData requestData) throws IOException {
         String cookie = "sessionId=" + getSessionID(activity);
         connection.setRequestProperty("Cookie", cookie);
         PostRequestData postData = (PostRequestData) requestData;

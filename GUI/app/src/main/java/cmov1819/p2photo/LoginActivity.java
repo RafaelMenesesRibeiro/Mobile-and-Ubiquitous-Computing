@@ -115,7 +115,7 @@ public class LoginActivity extends AppCompatActivity {
             requestBody.put("username", usernameValue);
             requestBody.put("password", passwordValue);
 
-            String url = getString(R.string.p2photo_host) + getString(R.string.signup_operation);
+            String url = getString(R.string.p2photo_host) + getString(R.string.signup);
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.SIGNUP, url, requestBody);
 
             ResponseData result = new QueryManager().execute(requestData).get();
@@ -168,11 +168,11 @@ public class LoginActivity extends AppCompatActivity {
         }
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
-        Map<String, String> albumMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
-        Set<String> albumIDs = albumMemberships.keySet();
-        SessionManager.updateAlbumMembershipsIDs(this, albumIDs);
-        Set<String> albumNames = new HashSet<>(albumMemberships.values());
-        SessionManager.updateAlbumMembershipsNames(this, albumNames);
+        Map<String, String> catalogMemberships = ViewUserCatalogsFragment.getUserMemberships(this);
+        Set<String> catalogIDs = catalogMemberships.keySet();
+        SessionManager.updateCatalogMembershipsIDs(this, catalogIDs);
+        Set<String> catalogTitles = new HashSet<>(catalogMemberships.values());
+        SessionManager.updateCatalogMembershipsNames(this, catalogTitles);
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {
@@ -183,7 +183,7 @@ public class LoginActivity extends AppCompatActivity {
             requestBody.put("username", username);
             requestBody.put("password", password);
 
-            String url = getString(R.string.p2photo_host) + getString(R.string.login_operation);
+            String url = getString(R.string.p2photo_host) + getString(R.string.login);
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.LOGIN, url, requestBody);
             ResponseData result = new QueryManager().execute(requestData).get();
 

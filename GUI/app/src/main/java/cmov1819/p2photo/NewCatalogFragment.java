@@ -30,8 +30,7 @@ import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-public class NewAlbumFragment extends Fragment {
-    public static String googleDriveSliceID;
+public class NewCatalogFragment extends Fragment {
     private AuthStateManager authStateManager;
     private GoogleDriveMediator googleDriveMediator;
     private Activity activity;
@@ -42,7 +41,7 @@ public class NewAlbumFragment extends Fragment {
         activity = getActivity();
         authStateManager = AuthStateManager.getInstance(this.getContext());
         googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
-        final View view = inflater.inflate(R.layout.fragment_new_album, container, false);
+        final View view = inflater.inflate(R.layout.fragment_new_catalog, container, false);
         populate(view);
         return view;
     }
@@ -52,70 +51,73 @@ public class NewAlbumFragment extends Fragment {
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                newAlbumClicked(view);
+                newCatalogClicked(view);
             }
         });
         EditText editText = view.findViewById(R.id.nameInputBox);
         MainMenuActivity.bingEditTextWithButton(editText, doneButton);
     }
 
-    public void newAlbumClicked(View view) {
+    public void newCatalogClicked(View view) {
         EditText titleInput = view.findViewById(R.id.nameInputBox);
-        String albumTitle = titleInput.getText().toString();
+        String catalogTitle = titleInput.getText().toString();
 
-        if (albumTitle.equals("")) {
+        if (catalogTitle.equals("")) {
             Toast toast = Toast.makeText(this.getContext(), "Enter a name for the album", Toast.LENGTH_LONG);
             toast.show();
             return;
         }
 
         try {
-            String albumID = newAlbum(albumTitle);
+            String catalogId = newCatalog(catalogTitle);
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.goToAlbum(albumID, albumTitle);
+            mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (FailedOperationException foex) {
-            Toast.makeText(this.getContext(), "The create album operation failed. Try again later", Toast.LENGTH_LONG).show();
+            Toast.makeText(this.getContext(), "The create catalog operation failed. Try again later", Toast.LENGTH_LONG).show();
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, "Could not present new catalog", Toast.LENGTH_LONG).show();
         }
     }
 
-    private String newAlbum(String albumName) {
-        Log.i("MSG", "Create album: " + albumName);
-        String url = getString(R.string.p2photo_host) + getString(R.string.new_album_operation);
+    private String newCatalog(String catalogTitle) {
+        Log.i("MSG", "Create catalog: " + catalogTitle);
+        String url = getString(R.string.p2photo_host) + getString(R.string.new_catalog);
 
         try {
             JSONObject requestBody = new JSONObject();
-            requestBody.put("catalogTitle", albumName);
-            // TODO - Implement adding slice to Cloud Provider. //
-            requestBody.put("sliceUrl", "http://www.acloudprovider.com/a_album_slice");
-            googleDriveMediator.newCatalog(
-                    getActivity(),
-                    albumName,
-                    "TODO",
-                    authStateManager.getAuthState()
-            );
-            Thread.sleep(1000);
-            requestBody.put("googleDriveFileID", NewAlbumFragment.googleDriveSliceID);
+            requestBody.put("catalogTitle", catalogTitle);
             requestBody.put("calleeUsername", SessionManager.getUsername(activity));
-            RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_ALBUM, url, requestBody);
-
+            RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_CATALOG, url, requestBody);
             ResponseData result = new QueryManager().execute(requestData).get();
+
+            String catalogID;
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
-                Log.i("STATUS", "The new album operation was successful");
+                Log.i("STATUS", "The new catalog operation was successful");
                 SuccessResponse payload = (SuccessResponse) result.getPayload();
-                return (String) payload.getResult();
+                catalogID = (String) payload.getResult();
             }
             else {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
-                Log.i("STATUS", "The new album operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason());
+                Log.i("STATUS", "The new catalog operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason());
                 throw new FailedOperationException();
             }
+
+            googleDriveMediator.newCatalog(
+                    getActivity(),
+                    catalogTitle,
+                    catalogID,
+                    authStateManager.getAuthState()
+            );
+
+            return catalogID;
         }
-        catch (JSONException | ExecutionException | InterruptedException ex) {
+        catch (JSONException ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new FailedOperationException(ex.getMessage());
         }
