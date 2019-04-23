@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
+import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.msgtypes.BasicResponse;
@@ -81,6 +82,10 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                 case NEW_CATALOG:
                     connection.setRequestMethod("POST");
                     result = newCatalog(activity, connection, requestData);
+                    break;
+                case NEW_CATALOG_SLICE:
+                    connection.setRequestMethod("PUT");
+                    result = newCatalogSliceFileId(activity, connection, requestData);
                     break;
                 case NEW_CATALOG_MEMBER:
                     connection.setRequestMethod("POST");
@@ -184,6 +189,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
 
     private ResponseData login(Activity activity, HttpURLConnection connection,
                                RequestData requestData) throws IOException {
+
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
         getCookies(activity, connection);
@@ -192,8 +198,8 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData logout(Activity activity, HttpURLConnection connection) throws IOException {
-        String cookie = "sessionId=" + getSessionID(activity);
-        connection.setRequestProperty("Cookie", cookie);
+
+        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
         connection.connect();
         BasicResponse payload = QueryManager.getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
@@ -220,12 +226,26 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
-    private ResponseData newCatalog(Activity activity, HttpURLConnection connection,
+    private ResponseData newCatalog(Activity activity,
+                                    HttpURLConnection connection,
                                     RequestData requestData) throws IOException {
-        String cookie = "sessionId=" + getSessionID(activity);
-        connection.setRequestProperty("Cookie", cookie);
+
+        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
+        connection.connect();
+
+        BasicResponse payload = QueryManager.getSuccessResponse(connection);
+        return new ResponseData(connection.getResponseCode(), payload);
+    }
+
+    private ResponseData newCatalogSliceFileId(Activity activity,
+                                               HttpURLConnection connection,
+                                               RequestData requestData) throws IOException {
+
+        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
+        PutRequestData putData = (PutRequestData) requestData;
+        sendJSON(connection, putData.getParams());
         connection.connect();
         BasicResponse payload = QueryManager.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
@@ -233,8 +253,8 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
 
     private ResponseData newCatalogMember(Activity activity, HttpURLConnection connection,
                                           RequestData requestData) throws IOException {
-        String cookie = "sessionId=" + getSessionID(activity);
-        connection.setRequestProperty("Cookie", cookie);
+
+        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
         connection.connect();

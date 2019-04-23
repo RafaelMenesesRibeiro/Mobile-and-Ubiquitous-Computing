@@ -42,13 +42,15 @@ import java.util.List;
 
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
+import cmov1819.p2photo.NewCatalogFragment;
+import cmov1819.p2photo.ViewCatalogFragment;
 import okhttp3.MediaType;
 
 @SuppressLint("StaticFieldLeak")
 public class GoogleDriveMediator {
     public static final String APPLICATION_NAME = MainApplication.getApplicationName();
 
-    public static final String GOOGLE_DRIVE_TAG = "DRIVE INTERACTOR";
+    public static final String GOOGLE_DRIVE_TAG = "DRIVE MEDIATOR";
 
     public static final String GOOGLE_API = "https://www.googleapis.com/";
     public static final String TYPE_GOOGLE_DRIVE_FILE = "application/vnd.google-apps.file";
@@ -202,7 +204,7 @@ public class GoogleDriveMediator {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
                         }
                         else {
-                            // TODO Klogan - Call endpoint to add slice. //
+                            NewCatalogFragment.newCatalogSlice(context, p2photoId, file.getId());
                             Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
                         }
                     }

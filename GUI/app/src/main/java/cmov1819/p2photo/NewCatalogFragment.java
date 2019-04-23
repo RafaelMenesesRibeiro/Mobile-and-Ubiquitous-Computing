@@ -1,6 +1,8 @@
 package cmov1819.p2photo;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -20,6 +22,7 @@ import java.net.HttpURLConnection;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
+import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
@@ -30,7 +33,12 @@ import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
+import static android.widget.Toast.LENGTH_LONG;
+import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
+
 public class NewCatalogFragment extends Fragment {
+    private static final String NEW_CATALOG_TAG = "NEW CATALOG FRAGMENT";
+
     private AuthStateManager authStateManager;
     private GoogleDriveMediator googleDriveMediator;
     private Activity activity;
@@ -88,7 +96,7 @@ public class NewCatalogFragment extends Fragment {
         try {
             JSONObject requestBody = new JSONObject();
             requestBody.put("catalogTitle", catalogTitle);
-            requestBody.put("calleeUsername", SessionManager.getUsername(activity));
+            requestBody.put("calleeUsername", getUsername(activity));
             RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_CATALOG, url, requestBody);
             ResponseData result = new QueryManager().execute(requestData).get();
 
@@ -119,6 +127,41 @@ public class NewCatalogFragment extends Fragment {
         }
         catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
+            throw new FailedOperationException(ex.getMessage());
+        }
+    }
+
+    public static void newCatalogSlice(final Context context, final String catalogId, final String googleCatalogFileId) {
+        try {
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("googleCatalogFileId", googleCatalogFileId);
+            requestBody.put("calleeUsername", getUsername((Activity)context));
+
+            String url =
+                    context.getString(R.string.p2photo_host) + context.getString(R.string.new_catalog_slice) + catalogId;
+
+            RequestData requestData = new PutRequestData(
+                    (Activity)context, RequestData.RequestType.NEW_CATALOG_SLICE, url, requestBody
+            );
+
+            ResponseData result = new QueryManager().execute(requestData).get();
+
+            int code = result.getServerCode();
+
+            if (code != HttpURLConnection.HTTP_OK) {
+                String reason = ((ErrorResponse) result.getPayload()).getReason();
+                if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    Log.w(NEW_CATALOG_TAG, reason);
+                    Toast.makeText(context, "Session timed out, please login again", Toast.LENGTH_SHORT).show();
+                    context.startActivity(new Intent(context, LoginActivity.class));
+                } else {
+                    Log.e(NEW_CATALOG_TAG, reason);
+                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();;
+                }
+            }
+
+        } catch (JSONException | ExecutionException | InterruptedException ex) {
             throw new FailedOperationException(ex.getMessage());
         }
     }

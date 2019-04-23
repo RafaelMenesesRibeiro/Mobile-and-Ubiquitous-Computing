@@ -120,7 +120,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         String username = SessionManager.getUsername(this);
         Log.i("MSG", "Logout: " + username);
 
-        String url = getString(R.string.p2photo_host) + getString(R.string.logout_operation) + username;
+        String url = getString(R.string.p2photo_host) + getString(R.string.logout) + username;
         RequestData rData = new RequestData(this, RequestData.RequestType.LOGOUT, url);
         try {
             ResponseData result = new QueryManager().execute(rData).get();
