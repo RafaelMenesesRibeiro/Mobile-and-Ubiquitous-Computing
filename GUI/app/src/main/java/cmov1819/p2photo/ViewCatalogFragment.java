@@ -100,8 +100,8 @@ public class ViewCatalogFragment extends Fragment {
                 Spinner dropdownMenu = view.findViewById(R.id.membershipDropdownMenu);
                 int index = dropdownMenu.getSelectedItemPosition();
                 catalogID = catalogIDs.get(index);
-                String catalogName = catalogTitles.get(index);
-                populateGrid(view, catalogName, getGoogleSliceFileIdentifiersList(catalogID));
+                String catalogTitle = catalogTitles.get(index);
+                populateGrid(view, catalogTitle, getGoogleSliceFileIdentifiersList(catalogID));
             }
         });
         return view;
