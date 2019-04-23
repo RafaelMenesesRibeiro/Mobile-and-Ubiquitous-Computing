@@ -1,3 +1,8 @@
+drop table if exists sessions;
+drop table if exists memberships;
+drop table if exists catalogs;
+drop table if exists users;
+
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS users (
@@ -17,7 +22,8 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS 	catalogs (
 	catalog_id numeric(10) CHECK (catalog_id > 0) PRIMARY KEY,
 	catalog_title varchar(50) NOT NULL,
-	slices varchar NOT NULL
+	slices varchar NOT NULL,
+	gd_id varchar NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS memberships (
