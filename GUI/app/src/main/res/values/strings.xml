@@ -7,10 +7,12 @@
     <string name="signup_operation">signup</string>
     <string name="login_operation">login</string>
     <string name="logout_operation">logout/</string>
-    <string name="search_users_operation">findUsers/</string>
-    <string name="new_album_operation">newAlbum/</string>
-    <string name="add_member_operation">newAlbumMember</string>
-    <string name="view_album_operation">viewAlbum</string>
+    <string name="find_users_operation">findUsers/</string>
+    <string name="new_catalog_operation">newCatalog/</string>
+    <string name="new_catalog_member_operation">newCatalogMember</string>
+    <string name="view_catalog_members_operation">viewCatalogMembers</string>
+    <string name="view_catalog_operation">viewCatalog</string>
+    <string name="view_catalog_details_operation">viewCatalogDetails</string>
     <string name="get_memberships_operation">getMemberships</string>
 
     <!-- Server response error reasons -->

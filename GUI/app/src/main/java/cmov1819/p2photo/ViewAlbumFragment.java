@@ -2,8 +2,6 @@ package cmov1819.p2photo;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -24,7 +22,6 @@ import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -197,7 +194,7 @@ public class ViewAlbumFragment extends Fragment {
     }
 
     public List<String[]> getSlicesURLList(String catalogID) {
-        String url = getString(R.string.p2photo_host) + getString(R.string.view_album_operation) +
+        String url = getString(R.string.p2photo_host) + getString(R.string.view_catalog_operation) +
                 "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
 
         try {

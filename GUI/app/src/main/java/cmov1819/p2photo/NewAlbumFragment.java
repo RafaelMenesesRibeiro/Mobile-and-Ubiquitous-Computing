@@ -84,7 +84,7 @@ public class NewAlbumFragment extends Fragment {
 
     private String newAlbum(String albumName) {
         Log.i("MSG", "Create album: " + albumName);
-        String url = getString(R.string.p2photo_host) + getString(R.string.new_album_operation);
+        String url = getString(R.string.p2photo_host) + getString(R.string.new_catalog_operation);
 
         try {
             JSONObject requestBody = new JSONObject();
