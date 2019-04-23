@@ -72,7 +72,7 @@ public class NewAlbumFragment extends Fragment {
         try {
             String catalogId = newCatalog(catalogTitle);
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.goToAlbum(catalogId, catalogTitle);
+            mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (FailedOperationException foex) {
             Toast.makeText(this.getContext(), "The create catalog operation failed. Try again later", Toast.LENGTH_LONG).show();
@@ -100,7 +100,7 @@ public class NewAlbumFragment extends Fragment {
             Thread.sleep(1000);
             requestBody.put("googleDriveFileID", NewAlbumFragment.googleDriveSliceID);
             requestBody.put("calleeUsername", SessionManager.getUsername(activity));
-            RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_ALBUM, url, requestBody);
+            RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_CATALOG, url, requestBody);
 
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();

@@ -14,7 +14,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="@string/view_album"
+        android:text="@string/view_catalog"
         android:layout_centerHorizontal="true"
         />
 
@@ -37,7 +37,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
-            android:text="@string/choose_album"
+            android:text="@string/choose_catalog"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -68,7 +68,7 @@
             android:layout_alignParentBottom="true"
             android:layout_marginEnd="30dp"
             android:layout_marginRight="30dp"
-            android:text="@string/view_album"
+            android:text="@string/view_catalog"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
@@ -92,7 +92,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp"
-            android:text="@string/placeholder_for_album_name"
+            android:text="@string/placeholder_catalog_name"
             android:layout_centerHorizontal="true"
             />
 

@@ -17,8 +17,8 @@ public class SessionManager {
     private static String sessionID;
     private static String username = null;
 
-    private static Set<String> albumMembershipIDs;
-    private static Set<String> albumMembershipNames;
+    private static Set<String> catalogMembershipIDs;
+    private static Set<String> catalogMembershipNames;
 
     /**********************************************************
      * COOKIE METHODS
@@ -64,33 +64,33 @@ public class SessionManager {
      * MEMBERSHIP METHODS
      ***********************************************************/
 
-    public static Set<String> getAlbumMembershipsNames(Activity activity) {
-        if (albumMembershipNames != null) { return albumMembershipNames; }
+    public static Set<String> getCatalogMembershipsNames(Activity activity) {
+        if (catalogMembershipNames != null) { return catalogMembershipNames; }
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         return sharedPref.getStringSet("membershipNames", null);
     }
 
-    public static void updateAlbumMembershipsNames(Activity activity, Set<String> albumMemberships) {
+    public static void updateCatalogMembershipsNames(Activity activity, Set<String> catalogMemberships) {
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putStringSet("membershipNames", albumMemberships);
+        editor.putStringSet("membershipNames", catalogMemberships);
         editor.apply();
-        SessionManager.albumMembershipNames = albumMemberships;
+        SessionManager.catalogMembershipNames = catalogMemberships;
     }
 
-    public static Set<String> getAlbumMembershipsIDs(Activity activity) {
-        if (albumMembershipIDs != null) { return albumMembershipIDs; }
+    public static Set<String> getCatalogMembershipsIDs(Activity activity) {
+        if (catalogMembershipIDs != null) { return catalogMembershipIDs; }
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         Set<String> set = sharedPref.getStringSet("membershipIDs", null);
         return set;
     }
 
-    public static void updateAlbumMembershipsIDs(Activity activity, Set<String> albumMemberships) {
+    public static void updateCatalogMembershipsIDs(Activity activity, Set<String> catalogMemberships) {
         SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putStringSet("membershipIDs", albumMemberships);
+        editor.putStringSet("membershipIDs", catalogMemberships);
         editor.apply();
-        SessionManager.albumMembershipIDs = albumMemberships;
+        SessionManager.catalogMembershipIDs = catalogMemberships;
     }
 
 }

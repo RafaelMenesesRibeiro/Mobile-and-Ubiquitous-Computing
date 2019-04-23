@@ -168,11 +168,11 @@ public class LoginActivity extends AppCompatActivity {
         }
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
-        Map<String, String> albumMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
-        Set<String> albumIDs = albumMemberships.keySet();
-        SessionManager.updateAlbumMembershipsIDs(this, albumIDs);
-        Set<String> albumNames = new HashSet<>(albumMemberships.values());
-        SessionManager.updateAlbumMembershipsNames(this, albumNames);
+        Map<String, String> catalogMemberships = ViewUserAlbumsFragment.getUserMemberships(this);
+        Set<String> catalogIDs = catalogMemberships.keySet();
+        SessionManager.updateCatalogMembershipsIDs(this, catalogIDs);
+        Set<String> catalogTitles = new HashSet<>(catalogMemberships.values());
+        SessionManager.updateCatalogMembershipsNames(this, catalogTitles);
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {

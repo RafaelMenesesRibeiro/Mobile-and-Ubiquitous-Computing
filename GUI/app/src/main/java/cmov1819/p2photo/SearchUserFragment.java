@@ -86,7 +86,7 @@ public class SearchUserFragment extends Fragment {
 
                 SuccessResponse payload = (SuccessResponse) result.getPayload();
                 LinkedHashMap<String, ArrayList> map = (LinkedHashMap<String, ArrayList>) payload.getResult();
-                Log.i("MSG", "Users and respective albums: " + map.toString());
+                Log.i("MSG", "Users and respective catalogs: " + map.toString());
                 if (map.size() == 0) {
                     throw new NoResultsException();
                 }

@@ -12,7 +12,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginEnd="8dp"
         android:layout_marginRight="8dp"
-        android:text="@string/create_album"
+        android:text="@string/create_catalog"
         android:layout_centerHorizontal="true"
         />
 
@@ -24,7 +24,7 @@
         android:layout_below="@+id/addPhotosLabel"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp"
-        android:hint="@string/input_album_name"
+        android:hint="@string/input_catalog_name"
         android:inputType="text" />
 
     <Button

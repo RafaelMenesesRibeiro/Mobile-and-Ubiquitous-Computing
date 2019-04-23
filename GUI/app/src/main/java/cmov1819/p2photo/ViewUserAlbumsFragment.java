@@ -51,14 +51,14 @@ public class ViewUserAlbumsFragment extends Fragment {
             catalogTitleList.add(entry.getValue());
         }
 
-        ListView userAlbumsListView = view.findViewById(R.id.userAlbumsList);
-        userAlbumsListView.setAdapter(new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, catalogTitleList));
-        userAlbumsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        ListView userCatalogsListView = view.findViewById(R.id.userCatalogsList);
+        userCatalogsListView.setAdapter(new ArrayAdapter<>(activity, android.R.layout.simple_list_item_1, catalogTitleList));
+        userCatalogsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 try {
                     MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-                    mainMenuActivity.goToAlbum(catalogIdList.get(position), catalogTitleList.get(position));
+                    mainMenuActivity.goToCatalog(catalogIdList.get(position), catalogTitleList.get(position));
                 }
                 catch (NullPointerException | ClassCastException ex) {
                     Toast.makeText(activity, "Could not present album", Toast.LENGTH_LONG).show();
@@ -82,7 +82,7 @@ public class ViewUserAlbumsFragment extends Fragment {
         }
         catch (ClassCastException | ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.i("ERROR", "VIEW USER ALBUMS: " + ex.getMessage());
+            Log.i("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
         }
         return map;
     }
