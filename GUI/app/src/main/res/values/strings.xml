@@ -10,6 +10,7 @@
     <string name="find_users_operation">findUsers/</string>
     <string name="new_catalog_operation">newCatalog/</string>
     <string name="new_catalog_member_operation">newCatalogMember</string>
+    <string name="new_catalog_slice_file_identifier_operation">newCatalogSliceIdentifierCatalogId</string>
     <string name="view_catalog_members_operation">viewCatalogMembers</string>
     <string name="view_catalog_operation">viewCatalog</string>
     <string name="view_catalog_details_operation">viewCatalogDetails</string>
