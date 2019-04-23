@@ -50,7 +50,7 @@ import okhttp3.MediaType;
 public class GoogleDriveMediator {
     public static final String APPLICATION_NAME = MainApplication.getApplicationName();
 
-    public static final String GOOGLE_DRIVE_TAG = "DRIVE INTERACTOR";
+    public static final String GOOGLE_DRIVE_TAG = "DRIVE MEDIATOR";
 
     public static final String GOOGLE_API = "https://www.googleapis.com/";
     public static final String TYPE_GOOGLE_DRIVE_FILE = "application/vnd.google-apps.file";
