@@ -3,7 +3,7 @@
     <string name="app_name">cmov1819.p2photo</string>
 
     <!-- Operation Endpoints -->
-    <string name="p2photo_host">https://p2photo-production.herokuapp.com/</string>
+    <string name="p2photo_host">https://p2photo.herokuapp.com/</string>
     <string name="signup_operation">signup</string>
     <string name="login_operation">login</string>
     <string name="logout_operation">logout/</string>
