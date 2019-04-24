@@ -48,6 +48,7 @@ import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
+import static android.widget.Toast.LENGTH_SHORT;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.*;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
@@ -163,6 +164,12 @@ public class AddPhotosFragment extends Fragment {
 
         HashMap<String, String> googleDriveIdentifiers = getGoogleDriveIdentifiers(catalogId);
 
+        if (googleDriveIdentifiers == null) {
+            Log.e(ADD_PHOTO_TAG, "Failed to obtain googleDriveIdentifiers. Found ErrorResponse");
+            Toast.makeText(activity, "Failed to add photo", LENGTH_SHORT).show();
+            return;
+        }
+
         googleDriveMediator.newPhoto(
                 getContext(),
                 googleDriveIdentifiers.get("parentFolderGoogleId"),
@@ -178,7 +185,7 @@ public class AddPhotosFragment extends Fragment {
             mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, "Failed to add photo", LENGTH_SHORT).show();
         }
     }
 
@@ -195,11 +202,14 @@ public class AddPhotosFragment extends Fragment {
                 String reason = ((ErrorResponse) result.getPayload()).getReason();
                 if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Log.w(ADD_PHOTO_TAG, reason);
-                    Toast.makeText(context, "Session timed out, please login again", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, "Session timed out, please login again", LENGTH_SHORT).show();
                     context.startActivity(new Intent(context, LoginActivity.class));
+                    return null;
                 } else {
                     Log.e(ADD_PHOTO_TAG, reason);
-                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();;
+                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();
+                    return null;
+
                 }
             } else {
                 Object resultObject = ((SuccessResponse)result.getPayload()).getResult();
@@ -209,7 +219,6 @@ public class AddPhotosFragment extends Fragment {
         } catch (ExecutionException | InterruptedException ex) {
             throw new FailedOperationException(ex.getMessage());
         }
-        return null;
     }
 
     public static ArrayList<String> setDropdownAdapterAngGetCatalogIDs(Activity activity, Spinner dropdownMenu) {
