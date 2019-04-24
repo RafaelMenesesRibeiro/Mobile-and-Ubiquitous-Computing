@@ -12,16 +12,16 @@ import android.widget.ImageView;
  */
 public class ImageGridAdapter extends BaseAdapter {
     private Context context;
-    private Integer[] imageIdsArray;
+    private Bitmap[] contents;
 
-    public ImageGridAdapter(Context context, Integer[] imageIdsArray) {
+    public ImageGridAdapter(Context context, Bitmap[] contents) {
         this.context = context;
-        this.imageIdsArray = imageIdsArray;
+        this.contents = contents;
     }
 
     @Override
     public int getCount() {
-        return imageIdsArray.length;
+        return contents.length;
     }
 
     @Override
@@ -49,7 +49,7 @@ public class ImageGridAdapter extends BaseAdapter {
         imageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         imageView.setAdjustViewBounds(true);
         imageView.setPadding(16, 16, 16, 16);
-        imageView.setImageResource(imageIdsArray[position]);
+        imageView.setImageBitmap(contents[position]);
         return imageView;
     }
 }
