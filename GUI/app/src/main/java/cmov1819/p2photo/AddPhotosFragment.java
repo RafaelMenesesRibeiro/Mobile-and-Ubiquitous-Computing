@@ -169,12 +169,12 @@ public class AddPhotosFragment extends Fragment {
     }
 
     public static ArrayList<String> setDropdownAdapterAngGetCatalogIDs(Activity activity, Spinner dropdownMenu) {
-        Map<String, String> map = ViewUserCatalogsFragment.getUserMemberships(activity);
+        Map<String, ArrayList<String>> map = ViewUserCatalogsFragment.getMemberships(activity);
         ArrayList<String> catalogTitles = new ArrayList<>();
         ArrayList<String> catalogIDs = new ArrayList<>();
-        for (Map.Entry<String, String> entry : map.entrySet()) {
+        for (Map.Entry<String, ArrayList<String>> entry : map.entrySet()) {
             catalogIDs.add(entry.getKey());
-            catalogTitles.add(entry.getValue());
+            catalogTitles.add(entry.getValue().get(0));
         }
         ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_dropdown_item, catalogTitles);
         dropdownMenu.setAdapter(adapter);

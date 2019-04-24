@@ -16,7 +16,10 @@ import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -45,10 +48,10 @@ public class ViewUserCatalogsFragment extends Fragment {
     private void populate(View view) {
         catalogIdList = new ArrayList<>();
         catalogTitleList = new ArrayList<>();
-        Map<String, String> memberships = getUserMemberships(activity);
-        for (Map.Entry<String, String> entry : memberships.entrySet()) {
+        Map<String, ArrayList<String>> memberships = getMemberships(activity);
+        for (Map.Entry<String, ArrayList<String>> entry : memberships.entrySet()) {
             catalogIdList.add(entry.getKey());
-            catalogTitleList.add(entry.getValue());
+            catalogTitleList.add(entry.getValue().get(0));
         }
 
         ListView userCatalogsListView = view.findViewById(R.id.userCatalogsList);
@@ -67,22 +70,23 @@ public class ViewUserCatalogsFragment extends Fragment {
         });
     }
 
-    public static Map<String, String> getUserMemberships(Activity activity) {
+    public static Map<String, ArrayList<String>> getMemberships(Activity activity) {
         String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_memberships)
                     + "?calleeUsername=" + getUsername(activity);
-        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        LinkedHashMap<String, ArrayList<String>> map = new LinkedHashMap<>();
         try {
             RequestData requestData = new RequestData(activity, GET_MEMBERSHIPS, url);
             ResponseData responseData = new QueryManager().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
                 Object object = payload.getResult();
-                map = (LinkedHashMap<String, String>) object;
+                map = (LinkedHashMap<String, ArrayList<String>>) object;
             }
         }
         catch (ClassCastException | ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
             Log.i("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
+            ex.printStackTrace();
         }
         return map;
     }

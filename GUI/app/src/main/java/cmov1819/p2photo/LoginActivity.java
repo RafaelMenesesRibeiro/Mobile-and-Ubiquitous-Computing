@@ -20,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -168,11 +169,11 @@ public class LoginActivity extends AppCompatActivity {
         }
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
-        Map<String, String> catalogMemberships = ViewUserCatalogsFragment.getUserMemberships(this);
-        Set<String> catalogIDs = catalogMemberships.keySet();
-        SessionManager.updateCatalogMembershipsIDs(this, catalogIDs);
-        Set<String> catalogTitles = new HashSet<>(catalogMemberships.values());
-        SessionManager.updateCatalogMembershipsNames(this, catalogTitles);
+        // TODO - Use this to check if there are catalogs not yet created. //
+        Map<String, ArrayList<String>> catalogMemberships = ViewUserCatalogsFragment.getMemberships(this);
+        // TODO - Is this necessary? //
+        // Set<String> catalogIDs = catalogMemberships.keySet();
+        // SessionManager.updateCatalogMembershipsIDs(this, catalogIDs);
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {
