@@ -193,7 +193,11 @@ public class AddPhotosFragment extends Fragment {
         try {
             Context context = getContext();
             String baseUrl = getString(R.string.p2photo_host) + getString(R.string.get_google_identifiers);
-            String url = String.format("baseUrl?calleeUsername=%s&catalogId=%s", getUsername(getActivity()) , catalogId);
+
+            String url = String.format(
+                    "%s?calleeUsername=%s&catalogId=%s", baseUrl, getUsername(getActivity()) , catalogId
+            );
+
             RequestData requestData = new RequestData(getActivity(), GET_GOOGLE_IDENTIFIERS, url);
             ResponseData result = new QueryManager().execute(requestData).get();
 
@@ -209,7 +213,6 @@ public class AddPhotosFragment extends Fragment {
                     Log.e(ADD_PHOTO_TAG, reason);
                     Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();
                     return null;
-
                 }
             } else {
                 Object resultObject = ((SuccessResponse)result.getPayload()).getResult();
