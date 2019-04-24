@@ -143,8 +143,8 @@ public class GoogleDriveMediator {
                         } catch (IOException | JSONException exc) {
                             setError(context, exc.getMessage());
                         }
-                        Bitmap[] displayablePhotosArray = displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
-                        ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
+                        // Bitmap[] displayablePhotosArray = displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
+                        // ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
                     }
                 }.execute(accessToken);
             }
