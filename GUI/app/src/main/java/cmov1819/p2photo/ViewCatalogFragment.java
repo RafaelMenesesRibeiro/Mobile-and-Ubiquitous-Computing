@@ -119,12 +119,12 @@ public class ViewCatalogFragment extends Fragment {
             return false;
         }
 
-        Map<String, ArrayList<String>> map = ViewUserCatalogsFragment.getMemberships(activity);
+        Map<String, String> map = ViewUserCatalogsFragment.getMemberships(activity);
         catalogTitles = new ArrayList<>();
         catalogIDs = new ArrayList<>();
-        for (Map.Entry<String, ArrayList<String>> entry : map.entrySet()) {
+        for (Map.Entry<String, String> entry : map.entrySet()) {
             catalogIDs.add(entry.getKey());
-            catalogTitles.add(entry.getValue().get(0));
+            catalogTitles.add(entry.getValue());
         }
 
         if (catalogID.equals(NO_CATALOG_SELECTED)) {

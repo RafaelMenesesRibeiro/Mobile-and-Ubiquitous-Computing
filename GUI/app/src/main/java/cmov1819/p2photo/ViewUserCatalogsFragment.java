@@ -48,10 +48,10 @@ public class ViewUserCatalogsFragment extends Fragment {
     private void populate(View view) {
         catalogIdList = new ArrayList<>();
         catalogTitleList = new ArrayList<>();
-        Map<String, ArrayList<String>> memberships = getMemberships(activity);
-        for (Map.Entry<String, ArrayList<String>> entry : memberships.entrySet()) {
+        Map<String, String> memberships = getMemberships(activity);
+        for (Map.Entry<String, String> entry : memberships.entrySet()) {
             catalogIdList.add(entry.getKey());
-            catalogTitleList.add(entry.getValue().get(0));
+            catalogTitleList.add(entry.getValue());
         }
 
         ListView userCatalogsListView = view.findViewById(R.id.userCatalogsList);
@@ -70,17 +70,17 @@ public class ViewUserCatalogsFragment extends Fragment {
         });
     }
 
-    public static Map<String, ArrayList<String>> getMemberships(Activity activity) {
+    public static Map<String, String> getMemberships(Activity activity) {
         String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_memberships)
                     + "?calleeUsername=" + getUsername(activity);
-        LinkedHashMap<String, ArrayList<String>> map = new LinkedHashMap<>();
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
         try {
             RequestData requestData = new RequestData(activity, GET_MEMBERSHIPS, url);
             ResponseData responseData = new QueryManager().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
                 Object object = payload.getResult();
-                map = (LinkedHashMap<String, ArrayList<String>>) object;
+                map = (LinkedHashMap<String, String>) object;
             }
         }
         catch (ClassCastException | ExecutionException | InterruptedException ex) {
