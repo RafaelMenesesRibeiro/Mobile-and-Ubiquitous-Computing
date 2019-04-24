@@ -140,13 +140,6 @@ public class AddPhotosFragment extends Fragment {
         String catalogTitle = dropdown.getSelectedItem().toString();
         File androidFilePath = selectedImage;
 
-        /* TODO Raphael:
-        * If we want to store photos in their folders along side their catalog.json file, we need to
-        * the googleDriveCatalogJsonId as well as the googleDriveCatalogFolderId. These can be stored seperatly on the
-        * database or they can be stored together using concatenation of strings splited by :p2pspliter:.
-        * The alternative is to store googleDriveCatalogJsonId inside googleDriveCatalogFolderId, but store all photos
-        * in the root folder of the user. In this case we only need to store googleDriveCatalogJsonId in the database
-        */
         googleDriveMediator.newPhoto(
                 getContext(),
                 "1Uy1i200TF8sPiccjnhgjDCD3RfpEpHZB",
