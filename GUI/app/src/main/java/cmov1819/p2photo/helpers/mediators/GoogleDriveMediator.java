@@ -138,6 +138,7 @@ public class GoogleDriveMediator {
                                 for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
                                     String photoId = jsonArray.getString(photoIdx);
                                     displayablePhotosList.add(readImageFile(photoId, TYPE_PNG));
+                                    // TODO UPDATE VIEW GARELLY WITH IMAGES
                                 }
                             }
                         } catch (IOException | JSONException exc) {
