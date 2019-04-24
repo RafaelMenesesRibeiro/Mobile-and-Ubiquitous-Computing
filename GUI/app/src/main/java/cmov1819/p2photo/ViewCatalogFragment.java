@@ -2,6 +2,8 @@ package cmov1819.p2photo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -160,17 +162,17 @@ public class ViewCatalogFragment extends Fragment {
             return;
         }
         */
+    }
 
-        Integer[] imageIdsArray = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img1};
+    public void drawImages(View view, Bitmap[] contents) {
         GridView grid = view.findViewById(R.id.catalogGrid);
-        grid.setAdapter(new ImageGridAdapter(activity, imageIdsArray));
+        grid.setAdapter(new ImageGridAdapter(activity, contents));
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Toast.makeText(activity, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
     private void addUserClicked() {
