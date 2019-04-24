@@ -13,7 +13,8 @@ public class RequestData {
         NEW_CATALOG,
         NEW_CATALOG_SLICE,
         NEW_CATALOG_MEMBER,
-        GET_MEMBERSHIPS
+        GET_MEMBERSHIPS,
+        GET_GOOGLE_IDENTIFIERS
     }
 
     private Activity activity;

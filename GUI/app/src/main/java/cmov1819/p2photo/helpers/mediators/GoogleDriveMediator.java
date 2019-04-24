@@ -219,8 +219,8 @@ public class GoogleDriveMediator {
     }
 
     public void newPhoto(final Context context,
-                         final String catalogFileGoogleId,
                          final String parentFolderGoogleId,
+                         final String catalogFileGoogleId,
                          final String photoName,
                          final String mimeType,
                          final java.io.File androidFilePath,

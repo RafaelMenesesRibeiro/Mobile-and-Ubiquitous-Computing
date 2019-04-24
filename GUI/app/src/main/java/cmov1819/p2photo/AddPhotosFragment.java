@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,17 +22,37 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
+import cmov1819.p2photo.dataobjects.PostRequestData;
+import cmov1819.p2photo.dataobjects.RequestData;
+import cmov1819.p2photo.dataobjects.RequestData.RequestType;
+import cmov1819.p2photo.dataobjects.ResponseData;
+import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
+import cmov1819.p2photo.msgtypes.ErrorResponse;
+import cmov1819.p2photo.msgtypes.SuccessResponse;
+
+import static android.widget.Toast.LENGTH_LONG;
+import static cmov1819.p2photo.dataobjects.RequestData.RequestType.*;
+import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class AddPhotosFragment extends Fragment {
+    private static final String ADD_PHOTO_TAG = "ADD PHOTO FRAGMENT";
     public static final String CATALOG_ID_EXTRA = "catalogID";
 
     private View view;
@@ -136,14 +157,16 @@ public class AddPhotosFragment extends Fragment {
 
     public void addPhotosClicked(View view) {
         Spinner dropdown = view.findViewById(R.id.membershipDropdownMenu);
-        String catalogID = catalogIDs.get(dropdown.getSelectedItemPosition());
+        String catalogId = catalogIDs.get(dropdown.getSelectedItemPosition());
         String catalogTitle = dropdown.getSelectedItem().toString();
         File androidFilePath = selectedImage;
 
+        HashMap<String, String> googleDriveIdentifiers = getGoogleDriveIdentifiers(catalogId);
+
         googleDriveMediator.newPhoto(
                 getContext(),
-                getCurrentCatalogFileId(), // TODO CHANGE THIS TO NON HARD CODED VALUE
-                getCurrentParentFolderFileId(),
+                googleDriveIdentifiers.get("parentFolderGoogleId"),
+                googleDriveIdentifiers.get("catalogFileGoogleId"),
                 androidFilePath.getName(),
                 GoogleDriveMediator.TYPE_PNG,
                 androidFilePath,
@@ -152,19 +175,41 @@ public class AddPhotosFragment extends Fragment {
 
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.goToCatalog(catalogID, catalogTitle);
+            mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
         }
     }
 
-    private String getCurrentParentFolderFileId() {
-        return null; // TODO
-    }
+    private HashMap<String, String> getGoogleDriveIdentifiers(String catalogId) {
+        try {
+            Context context = getContext();
+            String baseUrl = getString(R.string.p2photo_host) + getString(R.string.get_google_identifiers);
+            String url = String.format("baseUrl?calleeUsername=%s&catalogId=%s", getUsername(getActivity()) , catalogId);
+            RequestData requestData = new RequestData(getActivity(), GET_GOOGLE_IDENTIFIERS, url);
+            ResponseData result = new QueryManager().execute(requestData).get();
 
-    private String getCurrentCatalogFileId() {
-        return null; // TODO
+            int code = result.getServerCode();
+            if (code != HttpURLConnection.HTTP_OK) {
+                String reason = ((ErrorResponse) result.getPayload()).getReason();
+                if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    Log.w(ADD_PHOTO_TAG, reason);
+                    Toast.makeText(context, "Session timed out, please login again", Toast.LENGTH_SHORT).show();
+                    context.startActivity(new Intent(context, LoginActivity.class));
+                } else {
+                    Log.e(ADD_PHOTO_TAG, reason);
+                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();;
+                }
+            } else {
+                Object resultObject = ((SuccessResponse)result.getPayload()).getResult();
+                HashMap<String, String> googleIdentifiersMap = (HashMap<String, String>) resultObject;
+                return googleIdentifiersMap;
+            }
+        } catch (ExecutionException | InterruptedException ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+        return null;
     }
 
     public static ArrayList<String> setDropdownAdapterAngGetCatalogIDs(Activity activity, Spinner dropdownMenu) {
