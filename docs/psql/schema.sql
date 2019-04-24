@@ -22,16 +22,13 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE TABLE IF NOT EXISTS catalogs (
 	catalog_id numeric(10) CHECK (catalog_id > 0) PRIMARY KEY,
 	catalog_title varchar(50) NOT NULL,
-	slices text NOT NULL,
+	slices text NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS memberships (
     catalog_id numeric(10) REFERENCES catalogs(catalog_id),
     username varchar(50) REFERENCES users(username),
+    parent_folder_drive_id varchar(64),
+    catalog_drive_id varchar(64),
     PRIMARY KEY (catalog_id, username)
-);
-
-CREATE TABLE IF NOT EXISTS usercatalogs (
-	username varchar(50) PRIMARY KEY REFERENCES users(username),
-	google_catalog_id text NOT NULL,
 );
