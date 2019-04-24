@@ -153,14 +153,6 @@ public class ViewCatalogFragment extends Fragment {
         TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
-        // TODO Klogaaan  - Replace by actual downloaded images. //
-        /*
-        if (googleSliceFileIdentifiersList.isEmpty()) {
-            Toast.makeText(getContext(), "Album is empty.", LENGTH_LONG).show();
-            return;
-        }
-        */
-
         Integer[] imageIdsArray = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img1};
         GridView grid = view.findViewById(R.id.catalogGrid);
         grid.setAdapter(new ImageGridAdapter(activity, imageIdsArray));

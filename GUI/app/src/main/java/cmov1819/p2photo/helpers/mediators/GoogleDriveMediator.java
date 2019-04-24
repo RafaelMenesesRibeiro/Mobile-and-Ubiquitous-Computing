@@ -44,6 +44,7 @@ import java.util.List;
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
 import cmov1819.p2photo.NewCatalogFragment;
+import cmov1819.p2photo.ViewCatalogFragment;
 import okhttp3.MediaType;
 
 @SuppressLint("StaticFieldLeak")
@@ -137,12 +138,13 @@ public class GoogleDriveMediator {
                                 for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
                                     String photoId = jsonArray.getString(photoIdx);
                                     displayablePhotosList.add(readImgFile(photoId, TYPE_PNG));
-                                    // TODO UPDATE VIEW GARELLY WITH IMAGES
                                 }
                             }
                         } catch (IOException | JSONException exc) {
                             setError(context, exc.getMessage());
                         }
+                        Bitmap[] displayablePhotosArray = displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
+                        ViewCatalogFragment.drawImages(view, displayablePhotosArray);
                     }
                 }.execute(accessToken);
             }
