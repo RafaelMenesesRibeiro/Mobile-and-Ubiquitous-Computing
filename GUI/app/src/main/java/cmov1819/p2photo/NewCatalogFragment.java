@@ -78,8 +78,8 @@ public class NewCatalogFragment extends Fragment {
 
         try {
             String catalogId = newCatalog(catalogTitle);
-            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.goToCatalog(catalogId, catalogTitle);
+            // MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+            // mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (FailedOperationException foex) {
             Toast.makeText(this.getContext(), "The create catalog operation failed. Try again later", Toast.LENGTH_LONG).show();
