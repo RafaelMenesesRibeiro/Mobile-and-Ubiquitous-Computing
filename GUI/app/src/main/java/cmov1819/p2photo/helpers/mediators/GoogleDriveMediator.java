@@ -94,10 +94,10 @@ public class GoogleDriveMediator {
         return instance;
     }
 
-    public void retrieveCatalogSlice(final Context context,
-                                     final View view,
-                                     final String googleDriveCatalogId,
-                                     final AuthState authState) {
+    public void viewCatalogSlicePhotos(final Context context,
+                                       final View view,
+                                       final String googleDriveCatalogId,
+                                       final AuthState authState) {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
@@ -132,6 +132,10 @@ public class GoogleDriveMediator {
 
                     @Override
                     protected void onPostExecute(JSONObject jsonObject) {
+                        if (jsonObject == null) {
+                            setError(context, "readTxtFileContents resulted on a null object on viewCatalogSlicePhotos");
+                        }
+
                         ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
                         try {
                             JSONArray photosArray = jsonObject.getJSONArray("photos");
