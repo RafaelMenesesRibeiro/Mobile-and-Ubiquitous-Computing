@@ -94,10 +94,10 @@ public class GoogleDriveMediator {
         return instance;
     }
 
-    public void retrieveCatalogSlice(final Context context,
-                                     final View view,
-                                     final String googleDriveCatalogId,
-                                     final AuthState authState) {
+    public void viewCatalogSlicePhotos(final Context context,
+                                       final View view,
+                                       final String googleDriveCatalogId,
+                                       final AuthState authState) {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
@@ -120,6 +120,8 @@ public class GoogleDriveMediator {
                                 return null;
                             }
 
+                            Log.i(GOOGLE_DRIVE_TAG, readContents);
+
                             return new JSONObject(readContents);
 
                         } catch (IOException | JSONException exc) {
@@ -130,13 +132,16 @@ public class GoogleDriveMediator {
 
                     @Override
                     protected void onPostExecute(JSONObject jsonObject) {
+                        if (jsonObject == null) {
+                            setError(context, "readTxtFileContents resulted on a null object on viewCatalogSlicePhotos");
+                        }
                         ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
                         try {
-                            JSONArray jsonArray = jsonObject.getJSONArray("photos");
-                            if (jsonArray != null) {
-                                int photoCount = jsonArray.length();
+                            JSONArray photosArray = jsonObject.getJSONArray("photos");
+                            if (photosArray != null) {
+                                int photoCount = photosArray.length();
                                 for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
-                                    String photoId = jsonArray.getString(photoIdx);
+                                    String photoId = photosArray.getString(photoIdx);
                                     displayablePhotosList.add(readImgFile(photoId, TYPE_PNG));
                                 }
                             }
@@ -378,6 +383,9 @@ public class GoogleDriveMediator {
         while ((line = bufferedReader.readLine()) != null) {
             stringBuilder.append(line);
         }
+
+        Log.w("BOOOOHOO", stringBuilder.toString());
+
         return stringBuilder.toString();
     }
 
