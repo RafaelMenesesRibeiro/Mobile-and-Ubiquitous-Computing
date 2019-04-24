@@ -385,7 +385,7 @@ public class GoogleDriveMediator {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
 
         InputStream inputStream = driveService.files()
-                .export(fileId, mimeType)
+                .get(fileId)
                 .executeMediaAsInputStream();
 
         byte[] bitmapBytes = IOUtils.toByteArray(inputStream);
@@ -398,7 +398,7 @@ public class GoogleDriveMediator {
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         driveService.files()
-                .export(fileId, mimeType)
+                .get(fileId)
                 .executeMediaAndDownloadTo(outputStream);
 
         byte[] bitmapBytes = outputStream.toByteArray();
