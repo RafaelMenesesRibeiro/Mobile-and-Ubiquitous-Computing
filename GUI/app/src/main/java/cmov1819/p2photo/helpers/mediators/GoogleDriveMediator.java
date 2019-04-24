@@ -254,9 +254,7 @@ public class GoogleDriveMediator {
                                     currentCatalog.put("photos", photos);
                                     String newFileContent = currentCatalog.toString(4);
 
-                                    File googleFile = updateJsonFile(
-                                            parentFolderGoogleId, catalogFileGoogleId, photoName, newFileContent
-                                    );
+                                    File googleFile = updateJsonFile(catalogFileGoogleId, photoName, newFileContent);
 
                                     return googleFile;
                                 }
@@ -324,13 +322,11 @@ public class GoogleDriveMediator {
         return googleFile;
     }
 
-    private File updateJsonFile(String parentId,
-                                String fileId,
+    private File updateJsonFile(String fileId,
                                 String fileName,
                                 String fileContent) throws IOException {
 
         File metadata = new File()
-                .setParents(buildParentsList(parentId))
                 .setName(fileName)
                 .setMimeType(TYPE_TXT);
 
