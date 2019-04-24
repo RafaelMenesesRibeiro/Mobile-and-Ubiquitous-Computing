@@ -147,14 +147,21 @@ public class ViewCatalogFragment extends Fragment {
             Log.i("ERROR", "VIEW CATALOG: catalogTitle is null.");
             return false;
         }
-        List<String[]> googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(catalogID);
+        List<String>  googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(catalogID);
         populateGrid(view, catalogTitle, googleSliceFileIdentifiersList);
         return true;
     }
 
-    private void populateGrid(View view, String catalogTitle, List<String[]> googleSliceFileIdentifiersList) {
+    private void populateGrid(View view, String catalogTitle, List<String>  googleSliceFileIdentifiersList) {
         TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
+
+        for (String googleCatalogFileId : googleSliceFileIdentifiersList) {
+            googleDriveMediator.retrieveCatalogSlice(
+                    getContext(), view, googleCatalogFileId, authStateManager.getAuthState()
+            );
+            break;
+        }
     }
 
     public static void drawImages(View view, final Context context, Bitmap[] contents) {
@@ -188,7 +195,7 @@ public class ViewCatalogFragment extends Fragment {
         }
     }
 
-    public List<String[]> getGoogleSliceFileIdentifiersList(String catalogID) {
+    public List<String> getGoogleSliceFileIdentifiersList(String catalogID) {
         String url = getString(R.string.p2photo_host) + getString(R.string.view_catalog) +
                 "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
 
@@ -197,7 +204,7 @@ public class ViewCatalogFragment extends Fragment {
             ResponseData responseData = new QueryManager().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
-                return (ArrayList<String[]>) payload.getResult();
+                return (List<String> ) payload.getResult();
             }
         }
         catch (ExecutionException | InterruptedException ex) {
