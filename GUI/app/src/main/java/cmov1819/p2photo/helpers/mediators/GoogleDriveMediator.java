@@ -135,7 +135,6 @@ public class GoogleDriveMediator {
                         if (jsonObject == null) {
                             setError(context, "readTxtFileContents resulted on a null object on viewCatalogSlicePhotos");
                         }
-
                         ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
                         try {
                             JSONArray photosArray = jsonObject.getJSONArray("photos");
@@ -384,6 +383,9 @@ public class GoogleDriveMediator {
         while ((line = bufferedReader.readLine()) != null) {
             stringBuilder.append(line);
         }
+
+        Log.w("BOOOOHOO", stringBuilder.toString());
+
         return stringBuilder.toString();
     }
 
