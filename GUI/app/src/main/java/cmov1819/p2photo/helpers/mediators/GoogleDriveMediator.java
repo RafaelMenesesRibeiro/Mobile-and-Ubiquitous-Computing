@@ -144,7 +144,7 @@ public class GoogleDriveMediator {
                             setError(context, exc.getMessage());
                         }
                         Bitmap[] displayablePhotosArray = displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
-                        ViewCatalogFragment.drawImages(view, displayablePhotosArray);
+                        ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
                     }
                 }.execute(accessToken);
             }
