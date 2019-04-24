@@ -133,8 +133,8 @@ public class NewCatalogFragment extends Fragment {
 
     public static void newCatalogSlice(final Context context,
                                        final String catalogId,
-                                       final String catalogFileGoogleId,
-                                       final String parentFolderGoogleId) {
+                                       final String parentFolderGoogleId,
+                                       final String catalogFileGoogleId) {
         try {
 
             JSONObject requestBody = new JSONObject();

@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.Toast;
 
@@ -156,9 +157,9 @@ public class GoogleDriveMediator {
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
-                new AsyncTask<String, Void, File>() {
+                new AsyncTask<String, Void, Pair<File, File>>() {
                     @Override
-                    protected File doInBackground(String... tokens) {
+                    protected Pair<File, File> doInBackground(String... tokens) {
                         try {
                             if (error != null) {
                                 suggestReauthentication(context, error.getMessage());
@@ -167,16 +168,16 @@ public class GoogleDriveMediator {
                             else {
                                 credential.setAccessToken(tokens[0]);
 
-                                File catalogFolderFile = createFolder(null, title);
+                                File parentFolderFile = createFolder(null, title);
 
-                                if (catalogFolderFile == null) {
+                                if (parentFolderFile == null) {
                                     setWarning(context,"Null catalog folder file received from Google REST API.");
                                     return null;
                                 }
 
-                                Log.i(GOOGLE_DRIVE_TAG, ">>> Creating folder... ID = " + catalogFolderFile.getId());
+                                Log.i(GOOGLE_DRIVE_TAG, ">>> Creating folder... ID = " + parentFolderFile.getId());
 
-                                String catalogFolderId = catalogFolderFile.getId();
+                                String catalogFolderId = parentFolderFile.getId();
                                 String catalogJsonContent = newCatalogJsonFile(title, p2photoId, catalogFolderId);
                                 File catalogJsonFile = createTextFile(catalogFolderId,"catalog", catalogJsonContent);
 
@@ -190,7 +191,7 @@ public class GoogleDriveMediator {
                                 driveService.permissions().create(catalogJsonFile.getId(), userPermission).setFields("id").execute();
                                 catalogJsonFile = driveService.files().get(catalogJsonFile.getId()).setFields("id, webContentLink").execute();
 
-                                return catalogJsonFile;
+                                return new Pair<>(parentFolderFile, catalogJsonFile);
                             }
                         } catch (JSONException | IOException exc) {
                             setError(context, exc.getMessage());
@@ -199,12 +200,16 @@ public class GoogleDriveMediator {
                     }
 
                     @Override
-                    protected void onPostExecute(File file) {
-                        if (file == null) {
+                    protected void onPostExecute(Pair<File, File> files) {
+                        File parentFolderFile = files.first;
+                        File catalogJsonFile = files.second;
+                        if (catalogJsonFile == null) {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
                         }
                         else {
-                            NewCatalogFragment.newCatalogSlice(context, p2photoId, file.getId());
+                            NewCatalogFragment.newCatalogSlice(
+                                    context, p2photoId, parentFolderFile.getId(), catalogJsonFile.getId()
+                            );
                             Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
                         }
                     }
