@@ -178,7 +178,7 @@ public class GoogleDriveMediator {
 
                                 String catalogFolderId = catalogFolderFile.getId();
                                 String catalogJsonContent = newCatalogJsonFile(title, p2photoId, catalogFolderId);
-                                File catalogJsonFile = createTextFile(catalogFolderId,"catalog.json", catalogJsonContent);
+                                File catalogJsonFile = createTextFile(catalogFolderId,"catalog", catalogJsonContent);
 
                                 if (catalogJsonFile == null) {
                                     setWarning(context,"Null catalog.json file received from Google REST API.");
@@ -405,7 +405,7 @@ public class GoogleDriveMediator {
         JSONObject catalogJson = new JSONObject();
         catalogJson.put("title", title);
         catalogJson.put("p2photoId", p2photoId);
-        catalogJson.put("googleDriveId", catalogFolderId);
+        catalogJson.put("parentGoogleFolderId", catalogFolderId);
         catalogJson.put("photos", new JSONArray());
         return catalogJson.toString(4);
     }
