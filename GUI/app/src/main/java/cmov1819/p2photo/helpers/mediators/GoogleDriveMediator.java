@@ -120,6 +120,8 @@ public class GoogleDriveMediator {
                                 return null;
                             }
 
+                            Log.i(GOOGLE_DRIVE_TAG, readContents);
+
                             return new JSONObject(readContents);
 
                         } catch (IOException | JSONException exc) {
@@ -132,11 +134,11 @@ public class GoogleDriveMediator {
                     protected void onPostExecute(JSONObject jsonObject) {
                         ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
                         try {
-                            JSONArray jsonArray = jsonObject.getJSONArray("photos");
-                            if (jsonArray != null) {
-                                int photoCount = jsonArray.length();
+                            JSONArray photosArray = jsonObject.getJSONArray("photos");
+                            if (photosArray != null) {
+                                int photoCount = photosArray.length();
                                 for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
-                                    String photoId = jsonArray.getString(photoIdx);
+                                    String photoId = photosArray.getString(photoIdx);
                                     displayablePhotosList.add(readImgFile(photoId, TYPE_PNG));
                                 }
                             }
