@@ -44,7 +44,6 @@ import java.util.List;
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
 import cmov1819.p2photo.NewCatalogFragment;
-import cmov1819.p2photo.ViewCatalogFragment;
 import okhttp3.MediaType;
 
 @SuppressLint("StaticFieldLeak")
@@ -137,7 +136,7 @@ public class GoogleDriveMediator {
                                 int photoCount = jsonArray.length();
                                 for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
                                     String photoId = jsonArray.getString(photoIdx);
-                                    displayablePhotosList.add(readImageFile(photoId, TYPE_PNG));
+                                    displayablePhotosList.add(readImgFile(photoId, TYPE_PNG));
                                     // TODO UPDATE VIEW GARELLY WITH IMAGES
                                 }
                             }
@@ -180,7 +179,7 @@ public class GoogleDriveMediator {
 
                                 String catalogFolderId = parentFolderFile.getId();
                                 String catalogJsonContent = newCatalogJsonFile(title, p2photoId, catalogFolderId);
-                                File catalogJsonFile = createTextFile(catalogFolderId,"catalog", catalogJsonContent);
+                                File catalogJsonFile = createJsonFile(catalogFolderId,"catalog", catalogJsonContent);
 
                                 if (catalogJsonFile == null) {
                                     setWarning(context,"Null catalog.json file received from Google REST API.");
@@ -220,8 +219,8 @@ public class GoogleDriveMediator {
     }
 
     public void newPhoto(final Context context,
-                         final String googleDriveCatalogId,
-                         final String googleDriveFolderId,
+                         final String catalogFileGoogleId,
+                         final String parentFolderGoogleId,
                          final String photoName,
                          final String mimeType,
                          final java.io.File androidFilePath,
@@ -241,36 +240,28 @@ public class GoogleDriveMediator {
                             else {
                                 credential.setAccessToken(tokens[0]);
 
-                                File googlePhotoFile = createImgFile(
-                                        googleDriveFolderId, photoName, mimeType, androidFilePath
+                                File newGooglePhotoFile = createImgFile(
+                                        parentFolderGoogleId, photoName, mimeType, androidFilePath
                                 );
 
-                                if (googlePhotoFile == null) {
+                                if (newGooglePhotoFile == null) {
                                     setWarning(context,"Null response received from Google REST API.");
+                                    return null;
                                 } else {
-                                    try {
-                                        JSONObject catalog = new JSONObject(readTxtFileContents(googleDriveCatalogId));
-                                        JSONArray photos = catalog.getJSONArray("photos");
-                                        photos.put(googlePhotoFile.getId());
-                                        catalog.put("photos", photos);
+                                    JSONObject currentCatalog = new JSONObject(readTxtFileContents(catalogFileGoogleId));
+                                    JSONArray photos = currentCatalog.getJSONArray("photos");
+                                    photos.put(newGooglePhotoFile.getId());
+                                    currentCatalog.put("photos", photos);
+                                    String newFileContent = currentCatalog.toString(4);
 
-                                        InputStream targetStream = new ByteArrayInputStream(catalog.toString(4).getBytes(Charset.forName("UTF-8")));
-                                        AbstractInputStreamContent contentStream = new InputStreamContent(TYPE_JSON, targetStream);
+                                    File googleFile = updateJsonFile(
+                                            parentFolderGoogleId, catalogFileGoogleId, photoName, newFileContent
+                                    );
 
-                                        File metadata = new File()
-                                                .setName("catalog")
-                                                .setMimeType(TYPE_TXT);
-
-                                        driveService.files().update(googleDriveCatalogId, metadata, contentStream).execute();
-                                    } catch (JSONException | IOException exc) {
-                                        setError(context, exc.getMessage());
-                                        return null;
-                                    }
+                                    return googleFile;
                                 }
-
-                                return googlePhotoFile;
                             }
-                        } catch (IOException exc) {
+                        } catch (JSONException | IOException exc) {
                             setError(context, exc.getMessage());
                             return null;
                         }
@@ -311,7 +302,7 @@ public class GoogleDriveMediator {
         return googleFile;
     }
 
-    private File createTextFile(String parentId,
+    private File createJsonFile(String parentId,
                                 String fileName,
                                 String fileContent) throws IOException {
 
@@ -323,15 +314,37 @@ public class GoogleDriveMediator {
                 .setMimeType(TYPE_TXT);
 
         InputStream targetStream = new ByteArrayInputStream(fileContent.getBytes(Charset.forName("UTF-8")));
-        AbstractInputStreamContent contentStream = new InputStreamContent(TYPE_JSON, targetStream);
+        AbstractInputStreamContent fileContentStream = new InputStreamContent(TYPE_JSON, targetStream);
 
         File googleFile = driveService.files()
-                .create(metadata, contentStream)
+                .create(metadata, fileContentStream)
                 .setFields("id, parents")
                 .execute();
 
         return googleFile;
     }
+
+    private File updateJsonFile(String parentId,
+                                String fileId,
+                                String fileName,
+                                String fileContent) throws IOException {
+
+        File metadata = new File()
+                .setParents(buildParentsList(parentId))
+                .setName(fileName)
+                .setMimeType(TYPE_TXT);
+
+        InputStream targetStream = new ByteArrayInputStream(fileContent.getBytes(Charset.forName("UTF-8")));
+        AbstractInputStreamContent newFileContentStream = new InputStreamContent(TYPE_JSON, targetStream);
+
+        File googleFile = driveService.files()
+                .update(fileId, metadata, newFileContentStream)
+                .setFields("id, parents")
+                .execute();
+
+        return googleFile;
+    }
+
     private File createImgFile(String parentId,
                                String fileName,
                                String mimeType,
@@ -370,7 +383,7 @@ public class GoogleDriveMediator {
         return stringBuilder.toString();
     }
 
-    private Bitmap readImageFile(String fileId, String mimeType) throws IOException {
+    private Bitmap readImgFile(String fileId, String mimeType) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
 
         InputStream inputStream = driveService.files()
@@ -382,7 +395,7 @@ public class GoogleDriveMediator {
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
-    private Bitmap downloadImageFIle(String fileId, String mimeType) throws IOException {
+    private Bitmap downloadImgFile(String fileId, String mimeType) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

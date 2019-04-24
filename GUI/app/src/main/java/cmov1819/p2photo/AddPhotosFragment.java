@@ -142,15 +142,13 @@ public class AddPhotosFragment extends Fragment {
 
         googleDriveMediator.newPhoto(
                 getContext(),
-                "1Uy1i200TF8sPiccjnhgjDCD3RfpEpHZB",
-                "1NQeZnrE9vLldHvOwh3PEomLE5CozdHmR",
+                getCurrentCatalogFileId(), // TODO CHANGE THIS TO NON HARD CODED VALUE
+                getCurrentParentFolderFileId(),
                 androidFilePath.getName(),
                 GoogleDriveMediator.TYPE_PNG,
                 androidFilePath,
                 authStateManager.getAuthState()
         );
-
-        // TODO Bambi - Call method in GoogleDriveManager that: adds the photo's URL to user's catalog file
 
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
@@ -159,6 +157,14 @@ public class AddPhotosFragment extends Fragment {
         catch (NullPointerException | ClassCastException ex) {
             Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
         }
+    }
+
+    private String getCurrentParentFolderFileId() {
+        return null; // TODO
+    }
+
+    private String getCurrentCatalogFileId() {
+        return null; // TODO
     }
 
     public static ArrayList<String> setDropdownAdapterAngGetCatalogIDs(Activity activity, Spinner dropdownMenu) {
