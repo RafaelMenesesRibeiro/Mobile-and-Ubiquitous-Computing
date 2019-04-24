@@ -156,7 +156,7 @@ public class ViewCatalogFragment extends Fragment {
         catalogTitleTextView.setText(catalogTitle);
     }
 
-    public void drawImages(View view, Bitmap[] contents) {
+    public static void drawImages(View view, Bitmap[] contents) {
         GridView grid = view.findViewById(R.id.catalogGrid);
         grid.setAdapter(new ImageGridAdapter(activity, contents));
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
