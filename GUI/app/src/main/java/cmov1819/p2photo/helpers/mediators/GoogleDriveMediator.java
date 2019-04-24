@@ -136,7 +136,7 @@ public class GoogleDriveMediator {
                                 int photoCount = jsonArray.length();
                                 for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
                                     String photoId = jsonArray.getString(photoIdx);
-                                    displayablePhotosList.add(readImageFile(photoId, TYPE_PNG));
+                                    displayablePhotosList.add(readImgFile(photoId, TYPE_PNG));
                                     // TODO UPDATE VIEW GARELLY WITH IMAGES
                                 }
                             }
@@ -383,7 +383,7 @@ public class GoogleDriveMediator {
         return stringBuilder.toString();
     }
 
-    private Bitmap readImageFile(String fileId, String mimeType) throws IOException {
+    private Bitmap readImgFile(String fileId, String mimeType) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
 
         InputStream inputStream = driveService.files()
@@ -395,7 +395,7 @@ public class GoogleDriveMediator {
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
-    private Bitmap downloadImageFIle(String fileId, String mimeType) throws IOException {
+    private Bitmap downloadImgFile(String fileId, String mimeType) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
