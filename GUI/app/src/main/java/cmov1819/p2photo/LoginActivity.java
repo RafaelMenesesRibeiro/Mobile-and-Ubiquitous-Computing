@@ -169,11 +169,8 @@ public class LoginActivity extends AppCompatActivity {
         }
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
-        // TODO - Use this to check if there are catalogs not yet created. //
+        // TODO - @FranciscoBarros - Use this to check if there are catalogs not yet created. //
         Map<String, ArrayList<String>> catalogMemberships = ViewUserCatalogsFragment.getMemberships(this);
-        // TODO - Is this necessary? //
-        // Set<String> catalogIDs = catalogMemberships.keySet();
-        // SessionManager.updateCatalogMembershipsIDs(this, catalogIDs);
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {
