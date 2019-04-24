@@ -96,6 +96,11 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     connection.setDoOutput(false);
                     result = getMemberships(activity, connection);
                     break;
+                case GET_MEMBERSHIP_CATALOG_IDS:
+                    connection.setRequestMethod("GET");
+                    connection.setDoOutput(false);
+                    result = getMembershipCatalogIDs(activity, connection);
+                    break;
                 default:
                     Log.i("ERROR", "Should never be here.");
                     break;
@@ -263,6 +268,13 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
     }
 
     private ResponseData getMemberships(Activity activity, HttpURLConnection connection) throws IOException {
+        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
+        connection.connect();
+        BasicResponse payload = getSuccessResponse(connection);
+        return new ResponseData(connection.getResponseCode(), payload);
+    }
+
+    private ResponseData getMembershipCatalogIDs(Activity activity, HttpURLConnection connection) throws IOException {
         connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
         connection.connect();
         BasicResponse payload = getSuccessResponse(connection);

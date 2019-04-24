@@ -15,6 +15,7 @@
     <string name="view_catalog">viewCatalog</string>
     <string name="view_catalog_details">viewCatalogDetails</string>
     <string name="get_memberships">getMemberships</string>
+    <string name="get_membership_catalog_ids">getMembershipCatalogIDs</string>
 
     <!-- Server response error reasons -->
     <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>

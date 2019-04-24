@@ -29,6 +29,7 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
+import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIP_CATALOG_IDS;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class ViewUserCatalogsFragment extends Fragment {
@@ -76,6 +77,27 @@ public class ViewUserCatalogsFragment extends Fragment {
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         try {
             RequestData requestData = new RequestData(activity, GET_MEMBERSHIPS, url);
+            ResponseData responseData = new QueryManager().execute(requestData).get();
+            if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
+                SuccessResponse payload = (SuccessResponse) responseData.getPayload();
+                Object object = payload.getResult();
+                map = (LinkedHashMap<String, String>) object;
+            }
+        }
+        catch (ClassCastException | ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            Log.i("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        return map;
+    }
+
+    public static Map<String, String> getMembershipCatalogIDs(Activity activity) {
+        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_membership_catalog_ids)
+                + "?calleeUsername=" + getUsername(activity);
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        try {
+            RequestData requestData = new RequestData(activity, GET_MEMBERSHIP_CATALOG_IDS, url);
             ResponseData responseData = new QueryManager().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
