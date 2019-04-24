@@ -102,9 +102,9 @@ public class GoogleDriveMediator {
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
-                new AsyncTask<String, Void, JSONObject>() {
+                new AsyncTask<String, Void, ArrayList<Bitmap> >() {
                     @Override
-                    protected JSONObject doInBackground(String... tokens) {
+                    protected ArrayList<Bitmap>  doInBackground(String... tokens) {
                         try {
                             if (error != null) {
                                 suggestReauthentication(context, error.getMessage());
@@ -115,41 +115,40 @@ public class GoogleDriveMediator {
                             // Retrieve the metadata as a File object.
                             String readContents = readTxtFileContents(googleDriveCatalogId);
 
-                            if (readContents.equals("")) {
-                                setWarning(context, "catalog.json file not found or malformed");
+                            if (readContents == null || readContents.equals("")) {
+                                setWarning(context, "catalog file not found or malformed, null readTxtFileContents");
                                 return null;
                             }
 
-                            Log.i(GOOGLE_DRIVE_TAG, readContents);
+                            JSONObject catalogFileContents = new JSONObject(readContents);
 
-                            return new JSONObject(readContents);
-
-                        } catch (IOException | JSONException exc) {
-                            setError(context, exc.getMessage());
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(JSONObject jsonObject) {
-                        if (jsonObject == null) {
-                            setError(context, "readTxtFileContents resulted on a null object on viewCatalogSlicePhotos");
-                        }
-                        ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
-                        try {
-                            JSONArray photosArray = jsonObject.getJSONArray("photos");
-                            if (photosArray != null) {
-                                int photoCount = photosArray.length();
-                                for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
-                                    String photoId = photosArray.getString(photoIdx);
-                                    displayablePhotosList.add(readImgFile(photoId, TYPE_PNG));
+                            if (catalogFileContents.has("photos")) {
+                                ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
+                                JSONArray photosArray = catalogFileContents.getJSONArray("photos");
+                                if (photosArray != null) {
+                                    int photoCount = photosArray.length();
+                                    for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
+                                        String photoId = photosArray.getString(photoIdx);
+                                        displayablePhotosList.add(readImgFile(photoId, TYPE_PNG));
+                                    }
                                 }
+                                return displayablePhotosList;
                             }
                         } catch (IOException | JSONException exc) {
                             setError(context, exc.getMessage());
                         }
-                        // Bitmap[] displayablePhotosArray = displayablePhotosList.toArray(new Bitmap[displayablePhotosList.size()]);
-                        // ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
+
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(ArrayList<Bitmap>  photosFileIdList) {
+                       if (photosFileIdList == null) {
+                           setError(context, "catalog slice does not have a photos field");
+                       } else {
+                           Bitmap[] displayablePhotosArray = photosFileIdList.toArray(new Bitmap[photosFileIdList.size()]);
+                           ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
+                       }
                     }
                 }.execute(accessToken);
             }
