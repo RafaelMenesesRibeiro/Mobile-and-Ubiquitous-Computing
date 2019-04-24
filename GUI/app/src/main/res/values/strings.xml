@@ -9,7 +9,7 @@
     <string name="logout">logout/</string>
     <string name="find_users">findUsers</string>
     <string name="new_catalog">newCatalog</string>
-    <string name="new_catalog_slice">newCatalogSliceIdentifier/</string>
+    <string name="new_catalog_slice">newCatalogSlice/</string>
     <string name="new_catalog_member">newCatalogMember</string>
     <string name="view_catalog_members">viewCatalogMembers</string>
     <string name="view_catalog">viewCatalog</string>
