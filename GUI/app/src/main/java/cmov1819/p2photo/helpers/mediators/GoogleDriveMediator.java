@@ -193,7 +193,13 @@ public class GoogleDriveMediator {
 
                                 Log.i(GOOGLE_DRIVE_TAG, ">>> Creating catalog... ID = " + catalogJsonFile.getId());
 
-                                Permission userPermission = new Permission().setType("anyone").setRole("reader");
+                                Permission userPermission = new Permission()
+                                        .setAllowFileDiscovery(true)
+                                        .setType("anyone")
+                                        .setRole("reader")
+                                        .set("shared", true)
+                                        .set("viewersCanCopyContent", true);
+
                                 driveService.permissions().create(catalogJsonFile.getId(), userPermission).setFields("id").execute();
                                 catalogJsonFile = driveService.files().get(catalogJsonFile.getId()).setFields("id, webContentLink").execute();
 
