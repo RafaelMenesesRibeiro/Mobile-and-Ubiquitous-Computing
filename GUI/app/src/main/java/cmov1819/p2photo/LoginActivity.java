@@ -20,7 +20,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -32,11 +31,8 @@ import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
-import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
-import static android.widget.Toast.LENGTH_SHORT;
-import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {

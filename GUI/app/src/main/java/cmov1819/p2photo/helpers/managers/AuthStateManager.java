@@ -23,10 +23,6 @@ import net.openid.appauth.TokenResponse;
 
 import org.json.JSONException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Set;
-
 import cmov1819.p2photo.LoginActivity;
 
 import static android.widget.Toast.LENGTH_SHORT;
