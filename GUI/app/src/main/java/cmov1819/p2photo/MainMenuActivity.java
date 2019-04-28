@@ -155,7 +155,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         int code = result.getServerCode();
         if (code == HttpURLConnection.HTTP_OK) {
             String catalogTitle = (String)((SuccessResponse)result.getPayload()).getResult();
-            googleDriveMediator.newCatalog(this, catalogTitle, catalogId, authStateManager.getAuthState());
+            googleDriveMediator.newCatalogSlice(this, catalogTitle, catalogId, authStateManager.getAuthState());
         } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
             Log.w(MAIN_MENU_TAG,  ((ErrorResponse)result.getPayload()).getReason());
             Toast.makeText(this, "Session timed out, please login again", LENGTH_SHORT).show();

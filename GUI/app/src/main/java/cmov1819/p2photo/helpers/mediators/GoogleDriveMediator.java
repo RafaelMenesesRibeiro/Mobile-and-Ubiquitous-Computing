@@ -99,10 +99,10 @@ public class GoogleDriveMediator {
     }
 
 
-    public void newCatalog(final Context context,
-                           final String title,
-                           final String p2photoId,
-                           final AuthState authState) {
+    public void newCatalogSlice(final Context context,
+                                final String title,
+                                final String p2photoId,
+                                final AuthState authState) {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override

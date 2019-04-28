@@ -28,7 +28,6 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
-import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -113,7 +112,7 @@ public class NewCatalogFragment extends Fragment {
                 throw new FailedOperationException();
             }
 
-            googleDriveMediator.newCatalog(
+            googleDriveMediator.newCatalogSlice(
                     getActivity(),
                     catalogTitle,
                     catalogID,
