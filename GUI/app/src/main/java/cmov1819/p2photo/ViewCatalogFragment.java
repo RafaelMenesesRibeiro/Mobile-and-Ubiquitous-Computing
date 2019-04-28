@@ -159,7 +159,6 @@ public class ViewCatalogFragment extends Fragment {
             googleDriveMediator.viewCatalogSlicePhotos(
                     getContext(), view, googleCatalogFileId, authStateManager.getAuthState()
             );
-            break;
         }
     }
 
