@@ -134,13 +134,15 @@ public class NewCatalogFragment extends Fragment {
     public static void newCatalogSlice(final Context context,
                                        final String catalogId,
                                        final String parentFolderGoogleId,
-                                       final String catalogFileGoogleId) {
+                                       final String catalogFileGoogleId,
+                                       final String webContentLink) {
         try {
 
             JSONObject requestBody = new JSONObject();
 
             requestBody.put("parentFolderGoogleId", parentFolderGoogleId);
             requestBody.put("catalogFileGoogleId", catalogFileGoogleId);
+            requestBody.put("webContentLink", webContentLink);
             requestBody.put("calleeUsername", getUsername((Activity)context));
 
             String url =
