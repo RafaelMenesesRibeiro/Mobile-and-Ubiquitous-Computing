@@ -150,7 +150,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     private void completeJoinProcess(String catalogId) throws ExecutionException, InterruptedException {
         String baseUrl = getString(R.string.p2photo_host) + getString(R.string.view_catalog_details);
         String url = String.format("%s?catalogId=%s&calleeUsername=%s", baseUrl, catalogId, getUsername(this));
-        RequestData requestData = new RequestData(this, RequestData.RequestType.LOGIN, url);
+        RequestData requestData = new RequestData(this, RequestData.RequestType.GET_CATALOG_TITLE, url);
         ResponseData result = new QueryManager().execute(requestData).get();
         int code = result.getServerCode();
         if (code == HttpURLConnection.HTTP_OK) {
