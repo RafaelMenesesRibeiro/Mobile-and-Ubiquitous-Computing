@@ -308,8 +308,7 @@ public class GoogleDriveMediator {
 
                     @Override
                     protected void onPostExecute(ArrayList<Bitmap> photosFileIdList) {
-                        Bitmap[] displayablePhotosArray = photosFileIdList.toArray(new Bitmap[photosFileIdList.size()]);
-                        ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
+                        ViewCatalogFragment.drawImages(view, context, photosFileIdList);
                     }
                 }.execute(accessToken);
             }
