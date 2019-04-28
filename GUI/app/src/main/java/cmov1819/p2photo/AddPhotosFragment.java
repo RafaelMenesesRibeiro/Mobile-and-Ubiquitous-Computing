@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -170,10 +171,11 @@ public class AddPhotosFragment extends Fragment {
             return;
         }
 
+        Map.Entry<String, String> onlyEntry = googleDriveIdentifiers.entrySet().iterator().next();
         googleDriveMediator.newPhoto(
                 getContext(),
-                googleDriveIdentifiers.get("parentFolderGoogleId"),
-                googleDriveIdentifiers.get("catalogFileGoogleId"),
+                onlyEntry.getKey(),
+                onlyEntry.getValue(),
                 androidFilePath.getName(),
                 GoogleDriveMediator.TYPE_PNG,
                 androidFilePath,
