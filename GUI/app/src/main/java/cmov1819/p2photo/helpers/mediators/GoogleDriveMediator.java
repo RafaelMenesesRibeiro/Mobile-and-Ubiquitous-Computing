@@ -242,7 +242,7 @@ public class GoogleDriveMediator {
 
     public void viewCatalogSlicePhotos(final Context context,
                                        final View view,
-                                       final String googleDriveCatalogId,
+                                       final String webContentLink,
                                        final AuthState authState) {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
@@ -259,7 +259,7 @@ public class GoogleDriveMediator {
 
                             credential.setAccessToken(tokens[0]);
                             // Retrieve the metadata as a File object.
-                            String readContents = readTxtFileContentsWithId(googleDriveCatalogId);
+                            String readContents = readTxtFileWithWebContentLink(webContentLink);
 
                             if (readContents == null || readContents.equals("")) {
                                 setWarning(context, "catalog file not found or malformed, null readTxtFileContentsWithId");
@@ -397,6 +397,23 @@ public class GoogleDriveMediator {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
         StringBuilder stringBuilder = new StringBuilder();
+        while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line);
+        }
+
+        return stringBuilder.toString();
+    }
+
+    private String readTxtFileWithWebContentLink(String webContentLink) throws IOException {
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading text file contents with webContentLink...");
+        Log.i(GOOGLE_DRIVE_TAG, " ::: " + webContentLink);
+
+        InputStream inputStream = new URL(webContentLink).openStream();
+
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        StringBuilder stringBuilder = new StringBuilder();
+        
         while ((line = bufferedReader.readLine()) != null) {
             stringBuilder.append(line);
         }
