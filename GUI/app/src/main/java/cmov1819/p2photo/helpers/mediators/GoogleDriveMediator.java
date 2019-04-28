@@ -96,7 +96,6 @@ public class GoogleDriveMediator {
     }
 
 
-
     public void newCatalog(final Context context,
                            final String title,
                            final String p2photoId,
@@ -169,7 +168,11 @@ public class GoogleDriveMediator {
                         }
                         else {
                             NewCatalogFragment.newCatalogSlice(
-                                    context, p2photoId, parentFolderFile.getId(), catalogJsonFile.getId()
+                                    context,
+                                    p2photoId,
+                                    parentFolderFile.getId(),
+                                    catalogJsonFile.getId(),
+                                    catalogJsonFile.getWebContentLink()
                             );
                             Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
                         }
@@ -211,7 +214,8 @@ public class GoogleDriveMediator {
                                 } else {
                                     JSONObject currentCatalog = new JSONObject(readTxtFileContentsWithId(catalogFileGoogleId));
                                     JSONArray photos = currentCatalog.getJSONArray("photos");
-                                    photos.put(newGooglePhotoFile.getId());
+                                    // photos.put(newGooglePhotoFile.getId());
+                                    photos.put(newGooglePhotoFile.getWebContentLink());
                                     currentCatalog.put("photos", photos);
                                     String newFileContent = currentCatalog.toString(4);
 
@@ -273,8 +277,8 @@ public class GoogleDriveMediator {
                                 if (photosArray != null) {
                                     int photoCount = photosArray.length();
                                     for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
-                                        String photoId = photosArray.getString(photoIdx);
-                                        displayablePhotosList.add(readImgFileWithWebContentLink(photoId, TYPE_PNG));
+                                        String webContentLink = photosArray.getString(photoIdx);
+                                        displayablePhotosList.add(readImgFileWithWebContentLink(webContentLink));
                                     }
                                 }
                                 return displayablePhotosList;
@@ -415,7 +419,7 @@ public class GoogleDriveMediator {
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
-    private Bitmap readImgFileWithWebContentLink(String webContentLink, String mimeType) throws IOException {
+    private Bitmap readImgFileWithWebContentLink(String webContentLink) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
 
         InputStream inputStream = new URL(webContentLink).openStream();
