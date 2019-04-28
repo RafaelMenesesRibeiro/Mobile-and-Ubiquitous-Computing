@@ -413,7 +413,7 @@ public class GoogleDriveMediator {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
         StringBuilder stringBuilder = new StringBuilder();
-        
+
         while ((line = bufferedReader.readLine()) != null) {
             stringBuilder.append(line);
         }
