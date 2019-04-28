@@ -92,7 +92,7 @@ public class ViewUserCatalogsFragment extends Fragment {
         return map;
     }
 
-    public static Map<String, String> getMembershipCatalogIDs(Activity activity) {
+    public static Map<String, String> getMembershipGoogleDriveIDs(Activity activity) {
         String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_membership_catalog_ids)
                 + "?calleeUsername=" + getUsername(activity);
         LinkedHashMap<String, String> map = new LinkedHashMap<>();

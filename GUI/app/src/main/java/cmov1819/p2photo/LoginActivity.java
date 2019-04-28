@@ -20,10 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -33,7 +30,7 @@ import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
-import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
@@ -43,6 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String LOGIN_TAG = "LOGIN";
     private static final String SIGN_UP_TAG = "SIGN UP";
 
+    private GoogleDriveMediator googleDriveMediator;
     private AuthStateManager authStateManager;
 
     BroadcastReceiver restrictionsReceiver;
@@ -58,6 +56,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login_screen);
 
         this.authStateManager = AuthStateManager.getInstance(this);
+        this.googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
 
         final Button loginButton = findViewById(R.id.LoginButton);
         final Button signUpButton = findViewById(R.id.SignUpBottom);
@@ -170,7 +169,8 @@ public class LoginActivity extends AppCompatActivity {
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
         // TODO - @FranciscoBarros - Use this to check if there are catalogs not yet created. //
-        Map<String, String> membershipCatalogIDs = ViewUserCatalogsFragment.getMembershipCatalogIDs(this);
+        Map<String, String> membershipGoogleDriveIDs = ViewUserCatalogsFragment.getMembershipGoogleDriveIDs(this);
+        // googleDriveMediator.checkMissingCatalogs(this, membershipGoogleDriveIDs, authStateManager.getAuthState());
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {

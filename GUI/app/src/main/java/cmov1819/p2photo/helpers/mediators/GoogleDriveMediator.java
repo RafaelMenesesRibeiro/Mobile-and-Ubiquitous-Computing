@@ -40,6 +40,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
@@ -283,6 +284,70 @@ public class GoogleDriveMediator {
                             Toast.makeText(context, "Couldn't upload photo", Toast.LENGTH_LONG).show();
                         } else {
                             Toast.makeText(context, "Upload complete", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                }.execute(accessToken);
+            }
+        });
+    }
+
+    public void checkMissingCatalogs(final Context context,
+                                       final Map<String, String> membershipGoogleDriveIDs,
+                                       final AuthState authState) {
+
+        authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
+            @Override
+            public void execute(String accessToken, String idToken, final AuthorizationException error) {
+                new AsyncTask<String, Void, ArrayList<String> >() {
+                    @Override
+                    protected ArrayList<String>  doInBackground(String... tokens) {
+                        /*
+                        try {
+                            if (error != null) {
+                                suggestReauthentication(context, error.getMessage());
+                                return null;
+                            }
+
+                            credential.setAccessToken(tokens[0]);
+                            // Retrieve the metadata as a File object.
+
+                            String readContents = readTxtFileContents(googleDriveCatalogId);
+
+                            if (readContents == null || readContents.equals("")) {
+                                setWarning(context, "catalog file not found or malformed, null readTxtFileContents");
+                                return null;
+                            }
+
+                            JSONObject catalogFileContents = new JSONObject(readContents);
+
+                            if (catalogFileContents.has("photos")) {
+                                ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
+                                JSONArray photosArray = catalogFileContents.getJSONArray("photos");
+                                if (photosArray != null) {
+                                    int photoCount = photosArray.length();
+                                    for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
+                                        String photoId = photosArray.getString(photoIdx);
+                                        displayablePhotosList.add(readImgFile(photoId, TYPE_PNG));
+                                    }
+                                }
+                                return displayablePhotosList;
+                            }
+                        }
+                        catch (IOException | JSONException exc) {
+                            setError(context, exc.getMessage());
+                        }
+                        */
+
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(ArrayList<String>  missingCatalogIDs) {
+                        if (missingCatalogIDs == null) {
+                            setError(context, "MissingCatalogIDs is null");
+                        }
+                        else {
+
                         }
                     }
                 }.execute(accessToken);
