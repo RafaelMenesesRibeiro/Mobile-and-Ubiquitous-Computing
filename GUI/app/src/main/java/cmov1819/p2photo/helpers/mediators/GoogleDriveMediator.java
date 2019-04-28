@@ -254,6 +254,7 @@ public class GoogleDriveMediator {
                 new AsyncTask<String, Void, ArrayList<Bitmap> >() {
                     @Override
                     protected ArrayList<Bitmap>  doInBackground(String... tokens) {
+                        ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
                         try {
                             if (error != null) {
                                 suggestReauthentication(context, error.getMessage());
@@ -271,8 +272,13 @@ public class GoogleDriveMediator {
 
                             JSONObject catalogFileContents = new JSONObject(readContents);
 
+                            Log.i(GOOGLE_DRIVE_TAG, String.format(
+                                    "Reading catalog contents: \n%s",
+                                    catalogFileContents.toString(4)
+                                )
+                            );
+
                             if (catalogFileContents.has("photos")) {
-                                ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
                                 JSONArray photosArray = catalogFileContents.getJSONArray("photos");
                                 if (photosArray != null) {
                                     int photoCount = photosArray.length();
@@ -283,23 +289,17 @@ public class GoogleDriveMediator {
                                         );
                                     }
                                 }
-                                return displayablePhotosList;
                             }
                         } catch (IOException | JSONException exc) {
                             setError(context, exc.getMessage());
                         }
-
-                        return null;
+                        return displayablePhotosList;
                     }
 
                     @Override
-                    protected void onPostExecute(ArrayList<Bitmap>  photosFileIdList) {
-                        if (photosFileIdList == null) {
-                            setError(context, "catalog slice does not have a photos field");
-                        } else {
-                            Bitmap[] displayablePhotosArray = photosFileIdList.toArray(new Bitmap[photosFileIdList.size()]);
-                            ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
-                        }
+                    protected void onPostExecute(ArrayList<Bitmap> photosFileIdList) {
+                        Bitmap[] displayablePhotosArray = photosFileIdList.toArray(new Bitmap[photosFileIdList.size()]);
+                        ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
                     }
                 }.execute(accessToken);
             }
