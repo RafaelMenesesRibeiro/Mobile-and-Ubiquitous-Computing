@@ -142,7 +142,6 @@ public class GoogleDriveMediator {
                                         .setType("anyone")
                                         .setRole("reader")
                                         .set("shared", true);
-                                //.set("viewersCanCopyContent", true);
 
                                 driveService.permissions()
                                         .create(catalogJsonFile.getId(), userPermission)
@@ -210,6 +209,17 @@ public class GoogleDriveMediator {
                                 File newGooglePhotoFile = createImgFile(
                                         parentFolderGoogleId, photoName, mimeType, androidFilePath
                                 );
+
+                                Permission userPermission = new Permission()
+                                        .setAllowFileDiscovery(true)
+                                        .setType("anyone")
+                                        .setRole("reader")
+                                        .set("shared", true);
+
+                                driveService.permissions()
+                                        .create(newGooglePhotoFile.getId(), userPermission)
+                                        .setFields("id")
+                                        .execute();
 
                                 if (newGooglePhotoFile == null) {
                                     setWarning(context,"Null response received from Google REST API.");
@@ -442,7 +452,9 @@ public class GoogleDriveMediator {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using webContentLink...");
         Log.i(GOOGLE_DRIVE_TAG, "::: " + webContentLink);
 
-        InputStream inputStream = context.getContentResolver().openInputStream(Uri.parse(webContentLink));
+       InputStream inputStream = context.getApplicationContext()
+               .getContentResolver()
+               .openInputStream(Uri.parse(webContentLink));
 
         byte[] bitmapBytes = IOUtils.toByteArray(inputStream);
 
