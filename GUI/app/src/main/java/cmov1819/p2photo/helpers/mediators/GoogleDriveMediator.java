@@ -36,6 +36,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -114,10 +115,10 @@ public class GoogleDriveMediator {
 
                             credential.setAccessToken(tokens[0]);
                             // Retrieve the metadata as a File object.
-                            String readContents = readTxtFileContents(googleDriveCatalogId);
+                            String readContents = readTxtFileContentsWithId(googleDriveCatalogId);
 
                             if (readContents == null || readContents.equals("")) {
-                                setWarning(context, "catalog file not found or malformed, null readTxtFileContents");
+                                setWarning(context, "catalog file not found or malformed, null readTxtFileContentsWithId");
                                 return null;
                             }
 
@@ -130,7 +131,7 @@ public class GoogleDriveMediator {
                                     int photoCount = photosArray.length();
                                     for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
                                         String photoId = photosArray.getString(photoIdx);
-                                        displayablePhotosList.add(readImgFile(photoId, TYPE_PNG));
+                                        displayablePhotosList.add(readImgFileWithWebContentLink(photoId, TYPE_PNG));
                                     }
                                 }
                                 return displayablePhotosList;
@@ -197,9 +198,9 @@ public class GoogleDriveMediator {
                                 Permission userPermission = new Permission()
                                         .setAllowFileDiscovery(true)
                                         .setType("anyone")
-                                        .setRole("reader")
-                                        .set("shared", true)
-                                        .set("viewersCanCopyContent", true);
+                                        .setRole("reader");
+                                        //.set("shared", true)
+                                        //.set("viewersCanCopyContent", true);
 
                                 driveService.permissions().create(catalogJsonFile.getId(), userPermission).setFields("id").execute();
                                 catalogJsonFile = driveService.files().get(catalogJsonFile.getId()).setFields("id, webContentLink").execute();
@@ -261,7 +262,7 @@ public class GoogleDriveMediator {
                                     setWarning(context,"Null response received from Google REST API.");
                                     return null;
                                 } else {
-                                    JSONObject currentCatalog = new JSONObject(readTxtFileContents(catalogFileGoogleId));
+                                    JSONObject currentCatalog = new JSONObject(readTxtFileContentsWithId(catalogFileGoogleId));
                                     JSONArray photos = currentCatalog.getJSONArray("photos");
                                     photos.put(newGooglePhotoFile.getId());
                                     currentCatalog.put("photos", photos);
@@ -399,25 +400,6 @@ public class GoogleDriveMediator {
         return googleFile;
     }
 
-    private File updateJsonFile(String fileId,
-                                String fileName,
-                                String fileContent) throws IOException {
-
-        File metadata = new File()
-                .setName(fileName)
-                .setMimeType(TYPE_TXT);
-
-        InputStream targetStream = new ByteArrayInputStream(fileContent.getBytes(Charset.forName("UTF-8")));
-        AbstractInputStreamContent newFileContentStream = new InputStreamContent(TYPE_JSON, targetStream);
-
-        File googleFile = driveService.files()
-                .update(fileId, metadata, newFileContentStream)
-                .setFields("id, parents")
-                .execute();
-
-        return googleFile;
-    }
-
     private File createImgFile(String parentId,
                                String fileName,
                                String mimeType,
@@ -440,7 +422,27 @@ public class GoogleDriveMediator {
         return googleFile;
     }
 
-    private String readTxtFileContents(String googleDriveCatalogId) throws IOException {
+    private File updateJsonFile(String fileId,
+                                String fileName,
+                                String fileContent) throws IOException {
+
+        File metadata = new File()
+                .setName(fileName)
+                .setMimeType(TYPE_TXT);
+
+        InputStream targetStream = new ByteArrayInputStream(fileContent.getBytes(Charset.forName("UTF-8")));
+        AbstractInputStreamContent newFileContentStream = new InputStreamContent(TYPE_JSON, targetStream);
+
+        File googleFile = driveService.files()
+                .update(fileId, metadata, newFileContentStream)
+                .setFields("id, parents")
+                .execute();
+
+        return googleFile;
+    }
+
+    //     webContentLink
+    private String readTxtFileContentsWithId(String googleDriveCatalogId) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading file contents...");
         // Stream the file contents to a String.
         InputStream inputStream = driveService.files()
@@ -454,12 +456,10 @@ public class GoogleDriveMediator {
             stringBuilder.append(line);
         }
 
-        Log.w("BOOOOHOO", stringBuilder.toString());
-
         return stringBuilder.toString();
     }
 
-    private Bitmap readImgFile(String fileId, String mimeType) throws IOException {
+    private Bitmap readImgFileWithId(String fileId, String mimeType) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
 
         InputStream inputStream = driveService.files()
@@ -471,7 +471,17 @@ public class GoogleDriveMediator {
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
-    private Bitmap downloadImgFile(String fileId, String mimeType) throws IOException {
+    private Bitmap readImgFileWithWebContentLink(String webContentLink, String mimeType) throws IOException {
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
+
+        InputStream inputStream = new URL(webContentLink).openStream();
+
+        byte[] bitmapBytes = IOUtils.toByteArray(inputStream);
+
+        return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+    }
+
+    private Bitmap downloadImgFileWithId(String fileId, String mimeType) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
