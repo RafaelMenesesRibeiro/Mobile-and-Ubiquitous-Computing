@@ -452,9 +452,12 @@ public class GoogleDriveMediator {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using webContentLink...");
         Log.i(GOOGLE_DRIVE_TAG, "::: " + webContentLink);
 
+        /*
        InputStream inputStream = context.getApplicationContext()
                .getContentResolver()
                .openInputStream(Uri.parse(webContentLink));
+       */
+        InputStream inputStream = new URL(webContentLink).openStream();
 
         byte[] bitmapBytes = IOUtils.toByteArray(inputStream);
 
