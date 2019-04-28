@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
@@ -36,6 +37,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -275,7 +278,9 @@ public class GoogleDriveMediator {
                                     int photoCount = photosArray.length();
                                     for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
                                         String webContentLink = photosArray.getString(photoIdx);
-                                        displayablePhotosList.add(readImgFileWithWebContentLink(webContentLink));
+                                        displayablePhotosList.add(
+                                                readImgFileWithWebContentLink(context, webContentLink)
+                                        );
                                     }
                                 }
                                 return displayablePhotosList;
@@ -433,11 +438,11 @@ public class GoogleDriveMediator {
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
-    private Bitmap readImgFileWithWebContentLink(String webContentLink) throws IOException {
+    private Bitmap readImgFileWithWebContentLink(Context context, String webContentLink) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using webContentLink...");
         Log.i(GOOGLE_DRIVE_TAG, "::: " + webContentLink);
 
-        InputStream inputStream = new URL(webContentLink).openStream();
+        InputStream inputStream = context.getContentResolver().openInputStream(Uri.parse(webContentLink));
 
         byte[] bitmapBytes = IOUtils.toByteArray(inputStream);
 
