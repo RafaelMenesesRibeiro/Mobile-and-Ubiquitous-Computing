@@ -32,8 +32,11 @@ import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
+import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
+import static android.widget.Toast.LENGTH_SHORT;
+import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
@@ -158,6 +161,7 @@ public class LoginActivity extends AppCompatActivity {
         EditText passwordEditText = findViewById(R.id.passwordInputBox);
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
+
         try {
             tryLogin(usernameValue, passwordValue);
         }
@@ -166,11 +170,9 @@ public class LoginActivity extends AppCompatActivity {
             passwordEditText.setText("");
             return;
         }
+
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
-        // TODO - @FranciscoBarros - Use this to check if there are catalogs not yet created. //
-        Map<String, String> membershipGoogleDriveIDs = ViewUserCatalogsFragment.getMembershipGoogleDriveIDs(this);
-        // googleDriveMediator.checkMissingCatalogs(this, membershipGoogleDriveIDs, authStateManager.getAuthState());
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {

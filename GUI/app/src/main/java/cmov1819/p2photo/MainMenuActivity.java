@@ -17,27 +17,40 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
+import cmov1819.p2photo.msgtypes.ErrorResponse;
+import cmov1819.p2photo.msgtypes.SuccessResponse;
 
+import static android.widget.Toast.LENGTH_SHORT;
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.NO_CATALOG_SELECTED;
+import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    public static final String MAIN_MENU_TAG = "MAIN MENU ACTIVITY";
     public static final String START_SCREEN = "initialScreen";
     public static final String HOME_SCREEN = SearchUserFragment.class.getName();
 
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+
+    private GoogleDriveMediator googleDriveMediator;
+    private AuthStateManager authStateManager;
 
     private static Resources resources;
 
@@ -47,6 +60,11 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         setContentView(R.layout.activity_main_menu);
 
         MainMenuActivity.resources = getResources();
+
+        this.authStateManager = AuthStateManager.getInstance(this);
+        this.googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
+
+        dealWithPendingMemberships();
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -91,7 +109,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                     logout();
                 }
                 catch (FailedOperationException ex) {
-                    Log.i("ERROR", "LOGOUT: Failed to logout, proceeding");
+                    Log.e(MAIN_MENU_TAG, "LOGOUT: Failed to logout, proceeding");
                 }
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
@@ -113,12 +131,45 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     }
 
     /**********************************************************
+    * MEMBERSHIP VERIFICATION METHODS
+    ***********************************************************/
+
+    private void dealWithPendingMemberships() {
+        Map<String, String> membershipMapping = ViewUserCatalogsFragment.getMembershipGoogleDriveIDs(this);
+        for (String catalogId : membershipMapping.keySet()) {
+            try {
+                if (membershipMapping.get(catalogId).equals("")) {
+                    completeJoinProcess(catalogId);
+                }
+            } catch (ExecutionException | InterruptedException exc) {
+                // pass;
+            }
+        }
+    }
+
+    private void completeJoinProcess(String catalogId) throws ExecutionException, InterruptedException {
+        String baseUrl = getString(R.string.p2photo_host) + getString(R.string.view_catalog_details);
+        String url = String.format("%s?catalogId=%s&calleeUsername=%s", baseUrl, catalogId, getUsername(this));
+        RequestData requestData = new RequestData(this, RequestData.RequestType.LOGIN, url);
+        ResponseData result = new QueryManager().execute(requestData).get();
+        int code = result.getServerCode();
+        if (code == HttpURLConnection.HTTP_OK) {
+            String catalogTitle = (String)((SuccessResponse)result.getPayload()).getResult();
+            googleDriveMediator.newCatalog(this, catalogTitle, catalogId, authStateManager.getAuthState());
+        } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            Log.w(MAIN_MENU_TAG,  ((ErrorResponse)result.getPayload()).getReason());
+            Toast.makeText(this, "Session timed out, please login again", LENGTH_SHORT).show();
+            this.startActivity(new Intent(this, LoginActivity.class));
+        }
+    }
+
+    /**********************************************************
      * LOGOUT HELPER
      ***********************************************************/
 
     public void logout() throws FailedOperationException {
         String username = SessionManager.getUsername(this);
-        Log.i("MSG", "Logout: " + username);
+        Log.i(MAIN_MENU_TAG, "Logout: " + username);
 
         String url = getString(R.string.p2photo_host) + getString(R.string.logout) + username;
         RequestData rData = new RequestData(this, RequestData.RequestType.LOGOUT, url);
@@ -126,12 +177,12 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             ResponseData result = new QueryManager().execute(rData).get();
             int code = result.getServerCode();
             if (code == 200) {
-                Log.i("STATUS", "The logout operation was successful");
+                Log.i(MAIN_MENU_TAG, "The logout operation was successful");
                 SessionManager.deleteSessionID(this);
                 SessionManager.deleteUsername(this);
             }
             else {
-                Log.i("STATUS", "The login operation was unsuccessful. Unknown error.");
+                Log.w(MAIN_MENU_TAG, "The login operation was unsuccessful. Unknown error.");
                 throw new FailedOperationException();
             }
         }
