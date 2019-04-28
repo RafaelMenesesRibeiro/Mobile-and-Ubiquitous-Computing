@@ -214,13 +214,10 @@ public class GoogleDriveMediator {
                                 } else {
                                     JSONObject currentCatalog = new JSONObject(readTxtFileContentsWithId(catalogFileGoogleId));
                                     JSONArray photos = currentCatalog.getJSONArray("photos");
-                                    // photos.put(newGooglePhotoFile.getId());
                                     photos.put(newGooglePhotoFile.getWebContentLink());
                                     currentCatalog.put("photos", photos);
                                     String newFileContent = currentCatalog.toString(4);
-
                                     File googleFile = updateJsonFile(catalogFileGoogleId, photoName, newFileContent);
-
                                     return googleFile;
                                 }
                             }
