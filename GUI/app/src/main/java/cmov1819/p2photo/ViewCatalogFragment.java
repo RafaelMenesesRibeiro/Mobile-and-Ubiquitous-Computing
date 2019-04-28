@@ -1,7 +1,9 @@
 package cmov1819.p2photo;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -119,7 +121,7 @@ public class ViewCatalogFragment extends Fragment {
             return false;
         }
 
-        Map<String, String> map = ViewUserCatalogsFragment.getUserMemberships(activity);
+        Map<String, String> map = ViewUserCatalogsFragment.getMemberships(activity);
         catalogTitles = new ArrayList<>();
         catalogIDs = new ArrayList<>();
         for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -144,33 +146,32 @@ public class ViewCatalogFragment extends Fragment {
             Log.i("ERROR", "VIEW CATALOG: catalogTitle is null.");
             return false;
         }
-        List<String[]> googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(catalogID);
+        List<String>  googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(catalogID);
         populateGrid(view, catalogTitle, googleSliceFileIdentifiersList);
         return true;
     }
 
-    private void populateGrid(View view, String catalogTitle, List<String[]> googleSliceFileIdentifiersList) {
+    private void populateGrid(View view, String catalogTitle, List<String>  googleSliceFileIdentifiersList) {
         TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
-        // TODO Klogaaan  - Replace by actual downloaded images. //
-        /*
-        if (googleSliceFileIdentifiersList.isEmpty()) {
-            Toast.makeText(getContext(), "Album is empty.", LENGTH_LONG).show();
-            return;
+        for (String googleCatalogFileId : googleSliceFileIdentifiersList) {
+            googleDriveMediator.viewCatalogSlicePhotos(
+                    getContext(), view, googleCatalogFileId, authStateManager.getAuthState()
+            );
+            break;
         }
-        */
+    }
 
-        Integer[] imageIdsArray = {R.drawable.img1, R.drawable.img2, R.drawable.img3, R.drawable.img4, R.drawable.img5, R.drawable.img1};
+    public static void drawImages(View view, final Context context, Bitmap[] contents) {
         GridView grid = view.findViewById(R.id.catalogGrid);
-        grid.setAdapter(new ImageGridAdapter(activity, imageIdsArray));
+        grid.setAdapter(new ImageGridAdapter(context, contents));
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(activity, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
     private void addUserClicked() {
@@ -193,7 +194,7 @@ public class ViewCatalogFragment extends Fragment {
         }
     }
 
-    public List<String[]> getGoogleSliceFileIdentifiersList(String catalogID) {
+    public List<String> getGoogleSliceFileIdentifiersList(String catalogID) {
         String url = getString(R.string.p2photo_host) + getString(R.string.view_catalog) +
                 "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
 
@@ -202,7 +203,7 @@ public class ViewCatalogFragment extends Fragment {
             ResponseData responseData = new QueryManager().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
-                return (ArrayList<String[]>) payload.getResult();
+                return (List<String> ) payload.getResult();
             }
         }
         catch (ExecutionException | InterruptedException ex) {

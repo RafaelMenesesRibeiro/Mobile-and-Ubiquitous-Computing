@@ -16,7 +16,10 @@ import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -26,6 +29,7 @@ import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
+import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIP_CATALOG_IDS;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class ViewUserCatalogsFragment extends Fragment {
@@ -45,7 +49,7 @@ public class ViewUserCatalogsFragment extends Fragment {
     private void populate(View view) {
         catalogIdList = new ArrayList<>();
         catalogTitleList = new ArrayList<>();
-        Map<String, String> memberships = getUserMemberships(activity);
+        Map<String, String> memberships = getMemberships(activity);
         for (Map.Entry<String, String> entry : memberships.entrySet()) {
             catalogIdList.add(entry.getKey());
             catalogTitleList.add(entry.getValue());
@@ -67,7 +71,7 @@ public class ViewUserCatalogsFragment extends Fragment {
         });
     }
 
-    public static Map<String, String> getUserMemberships(Activity activity) {
+    public static Map<String, String> getMemberships(Activity activity) {
         String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_memberships)
                     + "?calleeUsername=" + getUsername(activity);
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
@@ -83,6 +87,28 @@ public class ViewUserCatalogsFragment extends Fragment {
         catch (ClassCastException | ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
             Log.i("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+        return map;
+    }
+
+    public static Map<String, String> getMembershipGoogleDriveIDs(Activity activity) {
+        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_membership_catalog_ids)
+                + "?calleeUsername=" + getUsername(activity);
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+        try {
+            RequestData requestData = new RequestData(activity, GET_MEMBERSHIP_CATALOG_IDS, url);
+            ResponseData responseData = new QueryManager().execute(requestData).get();
+            if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
+                SuccessResponse payload = (SuccessResponse) responseData.getPayload();
+                Object object = payload.getResult();
+                map = (LinkedHashMap<String, String>) object;
+            }
+        }
+        catch (ClassCastException | ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            Log.i("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
+            ex.printStackTrace();
         }
         return map;
     }

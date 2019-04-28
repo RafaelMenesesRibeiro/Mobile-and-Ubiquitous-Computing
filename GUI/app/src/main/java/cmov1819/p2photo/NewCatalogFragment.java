@@ -78,8 +78,8 @@ public class NewCatalogFragment extends Fragment {
 
         try {
             String catalogId = newCatalog(catalogTitle);
-            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.goToCatalog(catalogId, catalogTitle);
+            // MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+            // mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (FailedOperationException foex) {
             Toast.makeText(this.getContext(), "The create catalog operation failed. Try again later", Toast.LENGTH_LONG).show();
@@ -131,11 +131,18 @@ public class NewCatalogFragment extends Fragment {
         }
     }
 
-    public static void newCatalogSlice(final Context context, final String catalogId, final String googleCatalogFileId) {
+    public static void newCatalogSlice(final Context context,
+                                       final String catalogId,
+                                       final String parentFolderGoogleId,
+                                       final String catalogFileGoogleId,
+                                       final String webContentLink) {
         try {
 
             JSONObject requestBody = new JSONObject();
-            requestBody.put("googleCatalogFileId", googleCatalogFileId);
+
+            requestBody.put("parentFolderGoogleId", parentFolderGoogleId);
+            requestBody.put("catalogFileGoogleId", catalogFileGoogleId);
+            requestBody.put("webContentLink", webContentLink);
             requestBody.put("calleeUsername", getUsername((Activity)context));
 
             String url =

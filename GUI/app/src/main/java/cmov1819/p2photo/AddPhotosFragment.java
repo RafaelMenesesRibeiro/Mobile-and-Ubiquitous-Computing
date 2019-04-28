@@ -12,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,17 +22,38 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
+import cmov1819.p2photo.dataobjects.PostRequestData;
+import cmov1819.p2photo.dataobjects.RequestData;
+import cmov1819.p2photo.dataobjects.RequestData.RequestType;
+import cmov1819.p2photo.dataobjects.ResponseData;
+import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
+import cmov1819.p2photo.msgtypes.ErrorResponse;
+import cmov1819.p2photo.msgtypes.SuccessResponse;
+
+import static android.widget.Toast.LENGTH_LONG;
+import static android.widget.Toast.LENGTH_SHORT;
+import static cmov1819.p2photo.dataobjects.RequestData.RequestType.*;
+import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class AddPhotosFragment extends Fragment {
+    private static final String ADD_PHOTO_TAG = "ADD PHOTO FRAGMENT";
     public static final String CATALOG_ID_EXTRA = "catalogID";
 
     private View view;
@@ -136,40 +158,74 @@ public class AddPhotosFragment extends Fragment {
 
     public void addPhotosClicked(View view) {
         Spinner dropdown = view.findViewById(R.id.membershipDropdownMenu);
-        String catalogID = catalogIDs.get(dropdown.getSelectedItemPosition());
+        String catalogId = catalogIDs.get(dropdown.getSelectedItemPosition());
         String catalogTitle = dropdown.getSelectedItem().toString();
         File androidFilePath = selectedImage;
 
-        /* TODO Raphael:
-        * If we want to store photos in their folders along side their catalog.json file, we need to
-        * the googleDriveCatalogJsonId as well as the googleDriveCatalogFolderId. These can be stored seperatly on the
-        * database or they can be stored together using concatenation of strings splited by :p2pspliter:.
-        * The alternative is to store googleDriveCatalogJsonId inside googleDriveCatalogFolderId, but store all photos
-        * in the root folder of the user. In this case we only need to store googleDriveCatalogJsonId in the database
-        */
+        HashMap<String, String> googleDriveIdentifiers = getGoogleDriveIdentifiers(catalogId);
+
+        if (googleDriveIdentifiers == null) {
+            Log.e(ADD_PHOTO_TAG, "Failed to obtain googleDriveIdentifiers. Found ErrorResponse");
+            Toast.makeText(activity, "Failed to add photo", LENGTH_SHORT).show();
+            return;
+        }
+
         googleDriveMediator.newPhoto(
                 getContext(),
-                "1Uy1i200TF8sPiccjnhgjDCD3RfpEpHZB",
-                "1NQeZnrE9vLldHvOwh3PEomLE5CozdHmR",
+                googleDriveIdentifiers.get("parentFolderGoogleId"),
+                googleDriveIdentifiers.get("catalogFileGoogleId"),
                 androidFilePath.getName(),
                 GoogleDriveMediator.TYPE_PNG,
                 androidFilePath,
                 authStateManager.getAuthState()
         );
 
-        // TODO Bambi - Call method in GoogleDriveManager that: adds the photo's URL to user's catalog file
-
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.goToCatalog(catalogID, catalogTitle);
+            mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
+            Toast.makeText(activity, "Failed to add photo", LENGTH_SHORT).show();
+        }
+    }
+
+    private HashMap<String, String> getGoogleDriveIdentifiers(String catalogId) {
+        try {
+            Context context = getContext();
+            String baseUrl = getString(R.string.p2photo_host) + getString(R.string.get_google_identifiers);
+
+            String url = String.format(
+                    "%s?calleeUsername=%s&catalogId=%s", baseUrl, getUsername(getActivity()) , catalogId
+            );
+
+            RequestData requestData = new RequestData(getActivity(), GET_GOOGLE_IDENTIFIERS, url);
+            ResponseData result = new QueryManager().execute(requestData).get();
+
+            int code = result.getServerCode();
+            if (code != HttpURLConnection.HTTP_OK) {
+                String reason = ((ErrorResponse) result.getPayload()).getReason();
+                if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    Log.w(ADD_PHOTO_TAG, reason);
+                    Toast.makeText(context, "Session timed out, please login again", LENGTH_SHORT).show();
+                    context.startActivity(new Intent(context, LoginActivity.class));
+                    return null;
+                } else {
+                    Log.e(ADD_PHOTO_TAG, reason);
+                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();
+                    return null;
+                }
+            } else {
+                Object resultObject = ((SuccessResponse)result.getPayload()).getResult();
+                HashMap<String, String> googleIdentifiersMap = (HashMap<String, String>) resultObject;
+                return googleIdentifiersMap;
+            }
+        } catch (ExecutionException | InterruptedException ex) {
+            throw new FailedOperationException(ex.getMessage());
         }
     }
 
     public static ArrayList<String> setDropdownAdapterAngGetCatalogIDs(Activity activity, Spinner dropdownMenu) {
-        Map<String, String> map = ViewUserCatalogsFragment.getUserMemberships(activity);
+        Map<String, String> map = ViewUserCatalogsFragment.getMemberships(activity);
         ArrayList<String> catalogTitles = new ArrayList<>();
         ArrayList<String> catalogIDs = new ArrayList<>();
         for (Map.Entry<String, String> entry : map.entrySet()) {

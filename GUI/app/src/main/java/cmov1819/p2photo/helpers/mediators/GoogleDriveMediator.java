@@ -5,8 +5,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.widget.Toast;
 
@@ -35,6 +37,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,60 +98,6 @@ public class GoogleDriveMediator {
         return instance;
     }
 
-    public void retrieveCatalogSlice(final Context context,
-                                     final View view,
-                                     final String googleDriveCatalogId,
-                                     final AuthState authState) {
-
-        authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
-            @Override
-            public void execute(String accessToken, String idToken, final AuthorizationException error) {
-                new AsyncTask<String, Void, JSONObject>() {
-                    @Override
-                    protected JSONObject doInBackground(String... tokens) {
-                        try {
-                            if (error != null) {
-                                suggestReauthentication(context, error.getMessage());
-                                return null;
-                            }
-
-                            credential.setAccessToken(tokens[0]);
-                            // Retrieve the metadata as a File object.
-                            String readContents = readTxtFileContents(googleDriveCatalogId);
-
-                            if (readContents.equals("")) {
-                                setWarning(context, "catalog.json file not found or malformed");
-                                return null;
-                            }
-
-                            return new JSONObject(readContents);
-
-                        } catch (IOException | JSONException exc) {
-                            setError(context, exc.getMessage());
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(JSONObject jsonObject) {
-                        ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
-                        try {
-                            JSONArray jsonArray = jsonObject.getJSONArray("photos");
-                            if (jsonArray != null) {
-                                int photoCount = jsonArray.length();
-                                for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
-                                    String photoId = jsonArray.getString(photoIdx);
-                                    displayablePhotosList.add(readImageFile(photoId, TYPE_PNG));
-                                }
-                            }
-                        } catch (IOException | JSONException exc) {
-                            setError(context, exc.getMessage());
-                        }
-                    }
-                }.execute(accessToken);
-            }
-        });
-    }
 
     public void newCatalog(final Context context,
                            final String title,
@@ -156,9 +107,9 @@ public class GoogleDriveMediator {
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
             public void execute(String accessToken, String idToken, final AuthorizationException error) {
-                new AsyncTask<String, Void, File>() {
+                new AsyncTask<String, Void, Pair<File, File>>() {
                     @Override
-                    protected File doInBackground(String... tokens) {
+                    protected Pair<File, File> doInBackground(String... tokens) {
                         try {
                             if (error != null) {
                                 suggestReauthentication(context, error.getMessage());
@@ -167,18 +118,18 @@ public class GoogleDriveMediator {
                             else {
                                 credential.setAccessToken(tokens[0]);
 
-                                File catalogFolderFile = createFolder(null, title);
+                                File parentFolderFile = createFolder(null, title);
 
-                                if (catalogFolderFile == null) {
+                                if (parentFolderFile == null) {
                                     setWarning(context,"Null catalog folder file received from Google REST API.");
                                     return null;
                                 }
 
-                                Log.i(GOOGLE_DRIVE_TAG, ">>> Creating folder... ID = " + catalogFolderFile.getId());
+                                Log.i(GOOGLE_DRIVE_TAG, ">>> Creating folder... ID = " + parentFolderFile.getId());
 
-                                String catalogFolderId = catalogFolderFile.getId();
+                                String catalogFolderId = parentFolderFile.getId();
                                 String catalogJsonContent = newCatalogJsonFile(title, p2photoId, catalogFolderId);
-                                File catalogJsonFile = createTextFile(catalogFolderId,"catalog.json", catalogJsonContent);
+                                File catalogJsonFile = createJsonFile(catalogFolderId,"catalog", catalogJsonContent);
 
                                 if (catalogJsonFile == null) {
                                     setWarning(context,"Null catalog.json file received from Google REST API.");
@@ -186,11 +137,23 @@ public class GoogleDriveMediator {
 
                                 Log.i(GOOGLE_DRIVE_TAG, ">>> Creating catalog... ID = " + catalogJsonFile.getId());
 
-                                Permission userPermission = new Permission().setType("anyone").setRole("reader");
-                                driveService.permissions().create(catalogJsonFile.getId(), userPermission).setFields("id").execute();
-                                catalogJsonFile = driveService.files().get(catalogJsonFile.getId()).setFields("id, webContentLink").execute();
+                                Permission userPermission = new Permission()
+                                        .setAllowFileDiscovery(true)
+                                        .setType("anyone")
+                                        .setRole("reader")
+                                        .set("shared", true);
 
-                                return catalogJsonFile;
+                                driveService.permissions()
+                                        .create(catalogJsonFile.getId(), userPermission)
+                                        .setFields("id")
+                                        .execute();
+
+                                catalogJsonFile = driveService.files()
+                                        .get(catalogJsonFile.getId())
+                                        .setFields("id, parents, webContentLink")
+                                        .execute();
+
+                                return new Pair<>(parentFolderFile, catalogJsonFile);
                             }
                         } catch (JSONException | IOException exc) {
                             setError(context, exc.getMessage());
@@ -199,12 +162,20 @@ public class GoogleDriveMediator {
                     }
 
                     @Override
-                    protected void onPostExecute(File file) {
-                        if (file == null) {
+                    protected void onPostExecute(Pair<File, File> files) {
+                        File parentFolderFile = files.first;
+                        File catalogJsonFile = files.second;
+                        if (catalogJsonFile == null) {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
                         }
                         else {
-                            NewCatalogFragment.newCatalogSlice(context, p2photoId, file.getId());
+                            NewCatalogFragment.newCatalogSlice(
+                                    context,
+                                    p2photoId,
+                                    parentFolderFile.getId(),
+                                    catalogJsonFile.getId(),
+                                    catalogJsonFile.getWebContentLink()
+                            );
                             Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
                         }
                     }
@@ -214,8 +185,8 @@ public class GoogleDriveMediator {
     }
 
     public void newPhoto(final Context context,
-                         final String googleDriveCatalogId,
-                         final String googleDriveFolderId,
+                         final String parentFolderGoogleId,
+                         final String catalogFileGoogleId,
                          final String photoName,
                          final String mimeType,
                          final java.io.File androidFilePath,
@@ -235,36 +206,35 @@ public class GoogleDriveMediator {
                             else {
                                 credential.setAccessToken(tokens[0]);
 
-                                File googlePhotoFile = createImgFile(
-                                        googleDriveFolderId, photoName, mimeType, androidFilePath
+                                File newGooglePhotoFile = createImgFile(
+                                        parentFolderGoogleId, photoName, mimeType, androidFilePath
                                 );
 
-                                if (googlePhotoFile == null) {
+                                Permission userPermission = new Permission()
+                                        .setAllowFileDiscovery(true)
+                                        .setType("anyone")
+                                        .setRole("reader")
+                                        .set("shared", true);
+
+                                driveService.permissions()
+                                        .create(newGooglePhotoFile.getId(), userPermission)
+                                        .setFields("id")
+                                        .execute();
+
+                                if (newGooglePhotoFile == null) {
                                     setWarning(context,"Null response received from Google REST API.");
+                                    return null;
                                 } else {
-                                    try {
-                                        JSONObject catalog = new JSONObject(readTxtFileContents(googleDriveCatalogId));
-                                        JSONArray photos = catalog.getJSONArray("photos");
-                                        photos.put(googlePhotoFile.getId());
-                                        catalog.put("photos", photos);
-
-                                        InputStream targetStream = new ByteArrayInputStream(catalog.toString(4).getBytes(Charset.forName("UTF-8")));
-                                        AbstractInputStreamContent contentStream = new InputStreamContent(TYPE_JSON, targetStream);
-
-                                        File metadata = new File()
-                                                .setName("catalog")
-                                                .setMimeType(TYPE_TXT);
-
-                                        driveService.files().update(googleDriveCatalogId, metadata, contentStream).execute();
-                                    } catch (JSONException | IOException exc) {
-                                        setError(context, exc.getMessage());
-                                        return null;
-                                    }
+                                    JSONObject currentCatalog = new JSONObject(readTxtFileContentsWithId(catalogFileGoogleId));
+                                    JSONArray photos = currentCatalog.getJSONArray("photos");
+                                    photos.put(newGooglePhotoFile.getWebContentLink());
+                                    currentCatalog.put("photos", photos);
+                                    String newFileContent = currentCatalog.toString(4);
+                                    File googleFile = updateJsonFile(catalogFileGoogleId, photoName, newFileContent);
+                                    return googleFile;
                                 }
-
-                                return googlePhotoFile;
                             }
-                        } catch (IOException exc) {
+                        } catch (JSONException | IOException exc) {
                             setError(context, exc.getMessage());
                             return null;
                         }
@@ -277,6 +247,69 @@ public class GoogleDriveMediator {
                         } else {
                             Toast.makeText(context, "Upload complete", Toast.LENGTH_LONG).show();
                         }
+                    }
+                }.execute(accessToken);
+            }
+        });
+    }
+
+    public void viewCatalogSlicePhotos(final Context context,
+                                       final View view,
+                                       final String webContentLink,
+                                       final AuthState authState) {
+
+        authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
+            @Override
+            public void execute(String accessToken, String idToken, final AuthorizationException error) {
+                new AsyncTask<String, Void, ArrayList<Bitmap> >() {
+                    @Override
+                    protected ArrayList<Bitmap>  doInBackground(String... tokens) {
+                        ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
+                        try {
+                            if (error != null) {
+                                suggestReauthentication(context, error.getMessage());
+                                return null;
+                            }
+
+                            credential.setAccessToken(tokens[0]);
+                            // Retrieve the metadata as a File object.
+                            String readContents = readTxtFileWithWebContentLink(webContentLink);
+
+                            if (readContents == null || readContents.equals("")) {
+                                setWarning(context, "catalog file not found or malformed, null readTxtFileContentsWithId");
+                                return null;
+                            }
+
+                            JSONObject catalogFileContents = new JSONObject(readContents);
+
+                            Log.i(GOOGLE_DRIVE_TAG, String.format(
+                                    "Reading catalog contents: \n%s",
+                                    catalogFileContents.toString(4)
+                                )
+                            );
+
+                            if (catalogFileContents.has("photos")) {
+                                JSONArray photosArray = catalogFileContents.getJSONArray("photos");
+                                if (photosArray != null) {
+                                    int photoCount = photosArray.length();
+                                    for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
+                                        String webContentLink = photosArray.getString(photoIdx);
+                                        displayablePhotosList.add(
+                                                readImgFileWithWebContentLink(context, webContentLink)
+                                        );
+                                    }
+                                }
+                            }
+                        } catch (IOException | JSONException exc) {
+                            setError(context, exc.getMessage());
+                        }
+                        return displayablePhotosList;
+                    }
+
+                    @Override
+                    protected void onPostExecute(ArrayList<Bitmap> photosFileIdList) {
+                        Bitmap[] displayablePhotosArray = photosFileIdList.toArray(new Bitmap[photosFileIdList.size()]);
+                        ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
                     }
                 }.execute(accessToken);
             }
@@ -305,7 +338,7 @@ public class GoogleDriveMediator {
         return googleFile;
     }
 
-    private File createTextFile(String parentId,
+    private File createJsonFile(String parentId,
                                 String fileName,
                                 String fileContent) throws IOException {
 
@@ -317,15 +350,16 @@ public class GoogleDriveMediator {
                 .setMimeType(TYPE_TXT);
 
         InputStream targetStream = new ByteArrayInputStream(fileContent.getBytes(Charset.forName("UTF-8")));
-        AbstractInputStreamContent contentStream = new InputStreamContent(TYPE_JSON, targetStream);
+        AbstractInputStreamContent fileContentStream = new InputStreamContent(TYPE_JSON, targetStream);
 
         File googleFile = driveService.files()
-                .create(metadata, contentStream)
-                .setFields("id, parents")
+                .create(metadata, fileContentStream)
+                .setFields("id, parents, webContentLink")
                 .execute();
 
         return googleFile;
     }
+
     private File createImgFile(String parentId,
                                String fileName,
                                String mimeType,
@@ -342,14 +376,34 @@ public class GoogleDriveMediator {
 
         File googleFile = driveService.files()
                 .create(metadata, mediaContent)
-                .setFields("id, parents")
+                .setFields("id, parents, webContentLink")
                 .execute();
 
         return googleFile;
     }
 
-    private String readTxtFileContents(String googleDriveCatalogId) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading file contents...");
+    private File updateJsonFile(String fileId,
+                                String fileName,
+                                String fileContent) throws IOException {
+
+        File metadata = new File()
+                .setName(fileName)
+                .setMimeType(TYPE_TXT);
+
+        InputStream targetStream = new ByteArrayInputStream(fileContent.getBytes(Charset.forName("UTF-8")));
+        AbstractInputStreamContent newFileContentStream = new InputStreamContent(TYPE_JSON, targetStream);
+
+        File googleFile = driveService.files()
+                .update(fileId, metadata, newFileContentStream)
+                .setFields("id, parents, webContentLink")
+                .execute();
+
+        return googleFile;
+    }
+
+    //     webContentLink
+    private String readTxtFileContentsWithId(String googleDriveCatalogId) throws IOException {
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading text file contents with googleDriveCatalogId...");
         // Stream the file contents to a String.
         InputStream inputStream = driveService.files()
                 .get(googleDriveCatalogId)
@@ -361,14 +415,32 @@ public class GoogleDriveMediator {
         while ((line = bufferedReader.readLine()) != null) {
             stringBuilder.append(line);
         }
+
         return stringBuilder.toString();
     }
 
-    private Bitmap readImageFile(String fileId, String mimeType) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
+    private String readTxtFileWithWebContentLink(String webContentLink) throws IOException {
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading text file contents with webContentLink...");
+        Log.i(GOOGLE_DRIVE_TAG, " ::: " + webContentLink);
+
+        InputStream inputStream = new URL(webContentLink).openStream();
+
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        String line;
+        StringBuilder stringBuilder = new StringBuilder();
+
+        while ((line = bufferedReader.readLine()) != null) {
+            stringBuilder.append(line);
+        }
+
+        return stringBuilder.toString();
+    }
+
+    private Bitmap readImgFileContentsWithId(String fileId, String mimeType) throws IOException {
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using fileId...");
 
         InputStream inputStream = driveService.files()
-                .export(fileId, mimeType)
+                .get(fileId)
                 .executeMediaAsInputStream();
 
         byte[] bitmapBytes = IOUtils.toByteArray(inputStream);
@@ -376,12 +448,28 @@ public class GoogleDriveMediator {
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
-    private Bitmap downloadImageFIle(String fileId, String mimeType) throws IOException {
+    private Bitmap readImgFileWithWebContentLink(Context context, String webContentLink) throws IOException {
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using webContentLink...");
+        Log.i(GOOGLE_DRIVE_TAG, "::: " + webContentLink);
+
+        /*
+       InputStream inputStream = context.getApplicationContext()
+               .getContentResolver()
+               .openInputStream(Uri.parse(webContentLink));
+       */
+        InputStream inputStream = new URL(webContentLink).openStream();
+
+        byte[] bitmapBytes = IOUtils.toByteArray(inputStream);
+
+        return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+    }
+
+    private Bitmap downloadImgFileWithId(String fileId, String mimeType) throws IOException {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         driveService.files()
-                .export(fileId, mimeType)
+                .get(fileId)
                 .executeMediaAndDownloadTo(outputStream);
 
         byte[] bitmapBytes = outputStream.toByteArray();
@@ -405,7 +493,7 @@ public class GoogleDriveMediator {
         JSONObject catalogJson = new JSONObject();
         catalogJson.put("title", title);
         catalogJson.put("p2photoId", p2photoId);
-        catalogJson.put("googleDriveId", catalogFolderId);
+        catalogJson.put("parentGoogleFolderId", catalogFolderId);
         catalogJson.put("photos", new JSONArray());
         return catalogJson.toString(4);
     }
