@@ -230,7 +230,7 @@ public class GoogleDriveMediator {
                                     photos.put(newGooglePhotoFile.getWebContentLink());
                                     currentCatalog.put("photos", photos);
                                     String newFileContent = currentCatalog.toString(4);
-                                    File googleFile = updateJsonFile(catalogFileGoogleId, photoName, newFileContent);
+                                    File googleFile = updateJsonFile(catalogFileGoogleId, "catalog", newFileContent);
                                     return googleFile;
                                 }
                             }
