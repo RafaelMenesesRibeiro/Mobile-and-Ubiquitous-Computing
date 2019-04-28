@@ -95,66 +95,7 @@ public class GoogleDriveMediator {
         return instance;
     }
 
-    public void viewCatalogSlicePhotos(final Context context,
-                                       final View view,
-                                       final String googleDriveCatalogId,
-                                       final AuthState authState) {
 
-        authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
-            @Override
-            public void execute(String accessToken, String idToken, final AuthorizationException error) {
-                new AsyncTask<String, Void, ArrayList<Bitmap> >() {
-                    @Override
-                    protected ArrayList<Bitmap>  doInBackground(String... tokens) {
-                        try {
-                            if (error != null) {
-                                suggestReauthentication(context, error.getMessage());
-                                return null;
-                            }
-
-                            credential.setAccessToken(tokens[0]);
-                            // Retrieve the metadata as a File object.
-                            String readContents = readTxtFileContentsWithId(googleDriveCatalogId);
-
-                            if (readContents == null || readContents.equals("")) {
-                                setWarning(context, "catalog file not found or malformed, null readTxtFileContentsWithId");
-                                return null;
-                            }
-
-                            JSONObject catalogFileContents = new JSONObject(readContents);
-
-                            if (catalogFileContents.has("photos")) {
-                                ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
-                                JSONArray photosArray = catalogFileContents.getJSONArray("photos");
-                                if (photosArray != null) {
-                                    int photoCount = photosArray.length();
-                                    for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
-                                        String photoId = photosArray.getString(photoIdx);
-                                        displayablePhotosList.add(readImgFileWithWebContentLink(photoId, TYPE_PNG));
-                                    }
-                                }
-                                return displayablePhotosList;
-                            }
-                        } catch (IOException | JSONException exc) {
-                            setError(context, exc.getMessage());
-                        }
-
-                        return null;
-                    }
-
-                    @Override
-                    protected void onPostExecute(ArrayList<Bitmap>  photosFileIdList) {
-                       if (photosFileIdList == null) {
-                           setError(context, "catalog slice does not have a photos field");
-                       } else {
-                           Bitmap[] displayablePhotosArray = photosFileIdList.toArray(new Bitmap[photosFileIdList.size()]);
-                           ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
-                       }
-                    }
-                }.execute(accessToken);
-            }
-        });
-    }
 
     public void newCatalog(final Context context,
                            final String title,
@@ -197,12 +138,19 @@ public class GoogleDriveMediator {
                                 Permission userPermission = new Permission()
                                         .setAllowFileDiscovery(true)
                                         .setType("anyone")
-                                        .setRole("reader");
-                                        //.set("shared", true)
+                                        .setRole("reader")
+                                        .set("shared", true);
                                         //.set("viewersCanCopyContent", true);
 
-                                driveService.permissions().create(catalogJsonFile.getId(), userPermission).setFields("id").execute();
-                                catalogJsonFile = driveService.files().get(catalogJsonFile.getId()).setFields("id, webContentLink").execute();
+                                driveService.permissions()
+                                        .create(catalogJsonFile.getId(), userPermission)
+                                        .setFields("id")
+                                        .execute();
+
+                                catalogJsonFile = driveService.files()
+                                        .get(catalogJsonFile.getId())
+                                        .setFields("id, parents, webContentLink")
+                                        .execute();
 
                                 return new Pair<>(parentFolderFile, catalogJsonFile);
                             }
@@ -291,6 +239,67 @@ public class GoogleDriveMediator {
         });
     }
 
+    public void viewCatalogSlicePhotos(final Context context,
+                                       final View view,
+                                       final String googleDriveCatalogId,
+                                       final AuthState authState) {
+
+        authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
+            @Override
+            public void execute(String accessToken, String idToken, final AuthorizationException error) {
+                new AsyncTask<String, Void, ArrayList<Bitmap> >() {
+                    @Override
+                    protected ArrayList<Bitmap>  doInBackground(String... tokens) {
+                        try {
+                            if (error != null) {
+                                suggestReauthentication(context, error.getMessage());
+                                return null;
+                            }
+
+                            credential.setAccessToken(tokens[0]);
+                            // Retrieve the metadata as a File object.
+                            String readContents = readTxtFileContentsWithId(googleDriveCatalogId);
+
+                            if (readContents == null || readContents.equals("")) {
+                                setWarning(context, "catalog file not found or malformed, null readTxtFileContentsWithId");
+                                return null;
+                            }
+
+                            JSONObject catalogFileContents = new JSONObject(readContents);
+
+                            if (catalogFileContents.has("photos")) {
+                                ArrayList<Bitmap> displayablePhotosList = new ArrayList<>();
+                                JSONArray photosArray = catalogFileContents.getJSONArray("photos");
+                                if (photosArray != null) {
+                                    int photoCount = photosArray.length();
+                                    for (int photoIdx=0; photoIdx < photoCount; photoIdx++){
+                                        String photoId = photosArray.getString(photoIdx);
+                                        displayablePhotosList.add(readImgFileWithWebContentLink(photoId, TYPE_PNG));
+                                    }
+                                }
+                                return displayablePhotosList;
+                            }
+                        } catch (IOException | JSONException exc) {
+                            setError(context, exc.getMessage());
+                        }
+
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(ArrayList<Bitmap>  photosFileIdList) {
+                        if (photosFileIdList == null) {
+                            setError(context, "catalog slice does not have a photos field");
+                        } else {
+                            Bitmap[] displayablePhotosArray = photosFileIdList.toArray(new Bitmap[photosFileIdList.size()]);
+                            ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
+                        }
+                    }
+                }.execute(accessToken);
+            }
+        });
+    }
+
     /**********************************************************
      * JSON OBJECT CONSTRUCTORS AND REQUESTS
      **********************************************************/
@@ -329,7 +338,7 @@ public class GoogleDriveMediator {
 
         File googleFile = driveService.files()
                 .create(metadata, fileContentStream)
-                .setFields("id, parents")
+                .setFields("id, parents, webContentLink")
                 .execute();
 
         return googleFile;
@@ -351,7 +360,7 @@ public class GoogleDriveMediator {
 
         File googleFile = driveService.files()
                 .create(metadata, mediaContent)
-                .setFields("id, parents")
+                .setFields("id, parents, webContentLink")
                 .execute();
 
         return googleFile;
@@ -370,7 +379,7 @@ public class GoogleDriveMediator {
 
         File googleFile = driveService.files()
                 .update(fileId, metadata, newFileContentStream)
-                .setFields("id, parents")
+                .setFields("id, parents, webContentLink")
                 .execute();
 
         return googleFile;
