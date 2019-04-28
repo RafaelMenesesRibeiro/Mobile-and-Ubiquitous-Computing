@@ -388,7 +388,7 @@ public class GoogleDriveMediator {
 
     //     webContentLink
     private String readTxtFileContentsWithId(String googleDriveCatalogId) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading file contents...");
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading text file contents with googleDriveCatalogId...");
         // Stream the file contents to a String.
         InputStream inputStream = driveService.files()
                 .get(googleDriveCatalogId)
@@ -404,8 +404,8 @@ public class GoogleDriveMediator {
         return stringBuilder.toString();
     }
 
-    private Bitmap readImgFileWithId(String fileId, String mimeType) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
+    private Bitmap readImgFileContentsWithId(String fileId, String mimeType) throws IOException {
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using fileId...");
 
         InputStream inputStream = driveService.files()
                 .get(fileId)
@@ -417,7 +417,8 @@ public class GoogleDriveMediator {
     }
 
     private Bitmap readImgFileWithWebContentLink(String webContentLink) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
+        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using webContentLink...");
+        Log.i(GOOGLE_DRIVE_TAG, "::: " + webContentLink);
 
         InputStream inputStream = new URL(webContentLink).openStream();
 
