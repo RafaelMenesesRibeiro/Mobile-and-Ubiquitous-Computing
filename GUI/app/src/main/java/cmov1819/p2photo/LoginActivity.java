@@ -38,7 +38,9 @@ import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 public class LoginActivity extends AppCompatActivity {
     private static final String LOGIN_TAG = "LOGIN";
     private static final String SIGN_UP_TAG = "SIGN UP";
-    
+
+    private AuthStateManager authStateManager;
+
     BroadcastReceiver restrictionsReceiver;
 
     @Override
@@ -50,6 +52,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
+
+        this.authStateManager = AuthStateManager.getInstance(this);
 
         final Button loginButton = findViewById(R.id.LoginButton);
         final Button signUpButton = findViewById(R.id.SignUpBottom);
