@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
@@ -37,8 +36,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -99,10 +96,10 @@ public class GoogleDriveMediator {
     }
 
 
-    public void newCatalog(final Context context,
-                           final String title,
-                           final String p2photoId,
-                           final AuthState authState) {
+    public void newCatalogSlice(final Context context,
+                                final String title,
+                                final String p2photoId,
+                                final AuthState authState) {
 
         authState.performActionWithFreshTokens(new AuthorizationService(context), new AuthState.AuthStateAction() {
             @Override
@@ -308,8 +305,7 @@ public class GoogleDriveMediator {
 
                     @Override
                     protected void onPostExecute(ArrayList<Bitmap> photosFileIdList) {
-                        Bitmap[] displayablePhotosArray = photosFileIdList.toArray(new Bitmap[photosFileIdList.size()]);
-                        ViewCatalogFragment.drawImages(view, context, displayablePhotosArray);
+                        ViewCatalogFragment.drawImages(view, context, photosFileIdList);
                     }
                 }.execute(accessToken);
             }
@@ -452,11 +448,6 @@ public class GoogleDriveMediator {
         Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using webContentLink...");
         Log.i(GOOGLE_DRIVE_TAG, "::: " + webContentLink);
 
-        /*
-       InputStream inputStream = context.getApplicationContext()
-               .getContentResolver()
-               .openInputStream(Uri.parse(webContentLink));
-       */
         InputStream inputStream = new URL(webContentLink).openStream();
 
         byte[] bitmapBytes = IOUtils.toByteArray(inputStream);

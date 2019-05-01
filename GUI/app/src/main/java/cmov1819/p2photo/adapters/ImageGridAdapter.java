@@ -7,26 +7,32 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
+import java.util.List;
+
 /**
  * ImageGridAdapter class responsible for showing the images in a grid.
  */
 public class ImageGridAdapter extends BaseAdapter {
     private Context context;
-    private Bitmap[] contents;
+    private List<Bitmap> contents;
 
-    public ImageGridAdapter(Context context, Bitmap[] contents) {
+    public ImageGridAdapter(Context context, List<Bitmap> contents) {
         this.context = context;
         this.contents = contents;
     }
 
+    public List<Bitmap> getContents() {
+        return this.contents;
+    }
+
     @Override
     public int getCount() {
-        return contents.length;
+        return contents.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return null;
+        return contents.get(position);
     }
 
     @Override
@@ -49,7 +55,7 @@ public class ImageGridAdapter extends BaseAdapter {
         imageView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
         imageView.setAdjustViewBounds(true);
         imageView.setPadding(16, 16, 16, 16);
-        imageView.setImageBitmap(contents[position]);
+        imageView.setImageBitmap(contents.get(position));
         return imageView;
     }
 }

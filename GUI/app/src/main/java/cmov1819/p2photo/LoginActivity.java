@@ -20,7 +20,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -40,7 +39,6 @@ public class LoginActivity extends AppCompatActivity {
     private static final String LOGIN_TAG = "LOGIN";
     private static final String SIGN_UP_TAG = "SIGN UP";
 
-    private GoogleDriveMediator googleDriveMediator;
     private AuthStateManager authStateManager;
 
     BroadcastReceiver restrictionsReceiver;
@@ -56,7 +54,6 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login_screen);
 
         this.authStateManager = AuthStateManager.getInstance(this);
-        this.googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
 
         final Button loginButton = findViewById(R.id.LoginButton);
         final Button signUpButton = findViewById(R.id.SignUpBottom);
@@ -158,6 +155,7 @@ public class LoginActivity extends AppCompatActivity {
         EditText passwordEditText = findViewById(R.id.passwordInputBox);
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
+
         try {
             tryLogin(usernameValue, passwordValue);
         }
@@ -166,11 +164,9 @@ public class LoginActivity extends AppCompatActivity {
             passwordEditText.setText("");
             return;
         }
+
         enableUserTextInputs(usernameEditText, passwordEditText);
         tryEnablingPostAuthorizationFlows(view);
-        // TODO - @FranciscoBarros - Use this to check if there are catalogs not yet created. //
-        Map<String, String> membershipGoogleDriveIDs = ViewUserCatalogsFragment.getMembershipGoogleDriveIDs(this);
-        // googleDriveMediator.checkMissingCatalogs(this, membershipGoogleDriveIDs, authStateManager.getAuthState());
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {
