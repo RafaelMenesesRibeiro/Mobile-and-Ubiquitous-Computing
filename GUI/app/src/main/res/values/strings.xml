@@ -1,0 +1,62 @@
+<resources>
+    <!-- Labels -->
+    <string name="app_name">cmov1819.p2photo</string>
+
+    <!-- Operation Endpoints -->
+    <string name="p2photo_host">https://p2photo.herokuapp.com/</string>
+    <string name="signup">signup</string>
+    <string name="login">login</string>
+    <string name="logout">logout/</string>
+    <string name="find_users">findUsers</string>
+    <string name="new_catalog">newCatalog</string>
+    <string name="new_catalog_slice">newCatalogSlice/</string>
+    <string name="new_catalog_member">newCatalogMember</string>
+    <string name="view_catalog_members">viewCatalogMembers</string>
+    <string name="view_catalog">viewCatalog</string>
+    <string name="view_catalog_details">viewCatalogDetails</string>
+    <string name="get_memberships">getMemberships</string>
+    <string name="get_google_identifiers">getCatalogDriveIdentifiers</string>
+    <string name="get_membership_catalog_ids">getMembershipCatalogIDs</string>
+
+    <!-- Server response error reasons -->
+    <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>
+    <string name="bad_pass">invalid password - p2photo passwords must be 8 to 50 characters long</string>
+    <string name="loading_complete">Loading complete…</string>
+    <string name="no_membership">invalid membership - user does not belong to referenced album</string>
+    <string name="no_user">invalid username - does not exist in p2photo databases</string>
+
+    <!-- Error messages -->
+    <string name="add_user_unsuccessful">The add user to album operation was unsuccessful. </string>
+    <string name="find_user_unsuccessful">The find users operation failed. </string>
+
+    <!-- Search User Functionality -->
+    <string name="find_user">Find User</string>
+    <string name="input_username">Input username to search</string>
+    <!-- New Catalog Functionality -->
+    <string name="create_catalog">Create Album</string>
+    <string name="input_catalog_name">Input new album name</string>
+    <!-- Add Photos Functionality -->
+    <string name="choose_photo">Choose photo</string>
+    <string name="add_photo">Add Photo</string>
+    <!-- New Catalog Member Functionality -->
+    <string name="add_catalog_member">Add Album Member</string>
+    <string name="input_member_username">Input the username to add</string>
+    <!-- View Catalog Functionality -->
+    <string name="view_album">View Album</string>
+    <string name="add_member">Add Member</string>
+    <string name="placeholder_catalog_name">placeholder-for-album-name</string>
+    <string name="choose_catalog">Choose album to view</string>
+    <!-- View User's Catalogs -->
+    <string name="view_user_catalogs">User albums</string>
+
+    <!-- Button Labels-->
+    <string name="done">Done</string>
+    <string name="button_search">Search</string>
+    <string name="button_create">Create</string>
+    <string name="button_add">Add</string>
+
+    <!-- Nav bar Required Strings-->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+</resources>

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/viewCatalogLabel"
+        style="@style/MainLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:text="@string/view_album"
+        android:layout_centerHorizontal="true"
+        />
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/dropdownContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/viewCatalogLabel"
+        android:layout_marginBottom="20dp"
+        android:visibility="invisible"
+        >
+
+        <TextView
+            android:id="@+id/noCatalogLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:text="@string/choose_catalog"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <Spinner
+            android:id="@+id/membershipDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/noCatalogLabel"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:spinnerMode="dropdown"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/noCatalogLabel" />
+
+        <Button
+            android:id="@+id/viewButton"
+            style="@style/ActiveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="46dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="30dp"
+            android:layout_marginRight="30dp"
+            android:text="@string/view_album"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
+
+    <RelativeLayout
+        android:id="@+id/catalogViewContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/viewCatalogLabel"
+        android:layout_marginBottom="20dp"
+        android:layout_marginTop="-30dp"
+        >
+
+        <TextView
+            android:id="@+id/catalogTitleLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:text="@string/placeholder_catalog_name"
+            android:layout_centerHorizontal="true"
+            />
+
+        <GridView
+            android:id="@+id/catalogGrid"
+            android:layout_width="match_parent"
+            android:layout_height="400dp"
+            android:layout_above="@+id/addPhotoButton"
+            android:layout_below="@+id/catalogTitleLabel"
+            android:layout_gravity="center"
+            android:layout_marginTop="10dp"
+            android:minHeight="90dp"
+            android:numColumns="auto_fit"
+            android:stretchMode="columnWidth"
+            android:layout_centerHorizontal="true"
+            />
+
+        <Button
+            android:id="@+id/addUserButton"
+            style="@style/ActiveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="46dp"
+            android:layout_alignParentBottom="true"
+            android:layout_marginEnd="12dp"
+            android:layout_marginRight="12dp"
+            android:layout_marginBottom="30dp"
+            android:layout_toStartOf="@+id/addPhotoButton"
+            android:layout_toLeftOf="@+id/addPhotoButton"
+            android:text="@string/add_member" />
+
+        <Button
+            android:id="@+id/addPhotoButton"
+            style="@style/ActiveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="46dp"
+            android:layout_marginEnd="30dp"
+            android:layout_marginRight="30dp"
+            android:layout_marginBottom="30dp"
+            android:text="@string/add_photo"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            />
+    </RelativeLayout>
+
+</RelativeLayout>

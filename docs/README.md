@@ -38,7 +38,7 @@ The sign up operation (F1) allows users to create a new user account in the syst
 
 To log into the system (F2), the account credentials must be validated by the server. If they are valid, the server must generate a new session id, keep an internal record associating that session id to the username and return the new session id to the client. However, if the credentials are invalid, the server must return an error. The logout function (F2) ends the current session.
 
-Users can create an album (F4). This operation creates an albumn catalog file in the P2Photo server containing the URL of an album-slice catalog of the creating user. The album-slice is the part of an album that contains the photos contributed by a user to an album. An album-slice is stored in its owner's cloud storage. It includes all the photos that the user has contributed to an album and a text file (the catalog) grouping all the URLs pointing to those photos. 
+Users can create an album (F3). This operation creates an albumn catalog file in the P2Photo server containing the URL of an album-slice catalog of the creating user. The album-slice is the part of an album that contains the photos contributed by a user to an album. An album-slice is stored in its owner's cloud storage. It includes all the photos that the user has contributed to an album and a text file (the catalog) grouping all the URLs pointing to those photos. 
 
 P2Photo allows logged in users to find other users to create albums (F4). With the usernames returned by the serer, a user can add those other users to the album membership (F6).
 
