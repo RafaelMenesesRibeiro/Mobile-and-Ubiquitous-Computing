@@ -125,7 +125,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
             return result;
         }
         catch (IOException ex) {
-            Log.i("ERROR", ex.getMessage());
+            Log.e("ERROR", ex.getMessage());
             ex.printStackTrace();
             return result;
         }

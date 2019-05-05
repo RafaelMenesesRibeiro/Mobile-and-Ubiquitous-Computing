@@ -42,7 +42,7 @@ public class ViewUserCatalogsFragment extends Fragment {
         activity = getActivity();
         View view = inflater.inflate(R.layout.fragment_view_user_catalogs, container, false);
         populate(view);
-        LogManager.LogViewUserCatalogs(SessionManager.getUsername(activity));
+        LogManager.logViewUserCatalogs(SessionManager.getUsername(activity));
         return view;
     }
 
@@ -86,7 +86,7 @@ public class ViewUserCatalogsFragment extends Fragment {
         }
         catch (ClassCastException | ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.i("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
+            Log.e("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
             ex.printStackTrace();
         }
         return map;
@@ -107,7 +107,7 @@ public class ViewUserCatalogsFragment extends Fragment {
         }
         catch (ClassCastException | ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.i("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
+            Log.e("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
             ex.printStackTrace();
         }
         return map;

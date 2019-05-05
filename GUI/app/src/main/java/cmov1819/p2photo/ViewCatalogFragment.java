@@ -113,13 +113,13 @@ public class ViewCatalogFragment extends Fragment {
 
     private boolean populate(View view) {
         if (getArguments() == null) {
-            Log.i("ERROR", "VIEW CATALOG: arguments passed to fragment are null");
+            Log.e("ERROR", "VIEW CATALOG: arguments passed to fragment are null");
             return false;
         }
 
         catalogID = getArguments().getString(CATALOG_ID_EXTRA);
         if (catalogID == null) {
-            Log.i("ERROR", "VIEW CATALOG: catalogID is null.");
+            Log.e("ERROR", "VIEW CATALOG: catalogID is null.");
             return false;
         }
 
@@ -162,7 +162,7 @@ public class ViewCatalogFragment extends Fragment {
                     getContext(), view, googleCatalogFileId, authStateManager.getAuthState()
             );
         }
-        LogManager.LogViewCatalog(catalogID, catalogTitle);
+        LogManager.logViewCatalog(catalogID, catalogTitle);
     }
 
     public static void drawImages(View view, final Context context, List<Bitmap> contents) {
@@ -220,7 +220,7 @@ public class ViewCatalogFragment extends Fragment {
         }
         catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.i("ERROR", "VIEW CATALOG: " + ex.getMessage());
+            Log.e("ERROR", "VIEW CATALOG: " + ex.getMessage());
         }
         return new ArrayList<>();
     }

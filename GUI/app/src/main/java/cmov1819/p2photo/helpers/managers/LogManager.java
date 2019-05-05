@@ -31,33 +31,47 @@ public class LogManager {
      * LOGS FOR OPERATIONS COMPLETION
      ***********************************************************/
 
-    public static void LogAddPhoto() {
-        Log.i(ADD_PHOTO_TAG, "Add Photo Operation completed.");
+    private static void logOperation(String tag, String msg) {
+        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+        Log.i(tag, "\nDate: " + currentDateTimeString + "\n" + msg);
     }
 
-    public static void LogListUsers() {
-        Log.i(LIST_USERS_TAG, "List Users Operation completed.");
+    public static void logLogout(String username) {
+        String msg = "Logout Operation completed. User: " + username;
+        logOperation(LOGOUT_TAG, msg);
     }
 
-    public static void LogNewCatalog(String catalogID, String catalogTitle) {
-        Log.i(NEW_CATALOG_TAG, "New Catalog Operation completed. Created catalog <id, title>: " + catalogID + ", " + catalogTitle);
+    public static void logAddPhoto() {
+        logOperation(ADD_PHOTO_TAG, "Add Photo Operation completed.");
     }
 
-    public static void LogNewCatalogMember(String catalogID, String catalogTitle, String username) {
-        Log.i(NEW_CATALOG_MEMBER_TAG, "New Catalog Member Operation completed. Added user: "
-                + username + " to catalog <id, title>: " + catalogID + ", " + catalogTitle);
+    public static void logListUsers() {
+        logOperation(LIST_USERS_TAG, "List Users Operation completed.");
     }
 
-    public static void LogSearchUser(String searchedPattern) {
-        Log.i(SEARCH_USER_TAG, "Search User Operation completed. Searched for pattern: " + searchedPattern);
+    public static void logNewCatalog(String catalogID, String catalogTitle) {
+        String msg = "New Catalog Operation completed. Created catalog <id, title>: " + catalogID + ", " + catalogTitle;
+        logOperation(NEW_CATALOG_TAG, msg);
     }
 
-    public static void LogViewCatalog(String catalogID, String catalogTitle) {
-        Log.i(VIEW_CATALOG_TAG, "View Catalog Operation completed. Viewed catalog <id, title>:" + catalogID + ", " + catalogTitle);
+    public static void logNewCatalogMember(String catalogID, String catalogTitle, String username) {
+        String msg = "New Catalog Member Operation completed. Added user: " + username + " to catalog <id, title>: " + catalogID + ", " + catalogTitle;
+        logOperation(NEW_CATALOG_MEMBER_TAG, msg);
     }
 
-    public static void LogViewUserCatalogs(String username) {
-        Log.i(VIEW_USER_CATALOGS_TAG, "View User Catalogs Operation completed. Viewed catalogs for user: " + username);
+    public static void logSearchUser(String searchedPattern) {
+        String msg = "Search User Operation completed. Searched for pattern: " + searchedPattern;
+        logOperation(SEARCH_USER_TAG, msg);
+    }
+
+    public static void logViewCatalog(String catalogID, String catalogTitle) {
+        String msg = "View Catalog Operation completed. Viewed catalog <id, title>:" + catalogID + ", " + catalogTitle;
+        logOperation(VIEW_CATALOG_TAG, msg);
+    }
+
+    public static void logViewUserCatalogs(String username) {
+        String msg = "View User Catalogs Operation completed. Viewed catalogs for user: " + username;
+        logOperation(VIEW_USER_CATALOGS_TAG, msg);
     }
 
     /**********************************************************

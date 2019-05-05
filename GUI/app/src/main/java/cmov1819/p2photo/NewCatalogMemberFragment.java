@@ -83,7 +83,7 @@ public class NewCatalogMemberFragment extends Fragment {
 
         try {
             addMember(catalogID, username);
-            LogManager.LogNewCatalogMember(catalogID, catalogTitle, username);
+            LogManager.logNewCatalogMember(catalogID, catalogTitle, username);
             try {
                 MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
                 mainMenuActivity.goToCatalog(catalogID, catalogTitle);
@@ -105,7 +105,6 @@ public class NewCatalogMemberFragment extends Fragment {
 
     private void addMember(String catalogID, String username)
             throws FailedOperationException, NoMembershipException, UsernameException {
-        Log.i("MSG", "Add User to Album: " + catalogID + ", " + username);
         String url = getString(R.string.p2photo_host) + getString(R.string.new_catalog_member);
 
         try {
@@ -120,19 +119,19 @@ public class NewCatalogMemberFragment extends Fragment {
             int code = result.getServerCode();
 
             if (code == HttpURLConnection.HTTP_OK) {
-                Log.i("STATUS", "The add user to album operation was successful");
+                // TODO - Change screen? //
             }
             else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
-                Log.i("STATUS", getString(R.string.add_user_unsuccessful) + reason);
+                Log.e("STATUS", getString(R.string.add_user_unsuccessful) + reason);
                 throw new FailedOperationException(reason);
             }
             else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
                 if (reason.equals(getString(R.string.no_membership))) {
-                    Log.i("STATUS", getString(R.string.add_user_unsuccessful) + "Callee does not belong to album " + catalogID);
+                    Log.e("STATUS", getString(R.string.add_user_unsuccessful) + "Callee does not belong to album " + catalogID);
                     throw new NoMembershipException(reason);
                 }
             }
@@ -140,12 +139,12 @@ public class NewCatalogMemberFragment extends Fragment {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
                 if (reason.equals(getString(R.string.no_user))) {
-                    Log.i("STATUS", getString(R.string.add_user_unsuccessful) + "Username does not exist " + username);
+                    Log.e("STATUS", getString(R.string.add_user_unsuccessful) + "Username does not exist " + username);
                     throw new UsernameException(reason);
                 }
             }
             else {
-                Log.i("STATUS", R.string.add_user_unsuccessful + "Server response code: " + code);
+                Log.e("STATUS", R.string.add_user_unsuccessful + "Server response code: " + code);
                 throw new FailedOperationException();
             }
         }

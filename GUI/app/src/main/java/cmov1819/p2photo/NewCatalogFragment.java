@@ -78,7 +78,7 @@ public class NewCatalogFragment extends Fragment {
 
         try {
             String catalogId = newCatalog(catalogTitle);
-            LogManager.LogNewCatalog(catalogId, catalogTitle);
+            LogManager.logNewCatalog(catalogId, catalogTitle);
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
             mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
@@ -91,7 +91,6 @@ public class NewCatalogFragment extends Fragment {
     }
 
     private String newCatalog(String catalogTitle) {
-        Log.i("MSG", "Create catalog: " + catalogTitle);
         String url = getString(R.string.p2photo_host) + getString(R.string.new_catalog);
 
         try {
@@ -104,13 +103,12 @@ public class NewCatalogFragment extends Fragment {
             String catalogID;
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
-                Log.i("STATUS", "The new catalog operation was successful");
                 SuccessResponse payload = (SuccessResponse) result.getPayload();
                 catalogID = (String) payload.getResult();
             }
             else {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
-                Log.i("STATUS", "The new catalog operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason());
+                Log.e("STATUS", "The new catalog operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason());
                 throw new FailedOperationException();
             }
 

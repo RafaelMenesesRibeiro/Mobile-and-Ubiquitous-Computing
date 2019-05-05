@@ -33,7 +33,7 @@ public class ListUsersFragment extends Fragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, usersList);
         usersListView.setAdapter(adapter);
 
-        LogManager.LogListUsers();
+        LogManager.logListUsers();
         return view;
     }
 }

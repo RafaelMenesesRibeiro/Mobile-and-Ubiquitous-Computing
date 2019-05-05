@@ -124,7 +124,7 @@ public class AddPhotosFragment extends Fragment {
             }
             catch (FileNotFoundException | NullPointerException ex) {
                 imageView.setImageResource(R.drawable.img_not_available);
-                Log.i("ERROR", "Add Photo: Could not load selected image file " + targetUri);
+                Log.e("ERROR", "Add Photo: Could not load selected image file " + targetUri);
             }
 
             try {
@@ -132,7 +132,7 @@ public class AddPhotosFragment extends Fragment {
                 save(bitmap);
             }
             catch (IOException ioex) {
-                Log.i("ERROR", "Add Photo: Could not save selected image file " + targetUri);
+                Log.e("ERROR", "Add Photo: Could not save selected image file " + targetUri);
                 return;
             }
 
@@ -175,7 +175,7 @@ public class AddPhotosFragment extends Fragment {
                 authStateManager.getAuthState()
         );
 
-        LogManager.LogAddPhoto();
+        LogManager.logAddPhoto();
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
             mainMenuActivity.goToCatalog(catalogId, catalogTitle);

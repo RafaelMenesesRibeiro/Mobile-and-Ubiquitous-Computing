@@ -28,6 +28,7 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
@@ -169,7 +170,6 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
     public void logout() throws FailedOperationException {
         String username = SessionManager.getUsername(this);
-        Log.i(MAIN_MENU_TAG, "Logout: " + username);
 
         String url = getString(R.string.p2photo_host) + getString(R.string.logout) + username;
         RequestData rData = new RequestData(this, RequestData.RequestType.LOGOUT, url);
@@ -177,7 +177,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             ResponseData result = new QueryManager().execute(rData).get();
             int code = result.getServerCode();
             if (code == 200) {
-                Log.i(MAIN_MENU_TAG, "The logout operation was successful");
+                LogManager.logLogout(username);
                 SessionManager.deleteSessionID(this);
                 SessionManager.deleteUsername(this);
             }
