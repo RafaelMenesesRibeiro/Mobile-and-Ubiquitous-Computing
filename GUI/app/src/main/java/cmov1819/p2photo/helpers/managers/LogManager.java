@@ -26,6 +26,11 @@ public class LogManager {
     private static final String GET_GOOGLE_IDENTIFIERS_TAG = "Get Google Identifiers";
     private static final String GET_MEMBERSHIP_CATALOG_IDS_TAG = "Get Catalog IDs";
 
+    private static String logText = "";
+
+    public static String getAppLog() {
+        return logText;
+    }
 
     /**********************************************************
      * LOGS FOR OPERATIONS COMPLETION
@@ -33,7 +38,9 @@ public class LogManager {
 
     private static void logOperation(String tag, String msg) {
         String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-        Log.i(tag, "\nDate: " + currentDateTimeString + "\n" + msg);
+        String toLog = "\nDate: " + currentDateTimeString + "\n" + msg;
+        Log.i(tag, toLog);
+        logText += "\n" + toLog;
     }
 
     public static void logLogout(String username) {
@@ -80,7 +87,9 @@ public class LogManager {
 
     private static void logReceived(String tag, String msg, ResponseData responseData) {
         String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-        Log.i(tag, "\nDate: " + currentDateTimeString + "\n" + msg + "\n" + responseData.toString());
+        String toLog = "\nDate: " + currentDateTimeString + "\n" + msg + "\n" + responseData.toString();
+        Log.i(tag, toLog);
+        logText += "\n" + toLog;
     }
 
     public static void logReceivedSignup(ResponseData responseData) {
@@ -137,7 +146,8 @@ public class LogManager {
 
     public static void logSentMessage(RequestData requestData) {
         String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-        String msg = "Starting request:";
-        Log.i("STATUS", "\nDate: " + currentDateTimeString + "\n" + msg + "\n" + requestData.toString());
+        String toLog = "\nDate: " + currentDateTimeString + "\nStarting request:\n" + requestData.toString();
+        Log.i("STATUS", toLog);
+        logText += "\n" + toLog;
     }
 }

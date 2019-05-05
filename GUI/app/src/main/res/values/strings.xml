@@ -57,6 +57,7 @@
     <string name="button_search">Search</string>
     <string name="button_create">Create</string>
     <string name="button_add">Add</string>
+    <string name="button_refresh">Refresh</string>
 
     <!-- Nav bar Required Strings-->
     <string name="navigation_drawer_open">Open navigation drawer</string>
