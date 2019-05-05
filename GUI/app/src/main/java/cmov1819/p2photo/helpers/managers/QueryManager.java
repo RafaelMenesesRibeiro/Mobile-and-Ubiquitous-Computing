@@ -35,9 +35,8 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
 
     @Override
     protected ResponseData doInBackground(RequestData... requestDataArray) {
-        Log.i("STATUS", "Starting request");
         RequestData requestData = requestDataArray[0];
-        Log.i("STATUS", "\nPARAMETERS: \n" + requestData.toString());
+        LogManager.logSentMessage(requestData);
 
         Activity activity = requestData.getActivity();
         ResponseData result = new ResponseData(-1, null);
@@ -55,56 +54,68 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                 case SIGNUP:
                     connection.setRequestMethod("POST");
                     result = signup(connection, requestData);
+                    LogManager.logReceivedSignup(result);
                     break;
                 case LOGIN:
                     connection.setRequestMethod("POST");
                     result = login(activity, connection, requestData);
+                    LogManager.logReceivedLogin(result);
                     break;
                 case LOGOUT:
                     connection.setRequestMethod("DELETE");
                     result = logout(activity, connection);
+                    LogManager.logReceivedLogout(result);
                     break;
                 case SEARCH_USERS:
                     connection.setRequestMethod("GET");
                     connection.setDoOutput(false);
                     result = findUsers(activity, connection);
+                    LogManager.logReceivedSearhUser(result);
                     break;
                 case GET_CATALOG_TITLE:
                     connection.setRequestMethod("GET");
                     connection.setDoOutput(false);
                     result = getCatalogTitle(activity, connection);
+                    LogManager.logReceivedGetCatalogTitle(result);
                     break;
                 case GET_CATALOG:
                     connection.setRequestMethod("GET");
                     connection.setDoOutput(false);
                     result = getCatalog(activity, connection);
+                    LogManager.logReceivedGetCatalog(result);
                     break;
                 case NEW_CATALOG:
                     connection.setRequestMethod("POST");
                     result = newCatalog(activity, connection, requestData);
+                    LogManager.logReceivedNewCatalog(result);
                     break;
                 case NEW_CATALOG_SLICE:
                     connection.setRequestMethod("PUT");
                     result = newCatalogSliceFileId(activity, connection, requestData);
+                    LogManager.logReceivedNewCatalogSlice(result);
                     break;
                 case NEW_CATALOG_MEMBER:
                     connection.setRequestMethod("POST");
                     result = newCatalogMember(activity, connection, requestData);
+                    LogManager.logReceivedNewCatalogMember(result);
                     break;
                 case GET_MEMBERSHIPS:
                     connection.setRequestMethod("GET");
                     connection.setDoOutput(false);
                     result = getMemberships(activity, connection);
+                    LogManager.logReceivedGetMemberships(result);
                     break;
                 case GET_GOOGLE_IDENTIFIERS:
                     connection.setRequestMethod("GET");
                     connection.setDoOutput(false);
                     result = getGoogleDriveIdentifiers(activity, connection);
+                    LogManager.logReceivedGetGoogleIdentifiers(result);
                     break;
                 case GET_MEMBERSHIP_CATALOG_IDS:
                     connection.setRequestMethod("GET");
                     connection.setDoOutput(false);
                     result = getMembershipCatalogIDs(activity, connection);
+                    LogManager.logReceivedGetMembershipCatalogIDs(result);
                     break;
                 default:
                     Log.i("ERROR", "Should never be here.");
@@ -112,7 +123,8 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
             }
             connection.disconnect();
             return result;
-        } catch (IOException ex) {
+        }
+        catch (IOException ex) {
             Log.i("ERROR", ex.getMessage());
             ex.printStackTrace();
             return result;
