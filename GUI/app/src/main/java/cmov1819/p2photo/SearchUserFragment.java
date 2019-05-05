@@ -24,6 +24,7 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.BadInputException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.NoResultsException;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -56,6 +57,7 @@ public class SearchUserFragment extends Fragment {
         }
         try {
             Map<String, ArrayList> usernames = searchUser(username);
+            LogManager.LogSearchUser(username);
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
             mainMenuActivity.goToListUsers(new ArrayList<>(usernames.keySet()));
         }

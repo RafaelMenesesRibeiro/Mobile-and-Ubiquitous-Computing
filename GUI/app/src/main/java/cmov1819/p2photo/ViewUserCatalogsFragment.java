@@ -22,7 +22,9 @@ import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBERSHIPS;
@@ -40,6 +42,7 @@ public class ViewUserCatalogsFragment extends Fragment {
         activity = getActivity();
         View view = inflater.inflate(R.layout.fragment_view_user_catalogs, container, false);
         populate(view);
+        LogManager.LogViewUserCatalogs(SessionManager.getUsername(activity));
         return view;
     }
 

@@ -12,6 +12,8 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 
+import cmov1819.p2photo.helpers.managers.LogManager;
+
 public class ListUsersFragment extends Fragment {
     public static final String USERS_EXTRA = "users";
 
@@ -30,6 +32,8 @@ public class ListUsersFragment extends Fragment {
         ListView usersListView = view.findViewById(R.id.usersList);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, usersList);
         usersListView.setAdapter(adapter);
+
+        LogManager.LogListUsers();
         return view;
     }
 }

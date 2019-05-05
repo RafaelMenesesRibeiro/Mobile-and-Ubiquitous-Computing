@@ -27,6 +27,7 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
@@ -77,8 +78,9 @@ public class NewCatalogFragment extends Fragment {
 
         try {
             String catalogId = newCatalog(catalogTitle);
-            // MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            // mainMenuActivity.goToCatalog(catalogId, catalogTitle);
+            LogManager.LogNewCatalog(catalogId, catalogTitle);
+            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+            mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (FailedOperationException foex) {
             Toast.makeText(this.getContext(), "The create catalog operation failed. Try again later", Toast.LENGTH_LONG).show();

@@ -33,6 +33,7 @@ import cmov1819.p2photo.adapters.ImageGridAdapter;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -104,7 +105,7 @@ public class ViewCatalogFragment extends Fragment {
                 int index = dropdownMenu.getSelectedItemPosition();
                 catalogID = catalogIDs.get(index);
                 String catalogTitle = catalogTitles.get(index);
-                populateGrid(view, catalogTitle, getGoogleSliceFileIdentifiersList(catalogID));
+                populateGrid(view, catalogID, catalogTitle, getGoogleSliceFileIdentifiersList(catalogID));
             }
         });
         return view;
@@ -148,11 +149,11 @@ public class ViewCatalogFragment extends Fragment {
             return false;
         }
         List<String>  googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(catalogID);
-        populateGrid(view, catalogTitle, googleSliceFileIdentifiersList);
+        populateGrid(view, catalogID, catalogTitle, googleSliceFileIdentifiersList);
         return true;
     }
 
-    private void populateGrid(View view, String catalogTitle, List<String>  googleSliceFileIdentifiersList) {
+    private void populateGrid(View view, String catalogID, String catalogTitle, List<String>  googleSliceFileIdentifiersList) {
         TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
@@ -161,6 +162,7 @@ public class ViewCatalogFragment extends Fragment {
                     getContext(), view, googleCatalogFileId, authStateManager.getAuthState()
             );
         }
+        LogManager.LogViewCatalog(catalogID, catalogTitle);
     }
 
     public static void drawImages(View view, final Context context, List<Bitmap> contents) {

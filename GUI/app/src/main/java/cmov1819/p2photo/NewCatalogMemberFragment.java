@@ -27,6 +27,7 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.NoMembershipException;
 import cmov1819.p2photo.exceptions.UsernameException;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
@@ -82,6 +83,7 @@ public class NewCatalogMemberFragment extends Fragment {
 
         try {
             addMember(catalogID, username);
+            LogManager.LogNewCatalogMember(catalogID, catalogTitle, username);
             try {
                 MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
                 mainMenuActivity.goToCatalog(catalogID, catalogTitle);
