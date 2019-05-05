@@ -24,6 +24,7 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.BadInputException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.NoResultsException;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -56,6 +57,7 @@ public class SearchUserFragment extends Fragment {
         }
         try {
             Map<String, ArrayList> usernames = searchUser(username);
+            LogManager.logSearchUser(username);
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
             mainMenuActivity.goToListUsers(new ArrayList<>(usernames.keySet()));
         }
@@ -72,7 +74,6 @@ public class SearchUserFragment extends Fragment {
 
     public Map<String, ArrayList> searchUser(String usernameToFind)
             throws FailedOperationException, NoResultsException {
-        Log.i("MSG", "Finding user " + usernameToFind + ".");
         String url = getString(R.string.p2photo_host) + getString(R.string.find_users) +
                     "?searchPattern=" + usernameToFind + "&bringCatalogs=" + true
                     + "&calleeUsername=" + SessionManager.getUsername(activity);
@@ -82,28 +83,30 @@ public class SearchUserFragment extends Fragment {
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
-                Log.i("STATUS", "The find users operation was successful");
-
                 SuccessResponse payload = (SuccessResponse) result.getPayload();
                 LinkedHashMap<String, ArrayList> map = (LinkedHashMap<String, ArrayList>) payload.getResult();
-                Log.i("MSG", "Users and respective catalogs: " + map.toString());
+                String msg = "Users and respective catalogs: " + map.toString();
+                LogManager.logInfo(LogManager.SEARCH_USER_TAG, msg);
                 if (map.size() == 0) {
                     throw new NoResultsException();
                 }
                 return map;
             }
             else {
-                Log.i("ERROR", "SEARCH USER: " + getString(R.string.find_user_unsuccessful) + "Server response code: " + code);
+                String msg = getString(R.string.find_user_unsuccessful) + "Server response code: " + code;
+                LogManager.logError(LogManager.SEARCH_USER_TAG, msg);
                 throw new FailedOperationException("URL: " + url);
             }
         }
         catch (ClassCastException ccex) {
-            Log.i("ERROR", "SEARCH USER: " + getString(R.string.find_user_unsuccessful) + "Caught Class Cast Exception.");
+            String msg = getString(R.string.find_user_unsuccessful) + "Caught Class Cast Exception.";
+            LogManager.logError(LogManager.SEARCH_USER_TAG, msg);
             throw new NoResultsException(ccex.getMessage());
         }
         catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.i("ERROR", "SEARCH USER: " + getString(R.string.find_user_unsuccessful));
+            String msg = getString(R.string.find_user_unsuccessful);
+            LogManager.logError(LogManager.SEARCH_USER_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
         }
     }

@@ -28,6 +28,7 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
@@ -109,10 +110,17 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                     logout();
                 }
                 catch (FailedOperationException ex) {
-                    Log.e(MAIN_MENU_TAG, "LOGOUT: Failed to logout, proceeding");
+                    String msg = "Failed to logout, proceeding.";
+                    LogManager.logError(MAIN_MENU_TAG, msg);
                 }
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
+                break;
+            case R.id.nav_show_app_log:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewAppLogFragment()).commit();
+                break;
+            case R.id.nav_show_server_log:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewServerLogFragment()).commit();
                 break;
             default:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
@@ -157,7 +165,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             String catalogTitle = (String)((SuccessResponse)result.getPayload()).getResult();
             googleDriveMediator.newCatalogSlice(this, catalogTitle, catalogId, authStateManager.getAuthState());
         } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-            Log.w(MAIN_MENU_TAG,  ((ErrorResponse)result.getPayload()).getReason());
+            String msg = ((ErrorResponse)result.getPayload()).getReason();
+            LogManager.logWarning(MAIN_MENU_TAG, msg);
             Toast.makeText(this, "Session timed out, please login again", LENGTH_SHORT).show();
             this.startActivity(new Intent(this, LoginActivity.class));
         }
@@ -169,7 +178,6 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
     public void logout() throws FailedOperationException {
         String username = SessionManager.getUsername(this);
-        Log.i(MAIN_MENU_TAG, "Logout: " + username);
 
         String url = getString(R.string.p2photo_host) + getString(R.string.logout) + username;
         RequestData rData = new RequestData(this, RequestData.RequestType.LOGOUT, url);
@@ -177,12 +185,13 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             ResponseData result = new QueryManager().execute(rData).get();
             int code = result.getServerCode();
             if (code == 200) {
-                Log.i(MAIN_MENU_TAG, "The logout operation was successful");
+                LogManager.logLogout(username);
                 SessionManager.deleteSessionID(this);
                 SessionManager.deleteUsername(this);
             }
             else {
-                Log.w(MAIN_MENU_TAG, "The login operation was unsuccessful. Unknown error.");
+                String msg = "The login operation was unsuccessful. Unknown error.";
+                LogManager.logError(MAIN_MENU_TAG, msg);
                 throw new FailedOperationException();
             }
         }

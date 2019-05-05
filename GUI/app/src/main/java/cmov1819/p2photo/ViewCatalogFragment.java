@@ -33,6 +33,7 @@ import cmov1819.p2photo.adapters.ImageGridAdapter;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -104,7 +105,7 @@ public class ViewCatalogFragment extends Fragment {
                 int index = dropdownMenu.getSelectedItemPosition();
                 catalogID = catalogIDs.get(index);
                 String catalogTitle = catalogTitles.get(index);
-                populateGrid(view, catalogTitle, getGoogleSliceFileIdentifiersList(catalogID));
+                populateGrid(view, catalogID, catalogTitle, getGoogleSliceFileIdentifiersList(catalogID));
             }
         });
         return view;
@@ -112,13 +113,15 @@ public class ViewCatalogFragment extends Fragment {
 
     private boolean populate(View view) {
         if (getArguments() == null) {
-            Log.i("ERROR", "VIEW CATALOG: arguments passed to fragment are null");
+            String msg = "Arguments passed to fragment are null";
+            LogManager.logError(LogManager.VIEW_CATALOG_TAG, msg);
             return false;
         }
 
         catalogID = getArguments().getString(CATALOG_ID_EXTRA);
         if (catalogID == null) {
-            Log.i("ERROR", "VIEW CATALOG: catalogID is null.");
+            String msg = "catalogID is null";
+            LogManager.logError(LogManager.VIEW_CATALOG_TAG, msg);
             return false;
         }
 
@@ -144,15 +147,16 @@ public class ViewCatalogFragment extends Fragment {
 
         String catalogTitle = getArguments().getString(CATALOG_TITLE_EXTRA);
         if (catalogTitle == null) {
-            Log.i("ERROR", "VIEW CATALOG: catalogTitle is null.");
+            String msg = "catalogTitle is null.";
+            LogManager.logError(LogManager.VIEW_CATALOG_TAG, msg);
             return false;
         }
         List<String>  googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(catalogID);
-        populateGrid(view, catalogTitle, googleSliceFileIdentifiersList);
+        populateGrid(view, catalogID, catalogTitle, googleSliceFileIdentifiersList);
         return true;
     }
 
-    private void populateGrid(View view, String catalogTitle, List<String>  googleSliceFileIdentifiersList) {
+    private void populateGrid(View view, String catalogID, String catalogTitle, List<String>  googleSliceFileIdentifiersList) {
         TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
@@ -161,6 +165,7 @@ public class ViewCatalogFragment extends Fragment {
                     getContext(), view, googleCatalogFileId, authStateManager.getAuthState()
             );
         }
+        LogManager.logViewCatalog(catalogID, catalogTitle);
     }
 
     public static void drawImages(View view, final Context context, List<Bitmap> contents) {
@@ -218,7 +223,7 @@ public class ViewCatalogFragment extends Fragment {
         }
         catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.i("ERROR", "VIEW CATALOG: " + ex.getMessage());
+            LogManager.logError(LogManager.VIEW_CATALOG_TAG, ex.getMessage());
         }
         return new ArrayList<>();
     }

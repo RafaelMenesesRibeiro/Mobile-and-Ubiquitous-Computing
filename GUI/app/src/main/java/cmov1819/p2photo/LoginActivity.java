@@ -28,6 +28,7 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
@@ -106,7 +107,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private boolean trySignUp(String usernameValue, String passwordValue) {
         try {
-            Log.i(SIGN_UP_TAG, "Starting Sign Up operation for user: " + usernameValue + "...");
+            String msg = "Starting Sign Up operation for user: " + usernameValue + "...";
+            LogManager.logInfo(LogManager.SIGN_UP_TAG, msg);
 
             JSONObject requestBody = new JSONObject();
             requestBody.put("username", usernameValue);
@@ -118,24 +120,29 @@ public class LoginActivity extends AppCompatActivity {
             ResponseData result = new QueryManager().execute(requestData).get();
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
-                Log.i(SIGN_UP_TAG, "Sign Up successful");
+                msg = "Sign Up successful";
+                LogManager.logInfo(LogManager.SIGN_UP_TAG, msg);
                 Toast.makeText(getApplicationContext(), "Created account successfully", LENGTH_LONG).show();
                 return true;
             } else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
                 if (reason.equals(getString(R.string.bad_user))) {
-                    Log.i(SIGN_UP_TAG, "Sign Up unsuccessful. Username does not abide the rules... ");
+                    msg = "Sign Up unsuccessful. Username does not abide the rules... ";
+                    LogManager.logError(LogManager.SIGN_UP_TAG, msg);
                     Toast.makeText(getApplicationContext(), getString(R.string.bad_user), LENGTH_LONG).show();
                 } else if (reason.equals(getString(R.string.bad_pass))) {
-                    Log.i(SIGN_UP_TAG,"Sign Up unsuccessful the password does not abide the rules... ");
+                    msg = "Sign Up unsuccessful the password does not abide the rules... ";
+                    LogManager.logError(LogManager.SIGN_UP_TAG, msg);
                     Toast.makeText(getApplicationContext(), getString(R.string.bad_pass), LENGTH_LONG).show();
                 }
             } else if (code == 422) {
-                Log.i(SIGN_UP_TAG, "Sign Up unsuccessful. The chosen username already exists.");
+                msg = "Sign Up unsuccessful. The chosen username already exists.";
+                LogManager.logError(LogManager.SIGN_UP_TAG, msg);
                 Toast.makeText(getApplicationContext(), "Chosen username already exists. Choose another...", LENGTH_LONG).show();
             } else {
-                Log.i(SIGN_UP_TAG,"Sign Up unsuccessful. Server response code: " + code);
+                msg = "Sign Up unsuccessful. Server response code: " + code;
+                LogManager.logError(LogManager.SIGN_UP_TAG, msg);
                 Toast.makeText(getApplicationContext(), "Unexpected error, try later...", LENGTH_LONG).show();
             }
 
@@ -171,7 +178,8 @@ public class LoginActivity extends AppCompatActivity {
 
     public void tryLogin(String username, String password) throws FailedLoginException {
         try {
-            Log.i(LOGIN_TAG, "Starting Login operation for user: " + username + "...");
+            String msg = "Starting Login operation for user: " + username + "...";
+            LogManager.logInfo(LogManager.LOGIN_TAG, msg);
 
             JSONObject requestBody = new JSONObject();
             requestBody.put("username", username);
@@ -186,19 +194,22 @@ public class LoginActivity extends AppCompatActivity {
             if (code == HttpURLConnection.HTTP_OK) {
                 (findViewById(R.id.usernameInputBox)).setVisibility(View.INVISIBLE);
                 (findViewById(R.id.passwordInputBox)).setVisibility(View.INVISIBLE);
-                Log.i(LOGIN_TAG, "Login operation succeded");
+                msg = "Login operation succeded";
+                LogManager.logInfo(LogManager.LOGIN_TAG, msg);
                 Toast.makeText(getApplicationContext(), "Welcome " + username, LENGTH_LONG).show();
                 updateUsername(this, username);
             }
             else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                Log.i(LOGIN_TAG, "Login operation failed. The username or password are incorrect.");
-                String msg = "Incorrect credential combination";
+                msg = "Login operation failed. The username or password are incorrect.";
+                LogManager.logError(LogManager.LOGIN_TAG, msg);
+                msg = "Incorrect credential combination";
                 Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
                 throw new FailedLoginException(msg);
             }
             else {
-                Log.i(LOGIN_TAG,"Login operation failed. Server error with response code: " + code);
-                String msg = "Unexpected error... Try again later";
+                msg = "Login operation failed. Server error with response code: " + code;
+                LogManager.logError(LogManager.LOGIN_TAG, msg);
+                msg = "Unexpected error... Try again later";
                 Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
                 throw new FailedLoginException(msg);
             }
@@ -213,15 +224,18 @@ public class LoginActivity extends AppCompatActivity {
      ***********************************************************/
 
     private void tryEnablingPostAuthorizationFlows(View view) {
-        Log.i(LOGIN_TAG, "Trying to enable post authorization flows...");
+        String msg = "Trying to enable post authorization flows...";
+        LogManager.logInfo(LogManager.LOGIN_TAG, msg);
         if (authStateManager.hasValidAuthState()) {
-            Log.i(LOGIN_TAG, "Valid authentication state >>> starting new MainMenuActivity...");
+            msg = "Valid authentication state >>> starting new MainMenuActivity...";
+            LogManager.logInfo(LogManager.LOGIN_TAG, msg);
             Intent mainMenuActivityIntent = new Intent(LoginActivity.this, MainMenuActivity.class);
             mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
             startActivity(mainMenuActivityIntent);
         }
         else {
-            Log.i(LOGIN_TAG, "Invalid authentication state >>> starting AuthenticationActivity...");
+            msg = "Invalid authentication state >>> starting AuthenticationActivity...";
+            LogManager.logInfo(LogManager.LOGIN_TAG, msg);
             AuthorizationRequest authorizationRequest = authStateManager.getAuthorizationRequest();
             Intent authenticationIntent = new Intent(this, AuthenticationActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(

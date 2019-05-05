@@ -35,6 +35,7 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
@@ -123,7 +124,8 @@ public class AddPhotosFragment extends Fragment {
             }
             catch (FileNotFoundException | NullPointerException ex) {
                 imageView.setImageResource(R.drawable.img_not_available);
-                Log.i("ERROR", "Add Photo: Could not load selected image file " + targetUri);
+                String msg = "Could not load selected image file " + targetUri;
+                LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
             }
 
             try {
@@ -131,7 +133,8 @@ public class AddPhotosFragment extends Fragment {
                 save(bitmap);
             }
             catch (IOException ioex) {
-                Log.i("ERROR", "Add Photo: Could not save selected image file " + targetUri);
+                String msg = "Could not save selected image file " + targetUri;
+                LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
                 return;
             }
 
@@ -158,7 +161,8 @@ public class AddPhotosFragment extends Fragment {
         HashMap<String, String> googleDriveIdentifiers = getGoogleDriveIdentifiers(catalogId);
 
         if (googleDriveIdentifiers == null) {
-            Log.e(ADD_PHOTO_TAG, "Failed to obtain googleDriveIdentifiers. Found ErrorResponse");
+            String msg = "Failed to obtain googleDriveIdentifiers. Found ErrorResponse";
+            LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
             Toast.makeText(activity, "Failed to add photo", LENGTH_SHORT).show();
             return;
         }
@@ -174,6 +178,7 @@ public class AddPhotosFragment extends Fragment {
                 authStateManager.getAuthState()
         );
 
+        LogManager.logAddPhoto();
         try {
             MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
             mainMenuActivity.goToCatalog(catalogId, catalogTitle);
@@ -199,12 +204,13 @@ public class AddPhotosFragment extends Fragment {
             if (code != HttpURLConnection.HTTP_OK) {
                 String reason = ((ErrorResponse) result.getPayload()).getReason();
                 if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.w(ADD_PHOTO_TAG, reason);
+                    LogManager.logError(LogManager.ADD_PHOTO_TAG, reason);
                     Toast.makeText(context, "Session timed out, please login again", LENGTH_SHORT).show();
                     context.startActivity(new Intent(context, LoginActivity.class));
                     return null;
-                } else {
-                    Log.e(ADD_PHOTO_TAG, reason);
+                }
+                else {
+                    LogManager.logError(LogManager.ADD_PHOTO_TAG, reason);
                     Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();
                     return null;
                 }

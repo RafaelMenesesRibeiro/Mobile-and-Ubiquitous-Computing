@@ -15,7 +15,8 @@ public class RequestData {
         NEW_CATALOG_MEMBER,
         GET_MEMBERSHIPS,
         GET_GOOGLE_IDENTIFIERS,
-        GET_MEMBERSHIP_CATALOG_IDS
+        GET_MEMBERSHIP_CATALOG_IDS,
+        GET_SERVER_LOGS
     }
 
     private Activity activity;
