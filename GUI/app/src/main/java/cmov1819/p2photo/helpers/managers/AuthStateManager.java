@@ -77,12 +77,14 @@ public class AuthStateManager {
      **********************************************************/
 
     public void handleAuthorizationResponse(final Context context, Intent appAuthIntent) {
-        Log.i(AUTH_MGR_TAG, "Initiating exchange protocol...");
+        String msg = "Initiating exchange protocol...";
+        LogManager.logInfo(AUTH_MGR_TAG, msg);
         AuthorizationResponse response = AuthorizationResponse.fromIntent(appAuthIntent);
         AuthorizationException error = AuthorizationException.fromIntent(appAuthIntent);
         this.authState = new AuthState(response, error);
         if (response != null) {
-            Log.i(AUTH_MGR_TAG, "Handled authorization response " + authState.jsonSerializeString());
+            msg = "Handled authorization response " + authState.jsonSerializeString();
+            LogManager.logInfo(AUTH_MGR_TAG, msg);
             AuthorizationService service = new AuthorizationService(context);
             exchangeAuthorizationForAcessTokens(context, service, response, error);
             service.dispose();
@@ -97,7 +99,8 @@ public class AuthStateManager {
             @Override
             public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
             if (error != null) {
-                Log.e(AUTH_MGR_TAG,"<AuthorizationException> Unable to refresh authorization token.");
+                String msg = "<AuthorizationException> Unable to refresh authorization token.";
+                LogManager.logError(AUTH_MGR_TAG, msg);
                 getAuthorization(context, REFRESH_FAILURE,true);
             } else {
                 updateAuthState(response, error);
@@ -126,7 +129,8 @@ public class AuthStateManager {
             try {
                 return AuthState.jsonDeserialize(jsonString);
             } catch (JSONException jsonException) {
-                Log.i(AUTH_MGR_TAG, "Except. when serializing AuthState from disk. This should not happen.");
+                String msg = "Except. when serializing AuthState from disk. This should not happen.";
+                LogManager.logInfo(AUTH_MGR_TAG, msg);
                 return null;
             }
         }
@@ -143,7 +147,8 @@ public class AuthStateManager {
     }
 
     public synchronized void updateAuthState(TokenResponse response, AuthorizationException error) {
-        Log.i(AUTH_MGR_TAG, "Updated and persisted <TokenResponse>: " + response.accessToken + ", "+ response.idToken);
+        String msg = "Updated and persisted <TokenResponse>: " + response.accessToken + ", "+ response.idToken;
+        LogManager.logInfo(AUTH_MGR_TAG, msg);
         authState.update(response, error);
         persistAuthState();
     }
@@ -198,13 +203,17 @@ public class AuthStateManager {
             @Override
             public void onTokenRequestCompleted(@Nullable TokenResponse response, @Nullable AuthorizationException error) {
                 if (error != null) {
-                    Log.e(AUTH_MGR_TAG, "Token exchange <AuthorizationResponse> had <AuthorizationException>");
+                    String msg = "Token exchange <AuthorizationResponse> had <AuthorizationException>";
+                    LogManager.logError(AUTH_MGR_TAG, msg);
                     Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
-                } else {
+                }
+                else {
                     if (response != null) {
                         updateAuthState(response, error);
-                    } else {
-                        Log.e(AUTH_MGR_TAG, "Could not obtain <TokenResponse> from <AuthorizationResponse>");
+                    }
+                    else {
+                        String msg = "Could not obtain <TokenResponse> from <AuthorizationResponse>";
+                        LogManager.logError(AUTH_MGR_TAG, msg);
                         Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
                     }
                 }

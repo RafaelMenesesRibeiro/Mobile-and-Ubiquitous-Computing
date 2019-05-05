@@ -17,6 +17,7 @@
     <string name="get_memberships">getMemberships</string>
     <string name="get_google_identifiers">getCatalogDriveIdentifiers</string>
     <string name="get_membership_catalog_ids">getMembershipCatalogIDs</string>
+    <string name="get_server_log">viewLogs</string>
 
     <!-- Server response error reasons -->
     <string name="bad_user">invalid username - p2photo only accepts non empty strings composed by alphanumeric characters, white spaces, no longer than 50 characters</string>
@@ -48,12 +49,16 @@
     <string name="choose_catalog">Choose album to view</string>
     <!-- View User's Catalogs -->
     <string name="view_user_catalogs">User albums</string>
+    <!-- View Logs -->
+    <string name="view_app_log">View App Log</string>
+    <string name="view_server_log">View Server Log</string>
 
     <!-- Button Labels-->
     <string name="done">Done</string>
     <string name="button_search">Search</string>
     <string name="button_create">Create</string>
     <string name="button_add">Add</string>
+    <string name="button_refresh">Refresh</string>
 
     <!-- Nav bar Required Strings-->
     <string name="navigation_drawer_open">Open navigation drawer</string>

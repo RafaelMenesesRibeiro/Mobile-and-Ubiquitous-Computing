@@ -27,6 +27,7 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
@@ -77,8 +78,9 @@ public class NewCatalogFragment extends Fragment {
 
         try {
             String catalogId = newCatalog(catalogTitle);
-            // MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            // mainMenuActivity.goToCatalog(catalogId, catalogTitle);
+            LogManager.logNewCatalog(catalogId, catalogTitle);
+            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+            mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (FailedOperationException foex) {
             Toast.makeText(this.getContext(), "The create catalog operation failed. Try again later", Toast.LENGTH_LONG).show();
@@ -89,7 +91,6 @@ public class NewCatalogFragment extends Fragment {
     }
 
     private String newCatalog(String catalogTitle) {
-        Log.i("MSG", "Create catalog: " + catalogTitle);
         String url = getString(R.string.p2photo_host) + getString(R.string.new_catalog);
 
         try {
@@ -102,13 +103,13 @@ public class NewCatalogFragment extends Fragment {
             String catalogID;
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
-                Log.i("STATUS", "The new catalog operation was successful");
                 SuccessResponse payload = (SuccessResponse) result.getPayload();
                 catalogID = (String) payload.getResult();
             }
             else {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
-                Log.i("STATUS", "The new catalog operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason());
+                String msg = "The new catalog operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason();
+                LogManager.logError(LogManager.NEW_CATALOG_TAG, msg);
                 throw new FailedOperationException();
             }
 
@@ -158,11 +159,12 @@ public class NewCatalogFragment extends Fragment {
             if (code != HttpURLConnection.HTTP_OK) {
                 String reason = ((ErrorResponse) result.getPayload()).getReason();
                 if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.w(NEW_CATALOG_TAG, reason);
+                    LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
                     Toast.makeText(context, "Session timed out, please login again", Toast.LENGTH_SHORT).show();
                     context.startActivity(new Intent(context, LoginActivity.class));
-                } else {
-                    Log.e(NEW_CATALOG_TAG, reason);
+                }
+                else {
+                    LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
                     Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();;
                 }
             }
