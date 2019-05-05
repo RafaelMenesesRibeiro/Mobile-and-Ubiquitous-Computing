@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,7 +46,6 @@ import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_GOOGLE_ID
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class AddPhotosFragment extends Fragment {
-    private static final String ADD_PHOTO_TAG = "ADD PHOTO FRAGMENT";
     public static final String CATALOG_ID_EXTRA = "catalogID";
 
     private View view;
@@ -188,7 +186,7 @@ public class AddPhotosFragment extends Fragment {
         }
     }
 
-    private HashMap<String, String> getGoogleDriveIdentifiers(String catalogId) {
+    private HashMap<String, String> getGoogleDriveIdentifiers(String catalogId) throws FailedOperationException {
         try {
             Context context = getContext();
             String baseUrl = getString(R.string.p2photo_host) + getString(R.string.get_google_identifiers);
@@ -214,12 +212,16 @@ public class AddPhotosFragment extends Fragment {
                     Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();
                     return null;
                 }
-            } else {
-                Object resultObject = ((SuccessResponse)result.getPayload()).getResult();
-                HashMap<String, String> googleIdentifiersMap = (HashMap<String, String>) resultObject;
-                return googleIdentifiersMap;
             }
-        } catch (ExecutionException | InterruptedException ex) {
+            else {
+                Object resultObject = ((SuccessResponse)result.getPayload()).getResult();
+                return (HashMap<String, String>) resultObject;
+            }
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            String msg = "Operation unsuccessful. " + ex.getMessage();
+            LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
         }
     }

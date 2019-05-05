@@ -1,13 +1,11 @@
 package cmov1819.p2photo;
 
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -35,19 +33,13 @@ import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
-import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
-    private static final String LOGIN_TAG = "LOGIN";
-    private static final String SIGN_UP_TAG = "SIGN UP";
-
     private AuthStateManager authStateManager;
-
-    BroadcastReceiver restrictionsReceiver;
 
     @Override
     public void onBackPressed() {
@@ -62,7 +54,6 @@ public class LoginActivity extends AppCompatActivity {
         this.authStateManager = AuthStateManager.getInstance(this);
 
         final Button loginButton = findViewById(R.id.LoginButton);
-        final Button signUpButton = findViewById(R.id.SignUpBottom);
         final EditText usernameInput = findViewById(R.id.usernameInputBox);
         final EditText passwordInput = findViewById(R.id.passwordInputBox);
 
@@ -72,7 +63,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                ActivateButtons(usernameInput, passwordInput, loginButton, signUpButton);
+                activateButtons(usernameInput, passwordInput, loginButton);
             }
 
             @Override
@@ -85,7 +76,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                ActivateButtons(usernameInput, passwordInput, loginButton, signUpButton);
+                activateButtons(usernameInput, passwordInput, loginButton);
             }
 
             @Override
@@ -114,6 +105,12 @@ public class LoginActivity extends AppCompatActivity {
         EditText passwordEditText = findViewById(R.id.passwordInputBox);
         String usernameValue = usernameEditText.getText().toString().trim();
         String passwordValue = passwordEditText.getText().toString().trim();
+
+        if (usernameValue.equals("") || passwordValue.equals("")) {
+            Toast.makeText(this, "Fill in username and password", LENGTH_LONG).show();
+            return;
+        }
+
         if (trySignUp(usernameValue, passwordValue)) {
             disableUserTextInputs(usernameEditText, passwordEditText);
             findViewById(R.id.LoginButton).performClick();
@@ -163,7 +160,16 @@ public class LoginActivity extends AppCompatActivity {
 
             return false;
 
-        } catch (JSONException | ExecutionException | InterruptedException ex) {
+        }
+        catch (JSONException ex) {
+            String msg = "JSONException: " + ex.getMessage();
+            LogManager.logError(LogManager.SIGN_UP_TAG, msg);
+            throw new FailedOperationException(ex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            String msg = "Sign Up unsuccessful. " + ex.getMessage();
+            LogManager.logError(LogManager.SIGN_UP_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
         }
     }
@@ -229,8 +235,16 @@ public class LoginActivity extends AppCompatActivity {
                 throw new FailedLoginException(msg);
             }
         }
-        catch (JSONException | ExecutionException | InterruptedException ex) {
-            throw new FailedLoginException(ex.getMessage());
+        catch (JSONException ex) {
+            String msg = "JSONException: " + ex.getMessage();
+            LogManager.logError(LogManager.LOGIN_TAG, msg);
+            throw new FailedOperationException(ex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            String msg = "Login unsuccessful. " + ex.getMessage();
+            LogManager.logError(LogManager.LOGIN_TAG, msg);
+            throw new FailedOperationException(ex.getMessage());
         }
     }
 
@@ -267,7 +281,7 @@ public class LoginActivity extends AppCompatActivity {
      * UI HELPERS
      ***********************************************************/
 
-    private void ActivateButtons(EditText usernameInput, EditText passwordInput, Button loginButton, Button signupButton) {
+    private void activateButtons(EditText usernameInput, EditText passwordInput, Button loginButton) {
         if (!usernameInput.getText().toString().isEmpty() && !passwordInput.getText().toString().isEmpty()) {
             loginButton.setEnabled(true);
             loginButton.setBackgroundColor(getResources().getColor(R.color.colorButtonActive));
