@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
 
 import static android.widget.Toast.LENGTH_SHORT;
 
@@ -22,7 +23,8 @@ public class AuthenticationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_authentication);
         this.authStateManager = AuthStateManager.getInstance(this);
 
-        Log.i(AUTH_TAG, "Started Authentication Activity...");
+        String msg = "Started Authentication Activity...";
+        LogManager.logInfo(AUTH_TAG, msg);
         Toast.makeText(this, "Trying to authenticate", LENGTH_SHORT).show();
 
         Intent appAuthIntent = getIntent();

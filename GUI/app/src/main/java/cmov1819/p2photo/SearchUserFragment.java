@@ -85,24 +85,28 @@ public class SearchUserFragment extends Fragment {
             if (code == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) result.getPayload();
                 LinkedHashMap<String, ArrayList> map = (LinkedHashMap<String, ArrayList>) payload.getResult();
-                Log.i("MSG", "Users and respective catalogs: " + map.toString());
+                String msg = "Users and respective catalogs: " + map.toString();
+                LogManager.logInfo(LogManager.SEARCH_USER_TAG, msg);
                 if (map.size() == 0) {
                     throw new NoResultsException();
                 }
                 return map;
             }
             else {
-                Log.e("ERROR", "SEARCH USER: " + getString(R.string.find_user_unsuccessful) + "Server response code: " + code);
+                String msg = getString(R.string.find_user_unsuccessful) + "Server response code: " + code;
+                LogManager.logError(LogManager.SEARCH_USER_TAG, msg);
                 throw new FailedOperationException("URL: " + url);
             }
         }
         catch (ClassCastException ccex) {
-            Log.e("ERROR", "SEARCH USER: " + getString(R.string.find_user_unsuccessful) + "Caught Class Cast Exception.");
+            String msg = getString(R.string.find_user_unsuccessful) + "Caught Class Cast Exception.";
+            LogManager.logError(LogManager.SEARCH_USER_TAG, msg);
             throw new NoResultsException(ccex.getMessage());
         }
         catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.e("ERROR", "SEARCH USER: " + getString(R.string.find_user_unsuccessful));
+            String msg = getString(R.string.find_user_unsuccessful);
+            LogManager.logError(LogManager.SEARCH_USER_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
         }
     }

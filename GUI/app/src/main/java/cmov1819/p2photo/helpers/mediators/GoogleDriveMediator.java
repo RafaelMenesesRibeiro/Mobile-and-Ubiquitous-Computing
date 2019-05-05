@@ -46,6 +46,7 @@ import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
 import cmov1819.p2photo.NewCatalogFragment;
 import cmov1819.p2photo.ViewCatalogFragment;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import okhttp3.MediaType;
 
 @SuppressLint("StaticFieldLeak")
@@ -122,7 +123,8 @@ public class GoogleDriveMediator {
                                     return null;
                                 }
 
-                                Log.i(GOOGLE_DRIVE_TAG, ">>> Creating folder... ID = " + parentFolderFile.getId());
+                                String msg = ">>> Creating folder... ID = " + parentFolderFile.getId();
+                                LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
 
                                 String catalogFolderId = parentFolderFile.getId();
                                 String catalogJsonContent = newCatalogJsonFile(title, p2photoId, catalogFolderId);
@@ -132,7 +134,8 @@ public class GoogleDriveMediator {
                                     setWarning(context,"Null catalog.json file received from Google REST API.");
                                 }
 
-                                Log.i(GOOGLE_DRIVE_TAG, ">>> Creating catalog... ID = " + catalogJsonFile.getId());
+                                msg = ">>> Creating catalog... ID = " + catalogJsonFile.getId();
+                                LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
 
                                 Permission userPermission = new Permission()
                                         .setAllowFileDiscovery(true)
@@ -279,11 +282,11 @@ public class GoogleDriveMediator {
 
                             JSONObject catalogFileContents = new JSONObject(readContents);
 
-                            Log.i(GOOGLE_DRIVE_TAG, String.format(
+                            String msg = String.format(
                                     "Reading catalog contents: \n%s",
                                     catalogFileContents.toString(4)
-                                )
                             );
+                            LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
 
                             if (catalogFileContents.has("photos")) {
                                 JSONArray photosArray = catalogFileContents.getJSONArray("photos");
@@ -319,7 +322,8 @@ public class GoogleDriveMediator {
     private File createFolder(String parentId,
                               String folderName) throws IOException {
 
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Creating folder...");
+        String msg = ">>> Creating folder...";
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
 
         File fileMetaData = new File()
                 .setParents(buildParentsList(parentId))
@@ -338,7 +342,8 @@ public class GoogleDriveMediator {
                                 String fileName,
                                 String fileContent) throws IOException {
 
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Creating text file...");
+        String msg = ">>> Creating text file...";
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
 
         File metadata = new File()
                 .setParents(buildParentsList(parentId))
@@ -361,7 +366,8 @@ public class GoogleDriveMediator {
                                String mimeType,
                                java.io.File filePath) throws IOException {
 
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Creating image file with content type: " + mimeType + "...");
+        String msg = ">>> Creating image file with content type: " + mimeType + "...";
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
 
         File metadata = new File()
                 .setParents(buildParentsList(parentId))
@@ -399,7 +405,8 @@ public class GoogleDriveMediator {
 
     //     webContentLink
     private String readTxtFileContentsWithId(String googleDriveCatalogId) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading text file contents with googleDriveCatalogId...");
+        String msg = ">>> Reading text file contents with googleDriveCatalogId...";
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
         // Stream the file contents to a String.
         InputStream inputStream = driveService.files()
                 .get(googleDriveCatalogId)
@@ -416,8 +423,10 @@ public class GoogleDriveMediator {
     }
 
     private String readTxtFileWithWebContentLink(String webContentLink) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading text file contents with webContentLink...");
-        Log.i(GOOGLE_DRIVE_TAG, " ::: " + webContentLink);
+        String msg = ">>> Reading text file contents with webContentLink...";
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
+        msg = " ::: " + webContentLink;
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
 
         InputStream inputStream = new URL(webContentLink).openStream();
 
@@ -433,7 +442,8 @@ public class GoogleDriveMediator {
     }
 
     private Bitmap readImgFileContentsWithId(String fileId, String mimeType) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using fileId...");
+        String msg = ">>> Reading image file contents using fileId...";
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
 
         InputStream inputStream = driveService.files()
                 .get(fileId)
@@ -445,8 +455,10 @@ public class GoogleDriveMediator {
     }
 
     private Bitmap readImgFileWithWebContentLink(Context context, String webContentLink) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using webContentLink...");
-        Log.i(GOOGLE_DRIVE_TAG, "::: " + webContentLink);
+        String msg = ">>> Reading image file contents using webContentLink...";
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
+        msg = "::: " + webContentLink;
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
 
         InputStream inputStream = new URL(webContentLink).openStream();
 
@@ -456,7 +468,8 @@ public class GoogleDriveMediator {
     }
 
     private Bitmap downloadImgFileWithId(String fileId, String mimeType) throws IOException {
-        Log.i(GOOGLE_DRIVE_TAG, ">>> Reading image file contents...");
+        String msg = ">>> Reading image file contents...";
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         driveService.files()
@@ -489,20 +502,20 @@ public class GoogleDriveMediator {
         return catalogJson.toString(4);
     }
 
-    private void setError(Context context, String message) {
-        Log.e(GOOGLE_DRIVE_TAG, message);
+    private void setError(Context context, String msg) {
+        LogManager.logError(GOOGLE_DRIVE_TAG, msg);
     }
 
     private void setWarning(Context context, String message) {
-        Log.w(GOOGLE_DRIVE_TAG, message);
+        LogManager.logWarning(GOOGLE_DRIVE_TAG, message);
     }
 
     private void suggestRetry(Context context, String message) {
-        Log.w(GOOGLE_DRIVE_TAG, "Google Drive REST API timed out.");
+        setWarning(context, "Google Drive REST API timed out.");
     }
 
     private void suggestReauthentication(Context context, String message) {
-        Log.w(GOOGLE_DRIVE_TAG, message);
+        setWarning(context, message);
         context.startActivity(new Intent(context, LoginActivity.class));
     }
 

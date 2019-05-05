@@ -62,7 +62,7 @@ public class ViewServerLogFragment extends Fragment {
         }
         catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.e("ERROR", "View Server Log: " + ex.getMessage());
+            LogManager.logError(LogManager.GET_SERVER_LOG, ex.getMessage());
         }
         return serverLog;
     }

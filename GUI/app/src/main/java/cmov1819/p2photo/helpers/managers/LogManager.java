@@ -9,26 +9,32 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 
 public class LogManager {
-    private static final String SIGN_UP_TAG = "Sign Up";
-    private static final String LOGIN_TAG = "Login";
-    private static final String LOGOUT_TAG = "Logout";
-    private static final String ADD_PHOTO_TAG = "Add Photo";
-    private static final String LIST_USERS_TAG = "List Users";
-    private static final String NEW_CATALOG_TAG = "New Catalog";
-    private static final String NEW_CATALOG_MEMBER_TAG = "New Catalog Member";
-    private static final String NEW_CATALOG_SLICE_TAG  = "New Catalog Slice";
-    private static final String SEARCH_USER_TAG = "Search User";
-    private static final String VIEW_CATALOG_TAG = "View Catalog";
-    private static final String VIEW_USER_CATALOGS_TAG = "View User Catalogs";
-    private static final String GET_CATALOG_TILE_TAG = "Get Catalog Title";
-    private static final String GET_CATALOG_TAG = "Get Catalog";
-    private static final String GET_MEMBERSHIPS_TAG = "Get Memberships";
-    private static final String GET_GOOGLE_IDENTIFIERS_TAG = "Get Google Identifiers";
-    private static final String GET_MEMBERSHIP_CATALOG_IDS_TAG = "Get Catalog IDs";
-    private static final String GET_SERVER_LOG = "Get Server Log";
-    private static final String VIEW_APP_LOG = "View App Log";
+    public static final String SIGN_UP_TAG = "Sign Up";
+    public static final String LOGIN_TAG = "Login";
+    public static final String LOGOUT_TAG = "Logout";
+    public static final String ADD_PHOTO_TAG = "Add Photo";
+    public static final String LIST_USERS_TAG = "List Users";
+    public static final String NEW_CATALOG_TAG = "New Catalog";
+    public static final String NEW_CATALOG_MEMBER_TAG = "New Catalog Member";
+    public static final String NEW_CATALOG_SLICE_TAG  = "New Catalog Slice";
+    public static final String SEARCH_USER_TAG = "Search User";
+    public static final String VIEW_CATALOG_TAG = "View Catalog";
+    public static final String VIEW_USER_CATALOGS_TAG = "View User Catalogs";
+    public static final String GET_CATALOG_TILE_TAG = "Get Catalog Title";
+    public static final String GET_CATALOG_TAG = "Get Catalog";
+    public static final String GET_MEMBERSHIPS_TAG = "Get Memberships";
+    public static final String GET_GOOGLE_IDENTIFIERS_TAG = "Get Google Identifiers";
+    public static final String GET_MEMBERSHIP_CATALOG_IDS_TAG = "Get Catalog IDs";
+    public static final String GET_SERVER_LOG = "Get Server Log";
+    public static final String VIEW_APP_LOG = "View App Log";
+
+    public static final String QUERY_MANAGER_TAG = "Quert Manager";
 
     private static String logText = "";
+
+    private LogManager() {
+        // Does not allow this class to be instantiated. //
+    }
 
     public static String getAppLog() {
         return logText;
@@ -162,6 +168,39 @@ public class LogManager {
         String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
         String toLog = "\nDate: " + currentDateTimeString + "\nStarting request:\n" + requestData.toString();
         Log.i("STATUS", toLog);
+        logText += "\n" + toLog;
+    }
+
+    /**********************************************************
+     * LOGS FOR ERROR MESSAGES
+     ***********************************************************/
+
+    public static void logError(String tag, String msg) {
+        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+        String toLog = "\nDate: " + currentDateTimeString + "\n" + msg;
+        Log.e(tag, toLog);
+        logText += "\n" + toLog;
+    }
+
+    /**********************************************************
+     * LOGS FOR INFORMATION MESSAGES
+     ***********************************************************/
+
+    public static void logInfo(String tag, String msg) {
+        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+        String toLog = "\nDate: " + currentDateTimeString + "\n" + msg;
+        Log.i(tag, toLog);
+        logText += "\n" + toLog;
+    }
+
+    /**********************************************************
+     * LOGS FOR WARNING MESSAGES
+     ***********************************************************/
+
+    public static void logWarning(String tag, String msg) {
+        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+        String toLog = "\nDate: " + currentDateTimeString + "\n" + msg;
+        Log.w(tag, toLog);
         logText += "\n" + toLog;
     }
 }

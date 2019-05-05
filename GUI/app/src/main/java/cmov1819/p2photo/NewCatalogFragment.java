@@ -108,7 +108,8 @@ public class NewCatalogFragment extends Fragment {
             }
             else {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
-                Log.e("STATUS", "The new catalog operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason());
+                String msg = "The new catalog operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason();
+                LogManager.logError(LogManager.NEW_CATALOG_TAG, msg);
                 throw new FailedOperationException();
             }
 
@@ -158,11 +159,12 @@ public class NewCatalogFragment extends Fragment {
             if (code != HttpURLConnection.HTTP_OK) {
                 String reason = ((ErrorResponse) result.getPayload()).getReason();
                 if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    Log.w(NEW_CATALOG_TAG, reason);
+                    LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
                     Toast.makeText(context, "Session timed out, please login again", Toast.LENGTH_SHORT).show();
                     context.startActivity(new Intent(context, LoginActivity.class));
-                } else {
-                    Log.e(NEW_CATALOG_TAG, reason);
+                }
+                else {
+                    LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
                     Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();;
                 }
             }

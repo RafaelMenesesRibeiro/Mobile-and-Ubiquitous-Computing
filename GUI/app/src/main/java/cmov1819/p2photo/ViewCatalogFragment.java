@@ -113,13 +113,15 @@ public class ViewCatalogFragment extends Fragment {
 
     private boolean populate(View view) {
         if (getArguments() == null) {
-            Log.e("ERROR", "VIEW CATALOG: arguments passed to fragment are null");
+            String msg = "Arguments passed to fragment are null";
+            LogManager.logError(LogManager.VIEW_CATALOG_TAG, msg);
             return false;
         }
 
         catalogID = getArguments().getString(CATALOG_ID_EXTRA);
         if (catalogID == null) {
-            Log.e("ERROR", "VIEW CATALOG: catalogID is null.");
+            String msg = "catalogID is null";
+            LogManager.logError(LogManager.VIEW_CATALOG_TAG, msg);
             return false;
         }
 
@@ -145,7 +147,8 @@ public class ViewCatalogFragment extends Fragment {
 
         String catalogTitle = getArguments().getString(CATALOG_TITLE_EXTRA);
         if (catalogTitle == null) {
-            Log.i("ERROR", "VIEW CATALOG: catalogTitle is null.");
+            String msg = "catalogTitle is null.";
+            LogManager.logError(LogManager.VIEW_CATALOG_TAG, msg);
             return false;
         }
         List<String>  googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(catalogID);
@@ -220,7 +223,7 @@ public class ViewCatalogFragment extends Fragment {
         }
         catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.e("ERROR", "VIEW CATALOG: " + ex.getMessage());
+            LogManager.logError(LogManager.VIEW_CATALOG_TAG, ex.getMessage());
         }
         return new ArrayList<>();
     }

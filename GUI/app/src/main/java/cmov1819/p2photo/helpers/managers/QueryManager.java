@@ -124,15 +124,15 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
                     LogManager.logReceivedServerLog(result);
                     break;
                 default:
-                    Log.i("ERROR", "Should never be here.");
+                    String msg = "Should never be here.";
+                    LogManager.logError(LogManager.QUERY_MANAGER_TAG, msg);
                     break;
             }
             connection.disconnect();
             return result;
         }
         catch (IOException ex) {
-            Log.e("ERROR", ex.getMessage());
-            ex.printStackTrace();
+            LogManager.logError("Query Manager", ex.getMessage());
             return result;
         }
     }
@@ -200,11 +200,13 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         if (cookiesHeader != null && cookiesHeader.size() > 0) {
             String cookie = cookiesHeader.get(0);
             updateSessionID(activity, cookie);
-            Log.i("STATUS", "QUERY: received login cookie - " + cookie + ".");
+            String msg = "Received login cookie - " + cookie + ".";
+            LogManager.logInfo(LogManager.QUERY_MANAGER_TAG, msg);
         }
         else {
             updateSessionID(activity, "INVALID_SESSION");
-            Log.i("ERROR", "QUERY: no cookies were received.");
+            String msg = "No cookies were received.";
+            LogManager.logError(LogManager.QUERY_MANAGER_TAG, msg);
         }
     }
 

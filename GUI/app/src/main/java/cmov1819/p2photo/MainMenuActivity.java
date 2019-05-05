@@ -110,7 +110,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                     logout();
                 }
                 catch (FailedOperationException ex) {
-                    Log.e(MAIN_MENU_TAG, "LOGOUT: Failed to logout, proceeding");
+                    String msg = "Failed to logout, proceeding.";
+                    LogManager.logError(MAIN_MENU_TAG, msg);
                 }
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
@@ -164,7 +165,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             String catalogTitle = (String)((SuccessResponse)result.getPayload()).getResult();
             googleDriveMediator.newCatalogSlice(this, catalogTitle, catalogId, authStateManager.getAuthState());
         } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-            Log.w(MAIN_MENU_TAG,  ((ErrorResponse)result.getPayload()).getReason());
+            String msg = ((ErrorResponse)result.getPayload()).getReason();
+            LogManager.logWarning(MAIN_MENU_TAG, msg);
             Toast.makeText(this, "Session timed out, please login again", LENGTH_SHORT).show();
             this.startActivity(new Intent(this, LoginActivity.class));
         }
@@ -188,7 +190,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 SessionManager.deleteUsername(this);
             }
             else {
-                Log.w(MAIN_MENU_TAG, "The login operation was unsuccessful. Unknown error.");
+                String msg = "The login operation was unsuccessful. Unknown error.";
+                LogManager.logError(MAIN_MENU_TAG, msg);
                 throw new FailedOperationException();
             }
         }

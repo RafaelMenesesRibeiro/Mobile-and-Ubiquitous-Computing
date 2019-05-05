@@ -86,7 +86,7 @@ public class ViewUserCatalogsFragment extends Fragment {
         }
         catch (ClassCastException | ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.e("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
+            LogManager.logError(LogManager.VIEW_USER_CATALOGS_TAG, ex.getMessage());
             ex.printStackTrace();
         }
         return map;
@@ -107,8 +107,7 @@ public class ViewUserCatalogsFragment extends Fragment {
         }
         catch (ClassCastException | ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
-            Log.e("ERROR", "VIEW USER CATALOGS: " + ex.getMessage());
-            ex.printStackTrace();
+            LogManager.logError(LogManager.VIEW_USER_CATALOGS_TAG, ex.getMessage());
         }
         return map;
     }

@@ -123,15 +123,16 @@ public class NewCatalogMemberFragment extends Fragment {
             }
             else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
-                String reason = errorResponse.getReason();
-                Log.e("STATUS", getString(R.string.add_user_unsuccessful) + reason);
-                throw new FailedOperationException(reason);
+                String msg = errorResponse.getReason();
+                LogManager.logError(LogManager.NEW_CATALOG_MEMBER_TAG, msg);
+                throw new FailedOperationException(msg);
             }
             else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
                 if (reason.equals(getString(R.string.no_membership))) {
-                    Log.e("STATUS", getString(R.string.add_user_unsuccessful) + "Callee does not belong to album " + catalogID);
+                    String msg = "Callee does not belong to album " + catalogID;
+                    LogManager.logError(LogManager.NEW_CATALOG_MEMBER_TAG, msg);
                     throw new NoMembershipException(reason);
                 }
             }
@@ -139,12 +140,14 @@ public class NewCatalogMemberFragment extends Fragment {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
                 if (reason.equals(getString(R.string.no_user))) {
-                    Log.e("STATUS", getString(R.string.add_user_unsuccessful) + "Username does not exist " + username);
+                    String msg = "Username does not exist " + username;
+                    LogManager.logError(LogManager.NEW_CATALOG_MEMBER_TAG, msg);
                     throw new UsernameException(reason);
                 }
             }
             else {
-                Log.e("STATUS", R.string.add_user_unsuccessful + "Server response code: " + code);
+                String msg = "Server response code: " + code;
+                LogManager.logError(LogManager.NEW_CATALOG_MEMBER_TAG, msg);
                 throw new FailedOperationException();
             }
         }
