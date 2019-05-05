@@ -25,6 +25,8 @@ public class LogManager {
     private static final String GET_MEMBERSHIPS_TAG = "Get Memberships";
     private static final String GET_GOOGLE_IDENTIFIERS_TAG = "Get Google Identifiers";
     private static final String GET_MEMBERSHIP_CATALOG_IDS_TAG = "Get Catalog IDs";
+    private static final String GET_SERVER_LOG = "Get Server Log";
+    private static final String VIEW_APP_LOG = "View App Log";
 
     private static String logText = "";
 
@@ -79,6 +81,14 @@ public class LogManager {
     public static void logViewUserCatalogs(String username) {
         String msg = "View User Catalogs Operation completed. Viewed catalogs for user: " + username;
         logOperation(VIEW_USER_CATALOGS_TAG, msg);
+    }
+
+    public static void logViewAppLog() {
+        logOperation(VIEW_APP_LOG, "View App Log Operation completed.");
+    }
+
+    public static void logGetServerLog() {
+        logOperation(GET_SERVER_LOG, "View Server Log Operation completed.");
     }
 
     /**********************************************************
@@ -138,6 +148,10 @@ public class LogManager {
 
     public static void logReceivedGetMembershipCatalogIDs(ResponseData responseData) {
         logReceived(GET_MEMBERSHIP_CATALOG_IDS_TAG, "Received Get Membership Catalog IDs response", responseData);
+    }
+
+    public static void logReceivedServerLog(ResponseData responseData) {
+        logReceived(GET_SERVER_LOG, "Received Get Server Log response", responseData);
     }
 
     /**********************************************************

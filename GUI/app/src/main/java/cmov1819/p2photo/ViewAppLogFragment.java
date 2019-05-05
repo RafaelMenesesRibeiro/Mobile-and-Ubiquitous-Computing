@@ -17,6 +17,7 @@ public class ViewAppLogFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_view_app_log, container, false);
         populate(view);
+        LogManager.logViewAppLog();
         return view;
     }
 
