@@ -10,6 +10,8 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -27,6 +29,7 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
@@ -63,8 +66,7 @@ public class LoginActivity extends AppCompatActivity {
 
         usernameInput.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /*
-            Do nothing. */ }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing. */ }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -77,8 +79,7 @@ public class LoginActivity extends AppCompatActivity {
 
         passwordInput.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /*
-            Do nothing. */ }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { /* Do nothing. */ }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
@@ -87,6 +88,14 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) { /* Do nothing. */ }
+        });
+
+        CheckBox checkBox = findViewById(R.id.tickBox);
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                ArchitectureManager.isCloudStorageArchitecture = isChecked;
+            }
         });
     }
 
