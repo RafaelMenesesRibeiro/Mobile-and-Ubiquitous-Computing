@@ -115,6 +115,12 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
                 break;
+            case R.id.nav_show_app_log:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewAppLogFragment()).commit();
+                break;
+            case R.id.nav_show_server_log:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewServerLogFragment()).commit();
+                break;
             default:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new SearchUserFragment()).commit();
                 break;

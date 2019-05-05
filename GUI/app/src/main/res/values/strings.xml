@@ -48,6 +48,9 @@
     <string name="choose_catalog">Choose album to view</string>
     <!-- View User's Catalogs -->
     <string name="view_user_catalogs">User albums</string>
+    <!-- View Logs -->
+    <string name="view_app_log">View App Log</string>
+    <string name="view_server_log">View Server Log</string>
 
     <!-- Button Labels-->
     <string name="done">Done</string>
