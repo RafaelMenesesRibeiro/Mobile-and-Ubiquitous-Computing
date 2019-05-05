@@ -13,7 +13,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
@@ -144,12 +143,13 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
 
     private void dealWithPendingMemberships() {
         Map<String, String> membershipMapping = ViewUserCatalogsFragment.getMembershipGoogleDriveIDs(this);
-        for (String catalogId : membershipMapping.keySet()) {
+        for (Map.Entry<String, String> entry : membershipMapping.entrySet()) {
             try {
-                if (membershipMapping.get(catalogId).equals("")) {
-                    completeJoinProcess(catalogId);
+                if (entry.getValue().equals("")) {
+                    completeJoinProcess(entry.getKey());
                 }
-            } catch (ExecutionException | InterruptedException exc) {
+            }
+            catch (ExecutionException | InterruptedException exc) {
                 // pass;
             }
         }

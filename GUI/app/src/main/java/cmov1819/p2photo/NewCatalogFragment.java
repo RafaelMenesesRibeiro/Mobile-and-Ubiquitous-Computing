@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,8 +36,6 @@ import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class NewCatalogFragment extends Fragment {
-    private static final String NEW_CATALOG_TAG = "NEW CATALOG FRAGMENT";
-
     private AuthStateManager authStateManager;
     private GoogleDriveMediator googleDriveMediator;
     private Activity activity;
@@ -165,11 +162,20 @@ public class NewCatalogFragment extends Fragment {
                 }
                 else {
                     LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
-                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();;
+                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();
                 }
             }
 
-        } catch (JSONException | ExecutionException | InterruptedException ex) {
+        }
+        catch (JSONException ex) {
+            String msg = "JSONException: " + ex.getMessage();
+            LogManager.logError(LogManager.NEW_CATALOG_TAG, msg);
+            throw new FailedOperationException(ex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            String msg = "New Catalog unsuccessful. " + ex.getMessage();
+            LogManager.logError(LogManager.NEW_CATALOG_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
         }
     }
