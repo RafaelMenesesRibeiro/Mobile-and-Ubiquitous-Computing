@@ -29,6 +29,8 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
+import cmov1819.p2photo.helpers.architectures.WirelessP2PArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -94,7 +96,11 @@ public class LoginActivity extends AppCompatActivity {
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                ArchitectureManager.isCloudStorageArchitecture = isChecked;
+                if (isChecked) {
+                    ArchitectureManager.systemArchitecture = new CloudBackedArchitecture();
+                    return;
+                }
+                ArchitectureManager.systemArchitecture = new WirelessP2PArchitecture();
             }
         });
     }
