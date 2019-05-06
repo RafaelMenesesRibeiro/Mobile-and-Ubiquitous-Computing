@@ -198,7 +198,7 @@ public class NewCatalogFragment extends Fragment {
             JSONObject catalogFile = new JSONObject();
             catalogFile.put("catalogId", catalogId);
             catalogFile.put("catalogTitle", catalogTitle);
-            catalogFile.put("members", membersPhotosMap);
+            catalogFile.put("membersPhotos", membersPhotosMap);
             // Write them to application storage space
             String filePath = catalogFolder.getAbsolutePath() + "/catalog.json";
             FileOutputStream outputStream = activity.openFileOutput(filePath, Context.MODE_PRIVATE);
