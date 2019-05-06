@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 
@@ -193,13 +194,16 @@ public class NewCatalogFragment extends Fragment {
         java.io.File catalogFolder = activity.getDir(catalogId, Context.MODE_PRIVATE);
         // Create catalog.json file
         try {
+
             // Create file content representation
             Hashtable<String, List<String>> membersPhotosMap = new Hashtable<>();
             membersPhotosMap.put(username, new ArrayList<String>());
+            JSONObject memberPhotosMapObject = new JSONObject(new ObjectMapper().writeValueAsString(membersPhotosMap));
+
             JSONObject catalogFile = new JSONObject();
             catalogFile.put("catalogId", catalogId);
             catalogFile.put("catalogTitle", catalogTitle);
-            catalogFile.put("membersPhotos", membersPhotosMap);
+            catalogFile.put("membersPhotos", memberPhotosMapObject);
             // Write them to application storage space
             String fileName = String.format("catalog_%s.json", catalogId);
             FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
