@@ -231,43 +231,6 @@ public class AddPhotosFragment extends Fragment {
         }
     }
 
-    // TODO - Can only be tested once UpdateCatalog and ViewCatalogWifiDirectArch are implemented. //
-    public static void addPhotoWifiDirectArch(Activity activity, String catalogId, File file) throws FailedOperationException {
-        // Reads the temp image's bytes.
-        int fileLength = (int) file.length();
-        byte[] fileContents = new byte[fileLength];
-
-        try {
-            FileInputStream fis = new FileInputStream(file);
-            int bytesRead = fis.read(fileContents);
-            if (bytesRead != fileLength) {
-                String msg = "Could not read the image file.";
-                throw new FailedOperationException(msg);
-            }
-            fis.close();
-        }
-        catch(IOException ex){
-            throw new FailedOperationException(ex.getMessage());
-        }
-
-        // Saves the temp image's bytes to internal storage in a permanent file.
-        String username = SessionManager.getUsername(activity);
-        UUID uuid = UUID.randomUUID();
-        String filename = catalogId + "_" + username + "_" + uuid.toString();
-        FileOutputStream outputStream;
-        try {
-            outputStream = activity.openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(fileContents);
-            outputStream.close();
-        }
-        catch (IOException ex) {
-            throw new FailedOperationException(ex.getMessage());
-        }
-
-
-        // TODO - Update catalog file. //
-    }
-
     public static ArrayList<String> setDropdownAdapterAngGetCatalogIDs(Activity activity, Spinner dropdownMenu) {
         Map<String, String> map = ViewUserCatalogsFragment.getMemberships(activity);
         ArrayList<String> catalogTitles = new ArrayList<>();
