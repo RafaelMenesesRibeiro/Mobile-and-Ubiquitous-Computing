@@ -40,7 +40,6 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         // Nothing to setup. //
     }
 
-    // TODO - Can only be tested once UpdateCatalog and ViewCatalogWifiDirectArch are implemented. //
     @Override
     public void addPhoto(FragmentActivity activity, String catalogId, File file) throws FailedOperationException {
         // Reads the temp image's bytes.
@@ -74,7 +73,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             throw new FailedOperationException(ex.getMessage());
         }
 
-        // TODO - Update catalog file. //
+        updateCatalog(activity, catalogId, SessionManager.getUsername(activity), filename);
     }
 
     @Override
@@ -113,8 +112,8 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             outputStream.close();
 
         } catch (IOException | JSONException exc) {
-            Toast.makeText(activity, "Failed to add photo to catalog", Toast.LENGTH_SHORT).show();
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
+            LogManager.toast(activity, "Failed to add photo to catalog");
         }
     }
 }
