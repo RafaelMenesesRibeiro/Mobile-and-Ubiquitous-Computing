@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -222,8 +223,7 @@ public class NewCatalogFragment extends Fragment {
             InputStream inputStream = activity.openFileInput(catalogFolderDir + "/catalog.json");
             String thisCatalogFileContentsString = inputStreamToString(inputStream);
             JSONObject thisCatalogFileContents = new JSONObject(thisCatalogFileContentsString);
-            JSONObject mergedCatalogFileContents =
-                    tryMergeCatalogFiles(thisCatalogFileContents, anotherCatalogFileContents);
+            JSONObject mergedContents =  mergeCatalogFileContents(thisCatalogFileContents, anotherCatalogFileContents);
 
         } catch (IOException | JSONException exc) {
             Toast.makeText(activity, "Couldn't read stored catalog slice", Toast.LENGTH_SHORT).show();
@@ -231,7 +231,7 @@ public class NewCatalogFragment extends Fragment {
         }
     }
 
-    private static JSONObject tryMergeCatalogFiles(JSONObject thisFile, JSONObject otherFile)
+    private static JSONObject mergeCatalogFileContents(JSONObject thisFile, JSONObject otherFile)
             throws JSONException {
 
         String thisId = thisFile.getString("catalogId");
@@ -241,23 +241,59 @@ public class NewCatalogFragment extends Fragment {
             return null;
         }
 
-        List<UserSlice> thisMembersList = jsonArrayToArrayList(thisFile.getJSONArray("members"));
-        List<UserSlice> anotherMembersList = jsonArrayToArrayList(otherFile.getJSONArray("members"));
+        JSONObject thisMembersPhotosMap = thisFile.getJSONObject("membersPhotos");
+        JSONObject anotherMembersPhotosMap = otherFile.getJSONObject("membersPhotos");
 
-        List<UserSlice> finalMembersList = processMemberLists(thisMembersList, anotherMembersList);
+        JSONObject mergedMembersPhotoMap = processMembersMaps(thisMembersPhotosMap, anotherMembersPhotosMap);
 
         JSONObject mergedCatalogFileContents = new JSONObject();
         mergedCatalogFileContents.put("catalogId", thisId);
         mergedCatalogFileContents.put("catalogTitle", thisFile.getString("catalogTitle"));
-        mergedCatalogFileContents.put("members", finalMembersList);
+        mergedCatalogFileContents.put("members", mergedMembersPhotoMap);
 
         return mergedCatalogFileContents;
     }
 
-    private static List<UserSlice> processMemberLists(List<UserSlice> thisMembersList, List<UserSlice> anotherMembersList) {
-        for (UserSlice userSlice : thisMembersList) {
+    private static JSONObject processMembersMaps(JSONObject thisMembersPhotosMap, JSONObject anotherMembersPhotosMap) {
 
+        JSONObject mergedMembersPhotoMap = new JSONObject();
+
+        Iterator<String> thisMembers = thisMembersPhotosMap.keys();
+        while (thisMembers.hasNext()) {
+            try {
+                String currentMember = thisMembers.next();
+                JSONArray currentMemberPhotos = thisMembersPhotosMap.getJSONArray(currentMember);
+                int currentMemberPhotosLength = currentMemberPhotos.length();
+                if (anotherMembersPhotosMap.has(currentMember)) {
+                    JSONArray receivedCurrentMemberPhotos = anotherMembersPhotosMap.getJSONArray(currentMember);
+                    int receivedCurrentMemberPhotosLength = receivedCurrentMemberPhotos.length();
+                    JSONArray mergedCurrentMemberPhotos = new JSONArray();
+                    for (int i = 0; i < currentMemberPhotosLength; i++) {
+                        // for each photo belonging to the current member, get it's identifier in the array
+                        String photoI = currentMemberPhotos.getString(i);
+                        for (int j = 0; j < receivedCurrentMemberPhotosLength; j++) {
+                            // iterate all photo belonging to current member in received catalog file & compare IDs
+                            String photoJ = receivedCurrentMemberPhotos.getString(j);
+                            if (photoI.equals(photoJ)) {
+                                // Stop search. Both catalog files have the current member photo, so we put
+                                mergedCurrentMemberPhotos.put(photoJ);
+                                break;
+                            } else if (j == receivedCurrentMemberPhotosLength - 1) {
+                                // If photos uuid didn't match and there are no more J photos, then J is missing photoI
+                                mergedCurrentMemberPhotos.put(photoI);
+                            }
+                        }
+                    }
+                    mergedMembersPhotoMap.put(currentMember, mergedCurrentMemberPhotos);
+                }
+                else {
+                    mergedMembersPhotoMap.put(currentMember, currentMemberPhotos);
+                }
+            } catch (JSONException jsone) {
+                continue;
+            }
         }
+        return mergedMembersPhotoMap;
     }
 
     public static List<UserSlice> jsonArrayToArrayList(JSONArray jsonArray) {
