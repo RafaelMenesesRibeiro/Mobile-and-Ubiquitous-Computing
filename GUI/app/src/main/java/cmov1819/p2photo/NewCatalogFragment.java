@@ -234,9 +234,6 @@ public class NewCatalogFragment extends Fragment {
                 outputStream.write(mergedContents.toString().getBytes("UTF-8"));
                 outputStream.close();
             }
-
-
-
         } catch (IOException | JSONException exc) {
             Toast.makeText(activity, "Couldn't read stored catalog slice", Toast.LENGTH_SHORT).show();
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
