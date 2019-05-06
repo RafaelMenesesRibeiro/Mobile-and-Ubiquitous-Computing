@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -196,7 +197,7 @@ public class NewCatalogFragment extends Fragment {
         try {
 
             // Create file content representation
-            Hashtable<String, List<String>> membersPhotosMap = new Hashtable<>();
+            HashMap<String, List<String>> membersPhotosMap = new HashMap<>();
             membersPhotosMap.put(username, new ArrayList<String>());
             JSONObject memberPhotosMapObject = new JSONObject(new ObjectMapper().writeValueAsString(membersPhotosMap));
 
