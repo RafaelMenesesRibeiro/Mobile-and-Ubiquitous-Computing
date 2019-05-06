@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import cmov1819.p2photo.AddPhotosFragment;
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.NewCatalogFragment;

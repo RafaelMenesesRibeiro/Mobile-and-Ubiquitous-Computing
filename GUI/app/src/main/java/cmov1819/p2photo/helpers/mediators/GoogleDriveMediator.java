@@ -46,8 +46,8 @@ import cmov1819.p2photo.ViewCatalogFragment;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import okhttp3.MediaType;
 
-import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToBitmap;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayOutputStreamToBitmap;
+import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToBitmap;
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 
 @SuppressLint("StaticFieldLeak")
