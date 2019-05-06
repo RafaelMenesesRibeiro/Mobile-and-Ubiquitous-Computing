@@ -88,4 +88,9 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         ViewCatalogFragment.drawImages(view, activity, bitmaps);
         LogManager.logViewCatalog(catalogID, catalogTitle);
     }
+
+    // TODO - @Francisco Barros //
+    public void updateCatalog(Activity activity, String catalogID, String username, String imageName) {
+        // TODO //
+    }
 }
