@@ -166,10 +166,6 @@ public class ViewCatalogFragment extends Fragment {
         LogManager.logViewCatalog(catalogID, catalogTitle);
     }
 
-    public static void populateGridWifiDirectArch(Activity activity, View view, String catalogID, String catalogTitle) {
-        // TODO //
-    }
-
     public static void drawImages(View view, final Context context, List<Bitmap> contents) {
         GridView grid = view.findViewById(R.id.catalogGrid);
         Adapter adapter = grid.getAdapter();
