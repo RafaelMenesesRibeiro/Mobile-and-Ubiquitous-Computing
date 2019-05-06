@@ -33,6 +33,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -197,9 +198,9 @@ public class NewCatalogFragment extends Fragment {
         try {
 
             // Create file content representation
-            HashMap<String, List<String>> membersPhotosMap = new HashMap<>();
+            Map<String, List<String>> membersPhotosMap = new HashMap<>();
             membersPhotosMap.put(username, new ArrayList<String>());
-            JSONObject memberPhotosMapObject = new JSONObject(new ObjectMapper().writeValueAsString(membersPhotosMap));
+            JSONObject memberPhotosMapObject = new JSONObject(membersPhotosMap);
 
             JSONObject catalogFile = new JSONObject();
             catalogFile.put("catalogId", catalogId);
