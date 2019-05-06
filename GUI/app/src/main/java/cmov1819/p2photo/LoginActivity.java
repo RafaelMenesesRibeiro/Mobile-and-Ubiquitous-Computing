@@ -1,5 +1,6 @@
 package cmov1819.p2photo;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
@@ -27,6 +28,8 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
+import cmov1819.p2photo.helpers.architectures.WirelessP2PArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -37,8 +40,6 @@ import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
-    private AuthStateManager authStateManager;
-
     @Override
     public void onBackPressed() {
         // Do nothing. Prevents going back after logging out.
@@ -49,8 +50,23 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
 
-        this.authStateManager = AuthStateManager.getInstance(this);
+        ArchitectureManager.setWirelessP2PArch(); // Default architecture is Wireless P2P.
+        CheckBox checkBox = findViewById(R.id.tickBox);
+        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    ArchitectureManager.setCloudBackedArch();
+                    return;
+                }
+                ArchitectureManager.setWirelessP2PArch();
+            }
+        });
 
+        populate();
+    }
+
+    private void populate() {
         final Button loginButton = findViewById(R.id.LoginButton);
         final EditText usernameInput = findViewById(R.id.usernameInputBox);
         final EditText passwordInput = findViewById(R.id.passwordInputBox);
@@ -79,14 +95,6 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) { /* Do nothing. */ }
-        });
-
-        CheckBox checkBox = findViewById(R.id.tickBox);
-        checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                ArchitectureManager.isCloudStorageArchitecture = isChecked;
-            }
         });
     }
 
@@ -188,7 +196,7 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         enableUserTextInputs(usernameEditText, passwordEditText);
-        tryEnablingPostAuthorizationFlows(view);
+        ArchitectureManager.systemArchitecture.setup(view, this);
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {
@@ -246,21 +254,22 @@ public class LoginActivity extends AppCompatActivity {
      * GOOGLE API OAUTH HELPERS
      ***********************************************************/
 
-    private void tryEnablingPostAuthorizationFlows(View view) {
+    public static void tryEnablingPostAuthorizationFlows(View view, Activity activity) {
         String msg = "Trying to enable post authorization flows...";
         LogManager.logInfo(LogManager.LOGIN_TAG, msg);
+        AuthStateManager authStateManager  = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
         if (authStateManager.hasValidAuthState()) {
             msg = "Valid authentication state >>> starting new MainMenuActivity...";
             LogManager.logInfo(LogManager.LOGIN_TAG, msg);
-            Intent mainMenuActivityIntent = new Intent(LoginActivity.this, MainMenuActivity.class);
+            Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
             mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
-            startActivity(mainMenuActivityIntent);
+            activity.startActivity(mainMenuActivityIntent);
         }
         else {
             msg = "Invalid authentication state >>> starting AuthenticationActivity...";
             LogManager.logInfo(LogManager.LOGIN_TAG, msg);
             AuthorizationRequest authorizationRequest = authStateManager.getAuthorizationRequest();
-            Intent authenticationIntent = new Intent(this, AuthenticationActivity.class);
+            Intent authenticationIntent = new Intent(activity, AuthenticationActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(
                     view.getContext(), authorizationRequest.hashCode(), authenticationIntent, 0
             );
@@ -268,7 +277,7 @@ public class LoginActivity extends AppCompatActivity {
             authorizationService.performAuthorizationRequest(authorizationRequest, pendingIntent);
             authorizationService.dispose();
         }
-        finish();
+        activity.finish();
     }
 
     /**********************************************************

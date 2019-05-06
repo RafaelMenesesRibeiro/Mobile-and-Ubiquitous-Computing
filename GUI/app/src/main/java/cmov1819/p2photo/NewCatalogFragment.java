@@ -25,6 +25,7 @@ import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
@@ -36,16 +37,12 @@ import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class NewCatalogFragment extends Fragment {
-    private AuthStateManager authStateManager;
-    private GoogleDriveMediator googleDriveMediator;
     private Activity activity;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
-        authStateManager = AuthStateManager.getInstance(this.getContext());
-        googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
         final View view = inflater.inflate(R.layout.fragment_new_catalog, container, false);
         populate(view);
         return view;
@@ -110,13 +107,7 @@ public class NewCatalogFragment extends Fragment {
                 throw new FailedOperationException();
             }
 
-            googleDriveMediator.newCatalogSlice(
-                    getActivity(),
-                    catalogTitle,
-                    catalogID,
-                    authStateManager.getAuthState()
-            );
-
+            ArchitectureManager.systemArchitecture.newCatalogSlice(activity, catalogID, catalogTitle);
             return catalogID;
         }
         catch (JSONException ex) {
@@ -128,11 +119,11 @@ public class NewCatalogFragment extends Fragment {
         }
     }
 
-    public static void newCatalogSlice(final Context context,
-                                       final String catalogId,
-                                       final String parentFolderGoogleId,
-                                       final String catalogFileGoogleId,
-                                       final String webContentLink) {
+    public static void newCatalogSliceCloudArch(final Context context,
+                                                final String catalogId,
+                                                final String parentFolderGoogleId,
+                                                final String catalogFileGoogleId,
+                                                final String webContentLink) {
         try {
 
             JSONObject requestBody = new JSONObject();
@@ -178,5 +169,9 @@ public class NewCatalogFragment extends Fragment {
             LogManager.logError(LogManager.NEW_CATALOG_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
         }
+    }
+
+    public static void newCatalogSliceWifiDirectArch(Activity activity, String catalogID, String catalogTitle) {
+        // TODO //
     }
 }

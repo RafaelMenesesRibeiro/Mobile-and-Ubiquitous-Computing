@@ -31,6 +31,8 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.adapters.ImageGridAdapter;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
+import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
+import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
@@ -52,16 +54,10 @@ public class ViewCatalogFragment extends Fragment {
     private ArrayList<String> catalogIDs;
     private String catalogID;
 
-    private GoogleDriveMediator googleDriveMediator;
-    private AuthStateManager authStateManager;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
-        this.authStateManager = AuthStateManager.getInstance(this.getContext());
-        this.googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
-
         final View view = inflater.inflate(R.layout.fragment_view_catalog, container, false);
         boolean couldPopulate = populate(view);
         if (!couldPopulate) {
@@ -104,7 +100,7 @@ public class ViewCatalogFragment extends Fragment {
                 int index = dropdownMenu.getSelectedItemPosition();
                 catalogID = catalogIDs.get(index);
                 String catalogTitle = catalogTitles.get(index);
-                populateGrid(view, catalogID, catalogTitle, getGoogleSliceFileIdentifiersList(catalogID));
+                ArchitectureManager.systemArchitecture.viewCatalog(activity, view, catalogID, catalogTitle);
             }
         });
         return view;
@@ -150,21 +146,28 @@ public class ViewCatalogFragment extends Fragment {
             LogManager.logError(LogManager.VIEW_CATALOG_TAG, msg);
             return false;
         }
-        List<String>  googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(catalogID);
-        populateGrid(view, catalogID, catalogTitle, googleSliceFileIdentifiersList);
+
+        ArchitectureManager.systemArchitecture.viewCatalog(activity, view, catalogID, catalogTitle);
         return true;
     }
 
-    private void populateGrid(View view, String catalogID, String catalogTitle, List<String>  googleSliceFileIdentifiersList) {
+    public static void populateGridCloudArch(Activity activity, View view, String catalogID, String catalogTitle) {
+        List<String>  googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(activity, catalogID);
         TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
 
+        GoogleDriveMediator googleDriveMediator = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getGoogleDriveMediator(activity);
+        AuthStateManager authStateManager = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
+
         for (String googleCatalogFileId : googleSliceFileIdentifiersList) {
-            googleDriveMediator.viewCatalogSlicePhotos(
-                    getContext(), view, googleCatalogFileId, authStateManager.getAuthState()
+            googleDriveMediator.viewCatalogSlicePhotos(activity, view, googleCatalogFileId, authStateManager.getAuthState()
             );
         }
         LogManager.logViewCatalog(catalogID, catalogTitle);
+    }
+
+    public static void populateGridWifiDirectArch(Activity activity, View view, String catalogID, String catalogTitle) {
+        // TODO //
     }
 
     public static void drawImages(View view, final Context context, List<Bitmap> contents) {
@@ -208,12 +211,12 @@ public class ViewCatalogFragment extends Fragment {
         }
     }
 
-    public List<String> getGoogleSliceFileIdentifiersList(String catalogID) {
-        String url = getString(R.string.p2photo_host) + getString(R.string.view_catalog) +
+    public static List<String> getGoogleSliceFileIdentifiersList(Activity activity, String catalogID) {
+        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.view_catalog) +
                 "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
 
         try {
-            RequestData requestData = new RequestData(getActivity(), GET_CATALOG, url);
+            RequestData requestData = new RequestData(activity, GET_CATALOG, url);
             ResponseData responseData = new QueryManager().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();

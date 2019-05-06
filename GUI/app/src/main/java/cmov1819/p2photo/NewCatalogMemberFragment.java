@@ -148,8 +148,15 @@ public class NewCatalogMemberFragment extends Fragment {
                 throw new FailedOperationException();
             }
         }
-        catch (JSONException | ExecutionException | InterruptedException ex) {
+        catch (JSONException ex) {
+            String msg = "JSONException: " + ex.getMessage();
+            LogManager.logError(LogManager.NEW_CATALOG_MEMBER_TAG, msg);
+            throw new FailedOperationException(ex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
+            String msg = "New Catalog Member unsuccessful. " + ex.getMessage();
+            LogManager.logError(LogManager.NEW_CATALOG_MEMBER_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
         }
     }
