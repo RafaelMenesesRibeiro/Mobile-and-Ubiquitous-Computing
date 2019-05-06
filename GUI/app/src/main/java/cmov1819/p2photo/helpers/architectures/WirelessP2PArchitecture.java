@@ -87,21 +87,14 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         NewCatalogFragment.newCatalogSliceWifiDirectArch(activity, catalogID, catalogTitle);
     }
 
-    // TODO - Can only be tested once getCatalogImagePaths() is implemented. //
     @Override
     public void viewCatalog(Activity activity, View view, String catalogID, String catalogTitle) {
-        // ArrayList<String> imagePaths = getCatalogImagePaths(catalogID);
-        ArrayList<String> imagePaths = new ArrayList<>();
-        ArrayList<Bitmap> bitmaps = new ArrayList<>();
-        for (String imagePath : imagePaths) {
-            Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
-            bitmaps.add(bitmap);
-        }
+        List<Bitmap> bitmaps = getBitmapsFromFileStorage(activity, catalogID);
         ViewCatalogFragment.drawImages(view, activity, bitmaps);
         LogManager.logViewCatalog(catalogID, catalogTitle);
     }
 
-    public void updateCatalogFile(final Activity activity,
+    private void updateCatalogFile(final Activity activity,
                                   final String catalogId,
                                   final String owner,
                                   final String photoId) {
@@ -125,7 +118,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         }
     }
 
-    public List<Bitmap> getBitmapsFromFileStorage(final Activity activity,
+    private List<Bitmap> getBitmapsFromFileStorage(final Activity activity,
                                                   final String catalogId) {
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
