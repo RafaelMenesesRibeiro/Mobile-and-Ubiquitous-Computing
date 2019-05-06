@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,10 +36,9 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
 
     @Override
     public void setup(View view, LoginActivity loginActivity) {
-        // Nothing to setup. //
+        LoginActivity.goHome(loginActivity);
     }
 
-    // TODO - Can only be tested once UpdateCatalog and ViewCatalogWifiDirectArch are implemented. //
     @Override
     public void addPhoto(FragmentActivity activity, String catalogId, File file) throws FailedOperationException {
         // Reads the temp image's bytes.
@@ -74,7 +72,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             throw new FailedOperationException(ex.getMessage());
         }
 
-        // TODO - Update catalog file. //
+        updateCatalogFile(activity, catalogId, SessionManager.getUsername(activity), filename);
     }
 
     @Override
@@ -96,7 +94,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         LogManager.logViewCatalog(catalogID, catalogTitle);
     }
 
-    public void updateCatalog(Activity activity, String catalogId, String owner, String photoId) {
+    public void updateCatalogFile(Activity activity, String catalogId, String owner, String photoId) {
         // Get catalog folder path from application private storage
         String catalogFolderDir = activity.getDir(catalogId, Context.MODE_PRIVATE).getAbsolutePath();
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
@@ -113,8 +111,8 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             outputStream.close();
 
         } catch (IOException | JSONException exc) {
-            Toast.makeText(activity, "Failed to add photo to catalog", Toast.LENGTH_SHORT).show();
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
+            LogManager.toast(activity, "Failed to add photo to catalog");
         }
     }
 }
