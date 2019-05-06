@@ -140,7 +140,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
                                        final JSONObject membersPhotosMap) {
 
         List<Bitmap> loadedPhotos = new ArrayList<>();
-        Map<String, String> photosNotFoundMap = new HashMap<>();
+        List<String>  photoNotFoundList = new ArrayList<>();
 
         Iterator<String> receivedMembers = membersPhotosMap.keys();
         while (receivedMembers.hasNext()) {
@@ -154,14 +154,14 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
                         Bitmap loadedPhoto = loadPhoto(activity, fileName);
                         loadedPhotos.add(loadedPhoto);
                     } catch (FileNotFoundException fnfe) {
-                        photosNotFoundMap.put(currentMember, fileName);
+                        photoNotFoundList.add(fileName);
                     }
                 }
             } catch (JSONException jsone) {
                 continue;
             }
         }
-        loadedPhotos.addAll(requestMissingPhotosToPeers(photosNotFoundMap));
+        loadedPhotos.addAll(requestMissingPhotosToPeers(photoNotFoundList));
         return loadedPhotos;
     }
 
@@ -175,7 +175,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         }
     }
 
-    private List<Bitmap> requestMissingPhotosToPeers(Map<String, String> photoNotFoundList) {
+    private List<Bitmap> requestMissingPhotosToPeers(List<String> photoNotFoundList) {
         // TODO for each fileName in list, request photo, convert it to bit map, append to list and store it;
         return new ArrayList<>();
     }
