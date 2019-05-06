@@ -36,7 +36,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
 
     @Override
     public void setup(View view, LoginActivity loginActivity) {
-        // Nothing to setup. //
+        LoginActivity.goHome(loginActivity);
     }
 
     @Override

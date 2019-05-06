@@ -250,6 +250,12 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    public static void goHome(Activity activity) {
+        Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
+        mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
+        activity.startActivity(mainMenuActivityIntent);
+    }
+
     /**********************************************************
      * GOOGLE API OAUTH HELPERS
      ***********************************************************/
@@ -261,9 +267,7 @@ public class LoginActivity extends AppCompatActivity {
         if (authStateManager.hasValidAuthState()) {
             msg = "Valid authentication state >>> starting new MainMenuActivity...";
             LogManager.logInfo(LogManager.LOGIN_TAG, msg);
-            Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
-            mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
-            activity.startActivity(mainMenuActivityIntent);
+            goHome(activity);
         }
         else {
             msg = "Invalid authentication state >>> starting AuthenticationActivity...";
