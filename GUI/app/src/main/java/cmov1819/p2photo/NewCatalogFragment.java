@@ -24,7 +24,6 @@ import org.json.JSONObject;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -38,7 +37,6 @@ import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.UserSlice;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
@@ -222,10 +220,22 @@ public class NewCatalogFragment extends Fragment {
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
             // Load contents
-            InputStream inputStream = activity.openFileInput(catalogFolderDir + "/catalog.json");
+            String filePath = catalogFolderDir + "/catalog.json";
+            InputStream inputStream = activity.openFileInput(filePath);
             String thisCatalogFileContentsString = inputStreamToString(inputStream);
             JSONObject thisCatalogFileContents = new JSONObject(thisCatalogFileContentsString);
             JSONObject mergedContents =  mergeCatalogFileContents(thisCatalogFileContents, anotherCatalogFileContents);
+
+            if (mergedContents == null) {
+                Toast.makeText(activity, "Couldn't update catalog file", Toast.LENGTH_SHORT).show();
+                LogManager.logWarning(LogManager.NEW_CATALOG_SLICE_TAG, "Catalog merging resulted in null JSONObject");
+            } else {
+                FileOutputStream outputStream = activity.openFileOutput(filePath, Context.MODE_PRIVATE);
+                outputStream.write(mergedContents.toString().getBytes("UTF-8"));
+                outputStream.close();
+            }
+
+
 
         } catch (IOException | JSONException exc) {
             Toast.makeText(activity, "Couldn't read stored catalog slice", Toast.LENGTH_SHORT).show();
@@ -233,9 +243,7 @@ public class NewCatalogFragment extends Fragment {
         }
     }
 
-    private static JSONObject mergeCatalogFileContents(JSONObject thisFile, JSONObject otherFile)
-            throws JSONException {
-
+    private static JSONObject mergeCatalogFileContents(JSONObject thisFile, JSONObject otherFile) throws JSONException {
         String thisId = thisFile.getString("catalogId");
         String otherId = otherFile.getString("catalogId");
 
@@ -246,7 +254,7 @@ public class NewCatalogFragment extends Fragment {
         JSONObject thisMembersPhotosMap = thisFile.getJSONObject("membersPhotos");
         JSONObject anotherMembersPhotosMap = otherFile.getJSONObject("membersPhotos");
 
-        JSONObject mergedMembersPhotoMap = processMembersMaps(thisMembersPhotosMap, anotherMembersPhotosMap);
+        JSONObject mergedMembersPhotoMap = mergeMaps(thisMembersPhotosMap, anotherMembersPhotosMap);
 
         JSONObject mergedCatalogFileContents = new JSONObject();
         mergedCatalogFileContents.put("catalogId", thisId);
@@ -256,12 +264,9 @@ public class NewCatalogFragment extends Fragment {
         return mergedCatalogFileContents;
     }
 
-    private static JSONObject processMembersMaps(JSONObject thisMap, JSONObject receivedMap) {
-
+    private static JSONObject mergeMaps(JSONObject thisMap, JSONObject receivedMap) {
         JSONObject mergedMap = new JSONObject();
-
         Iterator<String> receivedMembers = receivedMap.keys();
-
         while (receivedMembers.hasNext()) {
             String currentMember = receivedMembers.next();
             try {
@@ -269,9 +274,7 @@ public class NewCatalogFragment extends Fragment {
                     List<String> thisCurrentMemberPhotos = jsonArrayToArrayList(receivedMap.getJSONArray(currentMember));
                     List<String> receivedCurrentMemberPhotos = jsonArrayToArrayList(thisMap.getJSONArray(currentMember));
                     thisCurrentMemberPhotos.addAll(receivedCurrentMemberPhotos);
-                    List<String> mergedCurrentMemberPhotos =
-                            new ArrayList<>(new HashSet<>(thisCurrentMemberPhotos));
-
+                    List<String> mergedCurrentMemberPhotos = new ArrayList<>(new HashSet<>(thisCurrentMemberPhotos));
                     mergedMap.put(currentMember, mergedCurrentMemberPhotos);
                 }
                 else {
