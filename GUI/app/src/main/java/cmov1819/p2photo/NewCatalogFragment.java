@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -220,7 +221,7 @@ public class NewCatalogFragment extends Fragment {
         try {
             // Load contents
             String filePath = catalogFolderDir + "/catalog.json";
-            InputStream inputStream = activity.openFileInput(filePath);
+            InputStream inputStream = new FileInputStream(filePath);
             String thisCatalogFileContentsString = inputStreamToString(inputStream);
             JSONObject thisCatalogFileContents = new JSONObject(thisCatalogFileContentsString);
             JSONObject mergedContents =  mergeCatalogFileContents(thisCatalogFileContents, anotherCatalogFileContents);

@@ -103,7 +103,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         try {
             // Load contents
             String filePath = catalogFolderDir + "/catalog.json";
-            InputStream inputStream = activity.openFileInput(filePath);
+            InputStream inputStream = new FileInputStream(filePath);
             JSONObject catalogFileContents = new JSONObject(inputStreamToString(inputStream));
             // Append photoId to the user photoId arrays under memberPhotos dictionary
             catalogFileContents.getJSONObject("membersPhotos").getJSONArray(owner).put(photoId);
