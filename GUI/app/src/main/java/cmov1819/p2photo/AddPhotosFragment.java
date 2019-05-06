@@ -21,6 +21,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
@@ -38,6 +40,7 @@ import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -189,10 +192,6 @@ public class AddPhotosFragment extends Fragment {
         );
     }
 
-    public static void addPhotoWifiDirectArch(Activity activity, String catalogId, File androidFilePath) {
-        // TODO //
-    }
-
     private static HashMap<String, String> getGoogleDriveIdentifiers(Activity activity, String catalogId) throws FailedOperationException {
         try {
             String baseUrl = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_google_identifiers);
@@ -230,6 +229,43 @@ public class AddPhotosFragment extends Fragment {
             LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
         }
+    }
+
+    // TODO - Can only be tested once UpdateCatalog and ViewCatalogWifiDirectArch are implemented. //
+    public static void addPhotoWifiDirectArch(Activity activity, String catalogId, File file) throws FailedOperationException {
+        // Reads the temp image's bytes.
+        int fileLength = (int) file.length();
+        byte[] fileContents = new byte[fileLength];
+
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            int bytesRead = fis.read(fileContents);
+            if (bytesRead != fileLength) {
+                String msg = "Could not read the image file.";
+                throw new FailedOperationException(msg);
+            }
+            fis.close();
+        }
+        catch(IOException ex){
+            throw new FailedOperationException(ex.getMessage());
+        }
+
+        // Saves the temp image's bytes to internal storage in a permanent file.
+        String username = SessionManager.getUsername(activity);
+        UUID uuid = UUID.randomUUID();
+        String filename = catalogId + "_" + username + "_" + uuid.toString();
+        FileOutputStream outputStream;
+        try {
+            outputStream = activity.openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(fileContents);
+            outputStream.close();
+        }
+        catch (IOException ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+
+
+        // TODO - Update catalog file. //
     }
 
     public static ArrayList<String> setDropdownAdapterAngGetCatalogIDs(Activity activity, Spinner dropdownMenu) {
