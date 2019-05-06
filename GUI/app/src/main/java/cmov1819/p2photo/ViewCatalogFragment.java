@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -167,7 +168,16 @@ public class ViewCatalogFragment extends Fragment {
     }
 
     public static void populateGridWifiDirectArch(Activity activity, View view, String catalogID, String catalogTitle) {
-        // TODO //
+        // TODO - Implement getCatalogImagePaths(). //
+        // ArrayList<String> imagePaths = getCatalogImagePaths(catalogID);
+        ArrayList<String> imagePaths = new ArrayList<>();
+        ArrayList<Bitmap> bitmaps = new ArrayList<>();
+        for (String imagePath : imagePaths) {
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePath);
+            bitmaps.add(bitmap);
+        }
+        ViewCatalogFragment.drawImages(view, activity, bitmaps);
+        LogManager.logViewCatalog(catalogID, catalogTitle);
     }
 
     public static void drawImages(View view, final Context context, List<Bitmap> contents) {
