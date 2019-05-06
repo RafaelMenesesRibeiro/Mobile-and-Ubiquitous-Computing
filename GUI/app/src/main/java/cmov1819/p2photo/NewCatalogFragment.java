@@ -223,7 +223,6 @@ public class NewCatalogFragment extends Fragment {
             String thisCatalogFileContentsString = inputStreamToString(inputStream);
             JSONObject thisCatalogFileContents = new JSONObject(thisCatalogFileContentsString);
             JSONObject mergedContents =  mergeCatalogFileContents(thisCatalogFileContents, anotherCatalogFileContents);
-
             if (mergedContents == null) {
                 Toast.makeText(activity, "Couldn't update catalog file", Toast.LENGTH_SHORT).show();
                 LogManager.logWarning(LogManager.NEW_CATALOG_SLICE_TAG, "Catalog merging resulted in null JSONObject");
@@ -254,7 +253,7 @@ public class NewCatalogFragment extends Fragment {
         JSONObject mergedCatalogFileContents = new JSONObject();
         mergedCatalogFileContents.put("catalogId", thisId);
         mergedCatalogFileContents.put("catalogTitle", thisFile.getString("catalogTitle"));
-        mergedCatalogFileContents.put("members", mergedMembersPhotoMap);
+        mergedCatalogFileContents.put("membersPhotos", mergedMembersPhotoMap);
 
         return mergedCatalogFileContents;
     }
