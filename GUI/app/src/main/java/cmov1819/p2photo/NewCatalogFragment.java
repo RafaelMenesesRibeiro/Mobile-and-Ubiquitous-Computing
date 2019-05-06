@@ -258,14 +258,14 @@ public class NewCatalogFragment extends Fragment {
 
         JSONObject mergedMembersPhotoMap = new JSONObject();
 
-        Iterator<String> thisMembers = thisMembersPhotosMap.keys();
+        Iterator<String> thisMembers = anotherMembersPhotosMap.keys();
         while (thisMembers.hasNext()) {
             try {
                 String currentMember = thisMembers.next();
-                JSONArray currentMemberPhotos = thisMembersPhotosMap.getJSONArray(currentMember);
+                JSONArray currentMemberPhotos = anotherMembersPhotosMap.getJSONArray(currentMember);
                 int currentMemberPhotosLength = currentMemberPhotos.length();
-                if (anotherMembersPhotosMap.has(currentMember)) {
-                    JSONArray receivedCurrentMemberPhotos = anotherMembersPhotosMap.getJSONArray(currentMember);
+                if (thisMembersPhotosMap.has(currentMember)) {
+                    JSONArray receivedCurrentMemberPhotos = thisMembersPhotosMap.getJSONArray(currentMember);
                     int receivedCurrentMemberPhotosLength = receivedCurrentMemberPhotos.length();
                     JSONArray mergedCurrentMemberPhotos = new JSONArray();
                     for (int i = 0; i < currentMemberPhotosLength; i++) {
