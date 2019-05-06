@@ -24,6 +24,7 @@ import org.json.JSONObject;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -284,6 +285,7 @@ public class NewCatalogFragment extends Fragment {
     }
 
     public static List<String> jsonArrayToArrayList(JSONArray jsonArray) {
+        //noinspection UnstableApiUsage
         return new Gson().fromJson(jsonArray.toString(), new TypeToken<List<String>>(){}.getType());
     }
 }
