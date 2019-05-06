@@ -17,7 +17,13 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -25,16 +31,19 @@ import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.CatalogUserPhotos;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NewCatalogFragment extends Fragment {
     private Activity activity;
@@ -171,7 +180,30 @@ public class NewCatalogFragment extends Fragment {
         }
     }
 
-    public static void newCatalogSliceWifiDirectArch(Activity activity, String catalogID, String catalogTitle) {
-        // TODO //
+    public static void newCatalogSliceWifiDirectArch(final Activity activity,
+                                                     final String catalogId,
+                                                     final String catalogTitle) {
+
+        String username = SessionManager.getUsername(activity);
+        String error = "Failed to create catalog slice";
+        // Make catalog folder if it doesn't exist in private storage, otherwise retrieve it
+        java.io.File catalogFolder = activity.getDir(catalogId, Context.MODE_PRIVATE);
+        // Create catalog.json file
+        try {
+            // Create file content representation
+            List<CatalogUserPhotos> catalogFileContents = new ArrayList<>();
+            catalogFileContents.add(new CatalogUserPhotos(username, new ArrayList<String>()));
+            JSONObject catalogFile = new JSONObject();
+            catalogFile.put("catalogTitle", catalogTitle);
+            catalogFile.put("users", catalogFileContents);
+            // Write them to application storage space
+            String filePath = catalogFolder.getAbsolutePath() + "/catalog.json";
+            FileOutputStream outputStream = activity.openFileOutput(filePath, Context.MODE_PRIVATE);
+            outputStream.write(catalogFile.toString().getBytes("UTF-8"));
+            outputStream.close();
+        } catch (JSONException | IOException exc) {
+            Toast.makeText(activity, error, Toast.LENGTH_SHORT).show();
+            LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
+        }
     }
 }
