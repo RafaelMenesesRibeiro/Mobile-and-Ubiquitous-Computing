@@ -79,8 +79,7 @@ public class NewCatalogFragment extends Fragment {
         String catalogTitle = titleInput.getText().toString();
 
         if (catalogTitle.equals("")) {
-            Toast toast = Toast.makeText(this.getContext(), "Enter a name for the album", Toast.LENGTH_LONG);
-            toast.show();
+            LogManager.toast(activity, "Enter a name for the album");
             return;
         }
 
@@ -91,10 +90,10 @@ public class NewCatalogFragment extends Fragment {
             mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (FailedOperationException foex) {
-            Toast.makeText(this.getContext(), "The create catalog operation failed. Try again later", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "The create catalog operation failed. Try again later");
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(activity, "Could not present new catalog", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "Could not present new catalog");
         }
     }
 
@@ -162,12 +161,12 @@ public class NewCatalogFragment extends Fragment {
                 String reason = ((ErrorResponse) result.getPayload()).getReason();
                 if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
-                    Toast.makeText(context, "Session timed out, please login again", Toast.LENGTH_SHORT).show();
+                    LogManager.toast(((Activity) context), "Session timed out, please login again");
                     context.startActivity(new Intent(context, LoginActivity.class));
                 }
                 else {
                     LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
-                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();
+                    LogManager.toast(((Activity) context), "Something went wrong");
                 }
             }
 
@@ -208,8 +207,8 @@ public class NewCatalogFragment extends Fragment {
             outputStream.write(catalogFile.toString().getBytes("UTF-8"));
             outputStream.close();
         } catch (JSONException | IOException exc) {
-            Toast.makeText(activity, "Failed to create catalog slice", Toast.LENGTH_SHORT).show();
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
+            LogManager.toast(activity, "Failed to create catalog slice");
         }
     }
 
@@ -228,8 +227,8 @@ public class NewCatalogFragment extends Fragment {
             JSONObject mergedContents =  mergeCatalogFileContents(thisCatalogFileContents, anotherCatalogFileContents);
 
         } catch (IOException | JSONException exc) {
-            Toast.makeText(activity, "Couldn't read stored catalog slice", Toast.LENGTH_SHORT).show();
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
+            LogManager.toast(activity, "Couldn't read stored catalog slice");
         }
     }
 

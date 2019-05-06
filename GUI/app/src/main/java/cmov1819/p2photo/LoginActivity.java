@@ -108,7 +108,7 @@ public class LoginActivity extends AppCompatActivity {
         String passwordValue = passwordEditText.getText().toString().trim();
 
         if (usernameValue.equals("") || passwordValue.equals("")) {
-            Toast.makeText(this, "Fill in username and password", LENGTH_LONG).show();
+            LogManager.toast(this, "Fill in username and password");
             return;
         }
 
@@ -135,7 +135,7 @@ public class LoginActivity extends AppCompatActivity {
             if (code == HttpURLConnection.HTTP_OK) {
                 msg = "Sign Up successful";
                 LogManager.logInfo(LogManager.SIGN_UP_TAG, msg);
-                Toast.makeText(getApplicationContext(), "Created account successfully", LENGTH_LONG).show();
+                LogManager.toast(this, "Created account successfully");
                 return true;
             } else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
@@ -143,20 +143,23 @@ public class LoginActivity extends AppCompatActivity {
                 if (reason.equals(getString(R.string.bad_user))) {
                     msg = "Sign Up unsuccessful. Username does not abide the rules... ";
                     LogManager.logError(LogManager.SIGN_UP_TAG, msg);
-                    Toast.makeText(getApplicationContext(), getString(R.string.bad_user), LENGTH_LONG).show();
-                } else if (reason.equals(getString(R.string.bad_pass))) {
+                    LogManager.toast(this, getString(R.string.bad_user));
+                }
+                else if (reason.equals(getString(R.string.bad_pass))) {
                     msg = "Sign Up unsuccessful the password does not abide the rules... ";
                     LogManager.logError(LogManager.SIGN_UP_TAG, msg);
-                    Toast.makeText(getApplicationContext(), getString(R.string.bad_pass), LENGTH_LONG).show();
+                    LogManager.toast(this, getString(R.string.bad_pass));
                 }
-            } else if (code == 422) {
+            }
+            else if (code == 422) {
                 msg = "Sign Up unsuccessful. The chosen username already exists.";
                 LogManager.logError(LogManager.SIGN_UP_TAG, msg);
-                Toast.makeText(getApplicationContext(), "Chosen username already exists. Choose another...", LENGTH_LONG).show();
-            } else {
+                LogManager.toast(this, "Chosen username already exists. Choose another...");
+            }
+            else {
                 msg = "Sign Up unsuccessful. Server response code: " + code;
                 LogManager.logError(LogManager.SIGN_UP_TAG, msg);
-                Toast.makeText(getApplicationContext(), "Unexpected error, try later...", LENGTH_LONG).show();
+                LogManager.toast(this, "Unexpected error, try later...");
             }
 
             return false;
@@ -218,21 +221,19 @@ public class LoginActivity extends AppCompatActivity {
                 (findViewById(R.id.passwordInputBox)).setVisibility(View.INVISIBLE);
                 msg = "Login operation succeded";
                 LogManager.logInfo(LogManager.LOGIN_TAG, msg);
-                Toast.makeText(getApplicationContext(), "Welcome " + username, LENGTH_LONG).show();
+                LogManager.toast(this, "Welcome " + username);
                 updateUsername(this, username);
             }
             else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 msg = "Login operation failed. The username or password are incorrect.";
                 LogManager.logError(LogManager.LOGIN_TAG, msg);
-                msg = "Incorrect credential combination";
-                Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
+                LogManager.toast(this, "Incorrect credential combination");
                 throw new FailedLoginException(msg);
             }
             else {
                 msg = "Login operation failed. Server error with response code: " + code;
                 LogManager.logError(LogManager.LOGIN_TAG, msg);
-                msg = "Unexpected error... Try again later";
-                Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
+                LogManager.toast(this, "Unexpected error... Try again later");
                 throw new FailedLoginException(msg);
             }
         }

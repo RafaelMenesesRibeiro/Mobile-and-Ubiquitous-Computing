@@ -24,7 +24,7 @@ public class AuthenticationActivity extends AppCompatActivity {
 
         String msg = "Started Authentication Activity...";
         LogManager.logInfo(AUTH_TAG, msg);
-        Toast.makeText(this, "Trying to authenticate", LENGTH_SHORT).show();
+        LogManager.toast(this, "Trying to authenticate");
 
         Intent appAuthIntent = getIntent();
 

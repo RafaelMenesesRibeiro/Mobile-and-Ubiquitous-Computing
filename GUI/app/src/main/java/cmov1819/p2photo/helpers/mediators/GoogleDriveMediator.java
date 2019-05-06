@@ -1,6 +1,7 @@
 package cmov1819.p2photo.helpers.mediators;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -167,7 +168,7 @@ public class GoogleDriveMediator {
                         File parentFolderFile = files.first;
                         File catalogJsonFile = files.second;
                         if (catalogJsonFile == null) {
-                            Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
+                            LogManager.toast((Activity) context, "Couldn't create catalog");
                         }
                         else {
                             NewCatalogFragment.newCatalogSliceCloudArch(
@@ -177,7 +178,7 @@ public class GoogleDriveMediator {
                                     catalogJsonFile.getId(),
                                     catalogJsonFile.getWebContentLink()
                             );
-                            Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
+                            LogManager.toast((Activity) context, "Catalog created");
                         }
                     }
                 }.execute(accessToken);
@@ -244,9 +245,10 @@ public class GoogleDriveMediator {
                     @Override
                     protected void onPostExecute(File file) {
                         if (file == null) {
-                            Toast.makeText(context, "Couldn't upload photo", Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(context, "Upload complete", Toast.LENGTH_LONG).show();
+                            LogManager.toast((Activity) context, "Couldn't upload photo");
+                        }
+                        else {
+                            LogManager.toast((Activity) context, "Upload complete");
                         }
                     }
                 }.execute(accessToken);
