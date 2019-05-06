@@ -201,8 +201,8 @@ public class NewCatalogFragment extends Fragment {
             catalogFile.put("catalogTitle", catalogTitle);
             catalogFile.put("membersPhotos", membersPhotosMap);
             // Write them to application storage space
-            String filePath = catalogFolder.getAbsolutePath() + "/catalog.json";
-            FileOutputStream outputStream = activity.openFileOutput(filePath, Context.MODE_PRIVATE);
+            String fileName = String.format("catalog_%s.json", catalogId);
+            FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
             outputStream.write(catalogFile.toString().getBytes("UTF-8"));
             outputStream.close();
         } catch (JSONException | IOException exc) {
@@ -215,13 +215,11 @@ public class NewCatalogFragment extends Fragment {
                                                         final String catalogId,
                                                         final JSONObject anotherCatalogFileContents) {
 
-        // Get catalog folder path from application private storage
-        String catalogFolderDir = activity.getDir(catalogId, Context.MODE_PRIVATE).getAbsolutePath();
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
             // Load contents
-            String filePath = catalogFolderDir + "/catalog.json";
-            InputStream inputStream = new FileInputStream(filePath);
+            String fileName = String.format("catalog_%s.json", catalogId);
+            InputStream inputStream = activity.openFileInput(fileName);
             String thisCatalogFileContentsString = inputStreamToString(inputStream);
             JSONObject thisCatalogFileContents = new JSONObject(thisCatalogFileContentsString);
             JSONObject mergedContents =  mergeCatalogFileContents(thisCatalogFileContents, anotherCatalogFileContents);
@@ -230,7 +228,7 @@ public class NewCatalogFragment extends Fragment {
                 Toast.makeText(activity, "Couldn't update catalog file", Toast.LENGTH_SHORT).show();
                 LogManager.logWarning(LogManager.NEW_CATALOG_SLICE_TAG, "Catalog merging resulted in null JSONObject");
             } else {
-                FileOutputStream outputStream = activity.openFileOutput(filePath, Context.MODE_PRIVATE);
+                FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
                 outputStream.write(mergedContents.toString().getBytes("UTF-8"));
                 outputStream.close();
             }

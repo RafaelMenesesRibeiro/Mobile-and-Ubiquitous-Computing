@@ -46,25 +46,23 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         byte[] fileContents = new byte[fileLength];
 
         try {
-            FileInputStream fis = new FileInputStream(file);
-            int bytesRead = fis.read(fileContents);
+            InputStream inputStream = new FileInputStream(file);
+            int bytesRead = inputStream.read(fileContents);
             if (bytesRead != fileLength) {
-                String msg = "Could not read the image file.";
-                throw new FailedOperationException(msg);
+                throw new FailedOperationException("Couldn't read the image file.");
             }
-            fis.close();
+            inputStream.close();
         }
-        catch(IOException ex){
-            throw new FailedOperationException(ex.getMessage());
+        catch(IOException ioe){
+            throw new FailedOperationException(ioe.getMessage());
         }
 
         // Saves the temp image's bytes to internal storage in a permanent file.
         String username = SessionManager.getUsername(activity);
-        UUID uuid = UUID.randomUUID();
-        String filename = catalogId + "_" + username + "_" + uuid.toString();
+        String photoName = String.format("%s_%s_%s", catalogId, username, UUID.randomUUID().toString().replace("/", ""));
         FileOutputStream outputStream;
         try {
-            outputStream = activity.openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream = activity.openFileOutput(photoName, Context.MODE_PRIVATE);
             outputStream.write(fileContents);
             outputStream.close();
         }
@@ -72,7 +70,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             throw new FailedOperationException(ex.getMessage());
         }
 
-        updateCatalogFile(activity, catalogId, SessionManager.getUsername(activity), filename);
+        updateCatalogFile(activity, catalogId, SessionManager.getUsername(activity), photoName);
     }
 
     @Override
@@ -95,18 +93,16 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
     }
 
     public void updateCatalogFile(Activity activity, String catalogId, String owner, String photoId) {
-        // Get catalog folder path from application private storage
-        String catalogFolderDir = activity.getDir(catalogId, Context.MODE_PRIVATE).getAbsolutePath();
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
             // Load contents
-            String filePath = catalogFolderDir + "/catalog.json";
-            InputStream inputStream = new FileInputStream(filePath);
+            String fileName = String.format("catalog_%s.json", catalogId);
+            InputStream inputStream = activity.openFileInput(fileName);
             JSONObject catalogFileContents = new JSONObject(inputStreamToString(inputStream));
             // Append photoId to the user photoId arrays under memberPhotos dictionary
             catalogFileContents.getJSONObject("membersPhotos").getJSONArray(owner).put(photoId);
             // Save to disk
-            FileOutputStream outputStream = activity.openFileOutput(filePath, Context.MODE_PRIVATE);
+            FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
             outputStream.write(catalogFileContents.toString().getBytes("UTF-8"));
             outputStream.close();
 
