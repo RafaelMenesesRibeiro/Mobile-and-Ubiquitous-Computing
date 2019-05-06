@@ -9,6 +9,7 @@ import java.io.File;
 import cmov1819.p2photo.AddPhotosFragment;
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainMenuActivity;
+import cmov1819.p2photo.ViewCatalogFragment;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
@@ -39,6 +40,11 @@ public class CloudBackedArchitecture extends BaseArchitecture {
                 catalogID,
                 authStateManager.getAuthState()
         );
+    }
+
+    @Override
+    public void viewCatalog(Activity activity, View view, String catalogID, String catalogTitle) {
+        ViewCatalogFragment.populateGridCloudArch(activity, view, catalogID, catalogTitle);
     }
 
     public GoogleDriveMediator getGoogleDriveMediator(Activity activity) {
