@@ -8,8 +8,6 @@ import android.support.annotation.NonNull;
 import java.util.Set;
 
 public class SessionManager {
-    private static final String SESSION_LOG_TAG = "SESSION";
-
     private static final String SESSION_ID_SHARED_PREF = "p2photo.SessionIDPreference";
     private static final String SESSION_ID_KEY = "sessionID";
     private static final String USER_NAME_KEY = "username";
@@ -17,6 +15,7 @@ public class SessionManager {
     private static String sessionID;
     private static String username = null;
 
+    // TODO - Remove these. //
     private static Set<String> catalogMembershipIDs;
     private static Set<String> catalogMembershipNames;
 
@@ -63,6 +62,8 @@ public class SessionManager {
     /**********************************************************
      * MEMBERSHIP METHODS
      ***********************************************************/
+
+    // TODO - Remove these. //
 
     public static Set<String> getCatalogMembershipsNames(Activity activity) {
         if (catalogMembershipNames != null) { return catalogMembershipNames; }
