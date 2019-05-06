@@ -15,4 +15,6 @@ public abstract class BaseArchitecture {
     public abstract void setup(View view, LoginActivity loginActivity);
 
     public abstract void addPhoto(FragmentActivity activity, String catalogId, File androidFilePath);
+
+    public abstract void newCatalogSlice(Activity activity, String catalogID, String catalogTitle);
 }

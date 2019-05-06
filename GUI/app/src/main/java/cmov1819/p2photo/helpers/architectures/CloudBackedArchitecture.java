@@ -29,6 +29,18 @@ public class CloudBackedArchitecture extends BaseArchitecture {
         AddPhotosFragment.addPhotoCloudArch(activity, catalogId, androidFilePath);
     }
 
+    @Override
+    public void newCatalogSlice(Activity activity, String catalogID, String catalogTitle) {
+        GoogleDriveMediator googleDriveMediator = getGoogleDriveMediator(activity);
+        AuthStateManager authStateManager = getAuthStateManager(activity);
+        googleDriveMediator.newCatalogSlice(
+                activity,
+                catalogTitle,
+                catalogID,
+                authStateManager.getAuthState()
+        );
+    }
+
     public GoogleDriveMediator getGoogleDriveMediator(Activity activity) {
         AuthStateManager authStateManager = AuthStateManager.getInstance(activity);
         return GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());

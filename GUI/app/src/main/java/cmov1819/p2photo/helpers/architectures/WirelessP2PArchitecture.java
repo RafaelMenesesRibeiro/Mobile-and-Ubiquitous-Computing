@@ -9,6 +9,7 @@ import java.io.File;
 import cmov1819.p2photo.AddPhotosFragment;
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainMenuActivity;
+import cmov1819.p2photo.NewCatalogFragment;
 
 public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
@@ -24,5 +25,10 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
     public void addPhoto(FragmentActivity activity, String catalogId, File androidFilePath) {
         AddPhotosFragment.addPhotoWifiDirectArch(activity, catalogId, androidFilePath);
+    }
+
+    @Override
+    public void newCatalogSlice(Activity activity, String catalogID, String catalogTitle) {
+        NewCatalogFragment.newCatalogSliceWifiDirectArch(activity, catalogID, catalogTitle);
     }
 }

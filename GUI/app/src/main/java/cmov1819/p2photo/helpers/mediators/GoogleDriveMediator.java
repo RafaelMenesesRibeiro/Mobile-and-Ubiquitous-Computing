@@ -168,7 +168,7 @@ public class GoogleDriveMediator {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
                         }
                         else {
-                            NewCatalogFragment.newCatalogSlice(
+                            NewCatalogFragment.newCatalogSliceCloudArch(
                                     context,
                                     p2photoId,
                                     parentFolderFile.getId(),
