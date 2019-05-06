@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -192,12 +193,12 @@ public class NewCatalogFragment extends Fragment {
         // Create catalog.json file
         try {
             // Create file content representation
-            List<UserSlice> membersList = new ArrayList<>();
-            membersList.add(new UserSlice(username, new ArrayList<String>()));
+            Hashtable<String, List<String>> membersPhotosMap = new Hashtable<>();
+            membersPhotosMap.put(username, new ArrayList<String>());
             JSONObject catalogFile = new JSONObject();
             catalogFile.put("catalogId", catalogId);
             catalogFile.put("catalogTitle", catalogTitle);
-            catalogFile.put("members", membersList);
+            catalogFile.put("members", membersPhotosMap);
             // Write them to application storage space
             String filePath = catalogFolder.getAbsolutePath() + "/catalog.json";
             FileOutputStream outputStream = activity.openFileOutput(filePath, Context.MODE_PRIVATE);
@@ -213,7 +214,6 @@ public class NewCatalogFragment extends Fragment {
                                                         final String catalogId,
                                                         final JSONObject anotherCatalogFileContents) {
 
-        final String thisUsername = SessionManager.getUsername(activity);
         // Get catalog folder path from application private storage
         String catalogFolderDir = activity.getDir(catalogId, Context.MODE_PRIVATE).getAbsolutePath();
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
@@ -223,7 +223,7 @@ public class NewCatalogFragment extends Fragment {
             String thisCatalogFileContentsString = inputStreamToString(inputStream);
             JSONObject thisCatalogFileContents = new JSONObject(thisCatalogFileContentsString);
             JSONObject mergedCatalogFileContents =
-                    tryMergeCatalogFiles(thisUsername, thisCatalogFileContents, anotherCatalogFileContents);
+                    tryMergeCatalogFiles(thisCatalogFileContents, anotherCatalogFileContents);
 
         } catch (IOException | JSONException exc) {
             Toast.makeText(activity, "Couldn't read stored catalog slice", Toast.LENGTH_SHORT).show();
@@ -231,7 +231,7 @@ public class NewCatalogFragment extends Fragment {
         }
     }
 
-    private static JSONObject tryMergeCatalogFiles(String thisUsername, JSONObject thisFile, JSONObject otherFile)
+    private static JSONObject tryMergeCatalogFiles(JSONObject thisFile, JSONObject otherFile)
             throws JSONException {
 
         String thisId = thisFile.getString("catalogId");
@@ -241,9 +241,10 @@ public class NewCatalogFragment extends Fragment {
             return null;
         }
 
-        List<UserSlice> finalMembersList = new ArrayList<>();
         List<UserSlice> thisMembersList = jsonArrayToArrayList(thisFile.getJSONArray("members"));
-        List<UserSlice> anotherMembersLis = jsonArrayToArrayList(otherFile.getJSONArray("members"));
+        List<UserSlice> anotherMembersList = jsonArrayToArrayList(otherFile.getJSONArray("members"));
+
+        List<UserSlice> finalMembersList = processMemberLists(thisMembersList, anotherMembersList);
 
         JSONObject mergedCatalogFileContents = new JSONObject();
         mergedCatalogFileContents.put("catalogId", thisId);
@@ -251,6 +252,12 @@ public class NewCatalogFragment extends Fragment {
         mergedCatalogFileContents.put("members", finalMembersList);
 
         return mergedCatalogFileContents;
+    }
+
+    private static List<UserSlice> processMemberLists(List<UserSlice> thisMembersList, List<UserSlice> anotherMembersList) {
+        for (UserSlice userSlice : thisMembersList) {
+
+        }
     }
 
     public static List<UserSlice> jsonArrayToArrayList(JSONArray jsonArray) {
