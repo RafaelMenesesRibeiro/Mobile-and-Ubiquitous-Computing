@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +33,8 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
+import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
@@ -47,14 +48,9 @@ import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_GOOGLE_ID
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class AddPhotosFragment extends Fragment {
-    private static final String ADD_PHOTO_TAG = "ADD PHOTO FRAGMENT";
     public static final String CATALOG_ID_EXTRA = "catalogID";
 
     private View view;
-
-    private GoogleDriveMediator googleDriveMediator;
-    private AuthStateManager authStateManager;
-
     private ArrayList<String> catalogIDs;
     private Activity activity;
     private File selectedImage;
@@ -63,13 +59,8 @@ public class AddPhotosFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         this.activity = getActivity();
-        this.authStateManager = AuthStateManager.getInstance(this.getContext());
-        this.googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
-
         final View inflaterView = view = inflater.inflate(R.layout.fragment_add_photos, container, false);
-
         populate(inflaterView);
-
         return inflaterView;
     }
 
@@ -158,18 +149,37 @@ public class AddPhotosFragment extends Fragment {
         String catalogTitle = dropdown.getSelectedItem().toString();
         File androidFilePath = selectedImage;
 
-        HashMap<String, String> googleDriveIdentifiers = getGoogleDriveIdentifiers(catalogId);
+        try {
+            ArchitectureManager.systemArchitecture.addPhoto(getActivity(), catalogId, androidFilePath);
+            LogManager.logAddPhoto();
+            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+            mainMenuActivity.goToCatalog(catalogId, catalogTitle);
+        }
+        catch (NullPointerException | ClassCastException ex) {
+            Toast.makeText(activity, "Failed to add photo", LENGTH_SHORT).show();
+        }
+        catch (FailedOperationException ex) {
+            String msg = "Add Photo Operation unsuccessful";
+            LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
+        }
+    }
+
+    public static void addPhotoCloudArch(Activity activity, String catalogId, File androidFilePath)
+            throws FailedOperationException{
+        HashMap<String, String> googleDriveIdentifiers = getGoogleDriveIdentifiers(activity, catalogId);
 
         if (googleDriveIdentifiers == null) {
             String msg = "Failed to obtain googleDriveIdentifiers. Found ErrorResponse";
             LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
             Toast.makeText(activity, "Failed to add photo", LENGTH_SHORT).show();
-            return;
+            throw new FailedOperationException();
         }
 
         Map.Entry<String, String> onlyEntry = googleDriveIdentifiers.entrySet().iterator().next();
+        GoogleDriveMediator googleDriveMediator = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getGoogleDriveMediator(activity);
+        AuthStateManager authStateManager = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
         googleDriveMediator.newPhoto(
-                getContext(),
+                activity,
                 onlyEntry.getKey(),
                 onlyEntry.getValue(),
                 androidFilePath.getName(),
@@ -177,27 +187,21 @@ public class AddPhotosFragment extends Fragment {
                 androidFilePath,
                 authStateManager.getAuthState()
         );
-
-        LogManager.logAddPhoto();
-        try {
-            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-            mainMenuActivity.goToCatalog(catalogId, catalogTitle);
-        }
-        catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(activity, "Failed to add photo", LENGTH_SHORT).show();
-        }
     }
 
-    private HashMap<String, String> getGoogleDriveIdentifiers(String catalogId) {
+    public static void addPhotoWifiDirectArch(Activity activity, String catalogId, File androidFilePath) {
+        // TODO //
+    }
+
+    private static HashMap<String, String> getGoogleDriveIdentifiers(Activity activity, String catalogId) throws FailedOperationException {
         try {
-            Context context = getContext();
-            String baseUrl = getString(R.string.p2photo_host) + getString(R.string.get_google_identifiers);
+            String baseUrl = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_google_identifiers);
 
             String url = String.format(
-                    "%s?calleeUsername=%s&catalogId=%s", baseUrl, getUsername(getActivity()) , catalogId
+                    "%s?calleeUsername=%s&catalogId=%s", baseUrl, getUsername(activity) , catalogId
             );
 
-            RequestData requestData = new RequestData(getActivity(), GET_GOOGLE_IDENTIFIERS, url);
+            RequestData requestData = new RequestData(activity, GET_GOOGLE_IDENTIFIERS, url);
             ResponseData result = new QueryManager().execute(requestData).get();
 
             int code = result.getServerCode();
@@ -205,21 +209,25 @@ public class AddPhotosFragment extends Fragment {
                 String reason = ((ErrorResponse) result.getPayload()).getReason();
                 if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     LogManager.logError(LogManager.ADD_PHOTO_TAG, reason);
-                    Toast.makeText(context, "Session timed out, please login again", LENGTH_SHORT).show();
-                    context.startActivity(new Intent(context, LoginActivity.class));
+                    Toast.makeText(activity, "Session timed out, please login again", LENGTH_SHORT).show();
+                    activity.startActivity(new Intent(activity, LoginActivity.class));
                     return null;
                 }
                 else {
                     LogManager.logError(LogManager.ADD_PHOTO_TAG, reason);
-                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();
+                    Toast.makeText(activity, "Something went wrong", LENGTH_LONG).show();
                     return null;
                 }
-            } else {
-                Object resultObject = ((SuccessResponse)result.getPayload()).getResult();
-                HashMap<String, String> googleIdentifiersMap = (HashMap<String, String>) resultObject;
-                return googleIdentifiersMap;
             }
-        } catch (ExecutionException | InterruptedException ex) {
+            else {
+                Object resultObject = ((SuccessResponse)result.getPayload()).getResult();
+                return (HashMap<String, String>) resultObject;
+            }
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            String msg = "Operation unsuccessful. " + ex.getMessage();
+            LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
         }
     }

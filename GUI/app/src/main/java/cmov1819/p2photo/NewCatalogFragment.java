@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +17,13 @@ import android.widget.Toast;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -26,29 +31,27 @@ import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.CatalogUserPhotos;
+import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NewCatalogFragment extends Fragment {
-    private static final String NEW_CATALOG_TAG = "NEW CATALOG FRAGMENT";
-
-    private AuthStateManager authStateManager;
-    private GoogleDriveMediator googleDriveMediator;
     private Activity activity;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         activity = getActivity();
-        authStateManager = AuthStateManager.getInstance(this.getContext());
-        googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
         final View view = inflater.inflate(R.layout.fragment_new_catalog, container, false);
         populate(view);
         return view;
@@ -113,13 +116,7 @@ public class NewCatalogFragment extends Fragment {
                 throw new FailedOperationException();
             }
 
-            googleDriveMediator.newCatalogSlice(
-                    getActivity(),
-                    catalogTitle,
-                    catalogID,
-                    authStateManager.getAuthState()
-            );
-
+            ArchitectureManager.systemArchitecture.newCatalogSlice(activity, catalogID, catalogTitle);
             return catalogID;
         }
         catch (JSONException ex) {
@@ -131,11 +128,11 @@ public class NewCatalogFragment extends Fragment {
         }
     }
 
-    public static void newCatalogSlice(final Context context,
-                                       final String catalogId,
-                                       final String parentFolderGoogleId,
-                                       final String catalogFileGoogleId,
-                                       final String webContentLink) {
+    public static void newCatalogSliceCloudArch(final Context context,
+                                                final String catalogId,
+                                                final String parentFolderGoogleId,
+                                                final String catalogFileGoogleId,
+                                                final String webContentLink) {
         try {
 
             JSONObject requestBody = new JSONObject();
@@ -165,12 +162,48 @@ public class NewCatalogFragment extends Fragment {
                 }
                 else {
                     LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
-                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();;
+                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();
                 }
             }
 
-        } catch (JSONException | ExecutionException | InterruptedException ex) {
+        }
+        catch (JSONException ex) {
+            String msg = "JSONException: " + ex.getMessage();
+            LogManager.logError(LogManager.NEW_CATALOG_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            String msg = "New Catalog unsuccessful. " + ex.getMessage();
+            LogManager.logError(LogManager.NEW_CATALOG_TAG, msg);
+            throw new FailedOperationException(ex.getMessage());
+        }
+    }
+
+    public static void newCatalogSliceWifiDirectArch(final Activity activity,
+                                                     final String catalogId,
+                                                     final String catalogTitle) {
+
+        String username = SessionManager.getUsername(activity);
+        String error = "Failed to create catalog slice";
+        // Make catalog folder if it doesn't exist in private storage, otherwise retrieve it
+        java.io.File catalogFolder = activity.getDir(catalogId, Context.MODE_PRIVATE);
+        // Create catalog.json file
+        try {
+            // Create file content representation
+            List<CatalogUserPhotos> catalogFileContents = new ArrayList<>();
+            catalogFileContents.add(new CatalogUserPhotos(username, new ArrayList<String>()));
+            JSONObject catalogFile = new JSONObject();
+            catalogFile.put("catalogTitle", catalogTitle);
+            catalogFile.put("users", catalogFileContents);
+            // Write them to application storage space
+            String filePath = catalogFolder.getAbsolutePath() + "/catalog.json";
+            FileOutputStream outputStream = activity.openFileOutput(filePath, Context.MODE_PRIVATE);
+            outputStream.write(catalogFile.toString().getBytes("UTF-8"));
+            outputStream.close();
+        } catch (JSONException | IOException exc) {
+            Toast.makeText(activity, error, Toast.LENGTH_SHORT).show();
+            LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
         }
     }
 }

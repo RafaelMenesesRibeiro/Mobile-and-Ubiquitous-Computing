@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
-import android.util.Log;
 import android.util.Pair;
 import android.view.View;
 import android.widget.Toast;
@@ -169,7 +168,7 @@ public class GoogleDriveMediator {
                             Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
                         }
                         else {
-                            NewCatalogFragment.newCatalogSlice(
+                            NewCatalogFragment.newCatalogSliceCloudArch(
                                     context,
                                     p2photoId,
                                     parentFolderFile.getId(),

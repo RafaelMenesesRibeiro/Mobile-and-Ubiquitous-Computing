@@ -1,5 +1,6 @@
 package cmov1819.p2photo;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -13,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
@@ -27,6 +27,8 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
+import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
@@ -50,30 +52,21 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
-    private GoogleDriveMediator googleDriveMediator;
-    private AuthStateManager authStateManager;
-
     private static Resources resources;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-
         MainMenuActivity.resources = getResources();
 
-        this.authStateManager = AuthStateManager.getInstance(this);
-        this.googleDriveMediator = GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
-
-        dealWithPendingMemberships();
+        ArchitectureManager.systemArchitecture.handlePendingMemberships(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
@@ -142,34 +135,47 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     * MEMBERSHIP VERIFICATION METHODS
     ***********************************************************/
 
-    private void dealWithPendingMemberships() {
-        Map<String, String> membershipMapping = ViewUserCatalogsFragment.getMembershipGoogleDriveIDs(this);
-        for (String catalogId : membershipMapping.keySet()) {
+    public static void handlePendingMembershipsCloudArch(Activity activity) {
+        Map<String, String> membershipMapping = ViewUserCatalogsFragment.getMembershipGoogleDriveIDs(activity);
+        for (Map.Entry<String, String> entry : membershipMapping.entrySet()) {
             try {
-                if (membershipMapping.get(catalogId).equals("")) {
-                    completeJoinProcess(catalogId);
+                if (entry.getValue().equals("")) {
+                    completeJoinProcessCloudArch(activity, entry.getKey());
                 }
-            } catch (ExecutionException | InterruptedException exc) {
+            }
+            catch (ExecutionException | InterruptedException exc) {
                 // pass;
             }
         }
     }
 
-    private void completeJoinProcess(String catalogId) throws ExecutionException, InterruptedException {
-        String baseUrl = getString(R.string.p2photo_host) + getString(R.string.view_catalog_details);
-        String url = String.format("%s?catalogId=%s&calleeUsername=%s", baseUrl, catalogId, getUsername(this));
-        RequestData requestData = new RequestData(this, RequestData.RequestType.GET_CATALOG_TITLE, url);
+    private static void completeJoinProcessCloudArch(Activity activity, String catalogId) throws ExecutionException, InterruptedException {
+        String baseUrl = activity.getString(R.string.p2photo_host) + activity.getString(R.string.view_catalog_details);
+        String url = String.format("%s?catalogId=%s&calleeUsername=%s", baseUrl, catalogId, getUsername(activity));
+        RequestData requestData = new RequestData(activity, RequestData.RequestType.GET_CATALOG_TITLE, url);
         ResponseData result = new QueryManager().execute(requestData).get();
         int code = result.getServerCode();
         if (code == HttpURLConnection.HTTP_OK) {
             String catalogTitle = (String)((SuccessResponse)result.getPayload()).getResult();
-            googleDriveMediator.newCatalogSlice(this, catalogTitle, catalogId, authStateManager.getAuthState());
-        } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+            // TODO - If this is throwing exception, it may be because of the method CloudBackedArchitecture returns these. //
+            GoogleDriveMediator googleDriveMediator = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getGoogleDriveMediator(activity);
+            AuthStateManager authStateManager = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
+            googleDriveMediator.newCatalogSlice(activity, catalogTitle, catalogId, authStateManager.getAuthState());
+        }
+        else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
             String msg = ((ErrorResponse)result.getPayload()).getReason();
             LogManager.logWarning(MAIN_MENU_TAG, msg);
-            Toast.makeText(this, "Session timed out, please login again", LENGTH_SHORT).show();
-            this.startActivity(new Intent(this, LoginActivity.class));
+            Toast.makeText(activity, "Session timed out, please login again", LENGTH_SHORT).show();
+            activity.startActivity(new Intent(activity, LoginActivity.class));
         }
+    }
+
+    public static void handlePendingMembershipsWifiDirect(Activity activity) {
+        // TODO //
+    }
+
+    private static void completeJoinProcessWifiDirect(Activity activity, String catalogId) {
+        // TODO //
     }
 
     /**********************************************************

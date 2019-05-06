@@ -2,7 +2,6 @@ package cmov1819.p2photo.helpers.managers;
 
 import android.app.Activity;
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

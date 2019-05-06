@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -84,13 +83,11 @@ public class NewCatalogMemberFragment extends Fragment {
         try {
             addMember(catalogID, username);
             LogManager.logNewCatalogMember(catalogID, catalogTitle, username);
-            try {
-                MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
-                mainMenuActivity.goToCatalog(catalogID, catalogTitle);
-            }
-            catch (NullPointerException | ClassCastException ex) {
-                Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
-            }
+            MainMenuActivity mainMenuActivity = (MainMenuActivity) activity;
+            mainMenuActivity.goToCatalog(catalogID, catalogTitle);
+        }
+        catch (NullPointerException | ClassCastException ex) {
+            Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
         }
         catch (FailedOperationException foex) {
             Toast.makeText(activity, "The add user to album operation failed. Try again later", Toast.LENGTH_LONG).show();
@@ -151,8 +148,15 @@ public class NewCatalogMemberFragment extends Fragment {
                 throw new FailedOperationException();
             }
         }
-        catch (JSONException | ExecutionException | InterruptedException ex) {
+        catch (JSONException ex) {
+            String msg = "JSONException: " + ex.getMessage();
+            LogManager.logError(LogManager.NEW_CATALOG_MEMBER_TAG, msg);
+            throw new FailedOperationException(ex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
             Thread.currentThread().interrupt();
+            String msg = "New Catalog Member unsuccessful. " + ex.getMessage();
+            LogManager.logError(LogManager.NEW_CATALOG_MEMBER_TAG, msg);
             throw new FailedOperationException(ex.getMessage());
         }
     }
