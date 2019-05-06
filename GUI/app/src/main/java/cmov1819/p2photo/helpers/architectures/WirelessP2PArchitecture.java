@@ -6,11 +6,16 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -21,6 +26,8 @@ import cmov1819.p2photo.ViewCatalogFragment;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
+
+import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 
 public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
@@ -89,8 +96,25 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         LogManager.logViewCatalog(catalogID, catalogTitle);
     }
 
-    // TODO - @Francisco Barros //
-    public void updateCatalog(Activity activity, String catalogID, String username, String imageName) {
-        // TODO //
+    public void updateCatalog(Activity activity, String catalogId, String owner, String photoId) {
+        // Get catalog folder path from application private storage
+        String catalogFolderDir = activity.getDir(catalogId, Context.MODE_PRIVATE).getAbsolutePath();
+        // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
+        try {
+            // Load contents
+            String filePath = catalogFolderDir + "/catalog.json";
+            InputStream inputStream = activity.openFileInput(filePath);
+            JSONObject catalogFileContents = new JSONObject(inputStreamToString(inputStream));
+            // Append photoId to the user photoId arrays under memberPhotos dictionary
+            catalogFileContents.getJSONObject("membersPhotos").getJSONArray(owner).put(photoId);
+            // Save to disk
+            FileOutputStream outputStream = activity.openFileOutput(filePath, Context.MODE_PRIVATE);
+            outputStream.write(catalogFileContents.toString().getBytes("UTF-8"));
+            outputStream.close();
+
+        } catch (IOException | JSONException exc) {
+            Toast.makeText(activity, "Failed to add photo to catalog", Toast.LENGTH_SHORT).show();
+            LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
+        }
     }
 }
