@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,7 +72,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             throw new FailedOperationException(ex.getMessage());
         }
 
-        updateCatalog(activity, catalogId, SessionManager.getUsername(activity), filename);
+        updateCatalogFile(activity, catalogId, SessionManager.getUsername(activity), filename);
     }
 
     @Override
@@ -95,7 +94,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         LogManager.logViewCatalog(catalogID, catalogTitle);
     }
 
-    public void updateCatalog(Activity activity, String catalogId, String owner, String photoId) {
+    public void updateCatalogFile(Activity activity, String catalogId, String owner, String photoId) {
         // Get catalog folder path from application private storage
         String catalogFolderDir = activity.getDir(catalogId, Context.MODE_PRIVATE).getAbsolutePath();
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
