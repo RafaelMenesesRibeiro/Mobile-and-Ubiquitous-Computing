@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
@@ -254,49 +255,35 @@ public class NewCatalogFragment extends Fragment {
         return mergedCatalogFileContents;
     }
 
-    private static JSONObject processMembersMaps(JSONObject thisMembersPhotosMap, JSONObject anotherMembersPhotosMap) {
+    private static JSONObject processMembersMaps(JSONObject thisMap, JSONObject receivedMap) {
 
-        JSONObject mergedMembersPhotoMap = new JSONObject();
+        JSONObject mergedMap = new JSONObject();
 
-        Iterator<String> thisMembers = anotherMembersPhotosMap.keys();
-        while (thisMembers.hasNext()) {
+        Iterator<String> receivedMembers = receivedMap.keys();
+
+        while (receivedMembers.hasNext()) {
+            String currentMember = receivedMembers.next();
             try {
-                String currentMember = thisMembers.next();
-                JSONArray currentMemberPhotos = anotherMembersPhotosMap.getJSONArray(currentMember);
-                int currentMemberPhotosLength = currentMemberPhotos.length();
-                if (thisMembersPhotosMap.has(currentMember)) {
-                    JSONArray receivedCurrentMemberPhotos = thisMembersPhotosMap.getJSONArray(currentMember);
-                    int receivedCurrentMemberPhotosLength = receivedCurrentMemberPhotos.length();
-                    JSONArray mergedCurrentMemberPhotos = new JSONArray();
-                    for (int i = 0; i < currentMemberPhotosLength; i++) {
-                        // for each photo belonging to the current member, get it's identifier in the array
-                        String photoI = currentMemberPhotos.getString(i);
-                        for (int j = 0; j < receivedCurrentMemberPhotosLength; j++) {
-                            // iterate all photo belonging to current member in received catalog file & compare IDs
-                            String photoJ = receivedCurrentMemberPhotos.getString(j);
-                            if (photoI.equals(photoJ)) {
-                                // Stop search. Both catalog files have the current member photo, so we put
-                                mergedCurrentMemberPhotos.put(photoJ);
-                                break;
-                            } else if (j == receivedCurrentMemberPhotosLength - 1) {
-                                // If photos uuid didn't match and there are no more J photos, then J is missing photoI
-                                mergedCurrentMemberPhotos.put(photoI);
-                            }
-                        }
-                    }
-                    mergedMembersPhotoMap.put(currentMember, mergedCurrentMemberPhotos);
+                if (thisMap.has(currentMember)) {
+                    List<String> thisCurrentMemberPhotos = jsonArrayToArrayList(receivedMap.getJSONArray(currentMember));
+                    List<String> receivedCurrentMemberPhotos = jsonArrayToArrayList(thisMap.getJSONArray(currentMember));
+                    thisCurrentMemberPhotos.addAll(receivedCurrentMemberPhotos);
+                    List<String> mergedCurrentMemberPhotos =
+                            new ArrayList<>(new HashSet<>(thisCurrentMemberPhotos));
+
+                    mergedMap.put(currentMember, mergedCurrentMemberPhotos);
                 }
                 else {
-                    mergedMembersPhotoMap.put(currentMember, currentMemberPhotos);
+                    mergedMap.put(currentMember, receivedMap.getJSONArray(currentMember));
                 }
             } catch (JSONException jsone) {
                 continue;
             }
         }
-        return mergedMembersPhotoMap;
+        return mergedMap;
     }
 
-    public static List<UserSlice> jsonArrayToArrayList(JSONArray jsonArray) {
-        return new Gson().fromJson(jsonArray.toString(), new TypeToken<List<UserSlice>>(){}.getType());
+    public static List<String> jsonArrayToArrayList(JSONArray jsonArray) {
+        return new Gson().fromJson(jsonArray.toString(), new TypeToken<List<String>>(){}.getType());
     }
 }
