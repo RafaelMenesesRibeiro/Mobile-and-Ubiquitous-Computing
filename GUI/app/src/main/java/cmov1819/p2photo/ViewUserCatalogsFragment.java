@@ -64,7 +64,7 @@ public class ViewUserCatalogsFragment extends Fragment {
                     mainMenuActivity.goToCatalog(catalogIdList.get(position), catalogTitleList.get(position));
                 }
                 catch (NullPointerException | ClassCastException ex) {
-                    Toast.makeText(activity, "Could not present album", Toast.LENGTH_LONG).show();
+                    LogManager.toast(activity, "Could not present album");
                 }
             }
         });

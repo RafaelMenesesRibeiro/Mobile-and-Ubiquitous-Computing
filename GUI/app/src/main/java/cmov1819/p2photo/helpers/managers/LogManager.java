@@ -1,6 +1,8 @@
 package cmov1819.p2photo.helpers.managers;
 
+import android.app.Activity;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -202,5 +204,13 @@ public class LogManager {
         String toLog = "\nDate: " + currentDateTimeString + "\n" + msg;
         Log.w(tag, toLog);
         logText += "\n" + toLog;
+    }
+
+    /**********************************************************
+     * TOAST MAKER
+     ***********************************************************/
+
+    public static void toast(Activity activity, String msg) {
+        Toast.makeText(activity, msg, Toast.LENGTH_LONG).show();
     }
 }

@@ -165,7 +165,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
             String msg = ((ErrorResponse)result.getPayload()).getReason();
             LogManager.logWarning(MAIN_MENU_TAG, msg);
-            Toast.makeText(activity, "Session timed out, please login again", LENGTH_SHORT).show();
+            LogManager.toast(activity, "Session timed out, please login again");
             activity.startActivity(new Intent(activity, LoginActivity.class));
         }
     }

@@ -111,7 +111,7 @@ public class AuthStateManager {
 
     @Deprecated
     public void getAuthorization(final Context context, String reason, boolean forceFinish) {
-        Toast.makeText(context, reason, LENGTH_SHORT).show();
+        LogManager.toast((Activity) context, reason);
         clearAuthState();
         context.startActivity(new Intent(context, LoginActivity.class));
         if (forceFinish) { ((Activity)context).finish(); }
@@ -204,7 +204,7 @@ public class AuthStateManager {
                 if (error != null) {
                     String msg = "Token exchange <AuthorizationResponse> had <AuthorizationException>";
                     LogManager.logError(AUTH_MGR_TAG, msg);
-                    Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
+                    LogManager.toast((Activity) context, AUTH_FAILURE);
                 }
                 else {
                     if (response != null) {
@@ -213,7 +213,7 @@ public class AuthStateManager {
                     else {
                         String msg = "Could not obtain <TokenResponse> from <AuthorizationResponse>";
                         LogManager.logError(AUTH_MGR_TAG, msg);
-                        Toast.makeText(context, AUTH_FAILURE, LENGTH_SHORT).show();
+                        LogManager.toast((Activity) context, AUTH_FAILURE);
                     }
                 }
             }
