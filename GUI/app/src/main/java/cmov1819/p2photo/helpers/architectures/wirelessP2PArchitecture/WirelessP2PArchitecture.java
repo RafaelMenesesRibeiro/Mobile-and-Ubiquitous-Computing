@@ -134,7 +134,8 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
             outputStream.write(catalogFile.toString().getBytes("UTF-8"));
             outputStream.close();
-        } catch (JSONException | IOException exc) {
+        }
+        catch (JSONException | IOException exc) {
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
             LogManager.toast(activity, "Failed to create catalog slice");
         }
