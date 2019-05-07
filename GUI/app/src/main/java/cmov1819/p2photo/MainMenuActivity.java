@@ -49,6 +49,7 @@ import cmov1819.p2photo.msgtypes.SuccessResponse;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
+import pt.inesc.termite.wifidirect.SimWifiP2pManager.Channel;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 
 import static android.widget.Toast.LENGTH_SHORT;
@@ -78,7 +79,7 @@ public class MainMenuActivity
 
     private SimWifiP2pManager simWifiP2pManager;
     private SimWifiP2pBroadcastReceiver simWifiP2pBroadcastReceiver;
-    private SimWifiP2pManager.Channel channel;
+    private Channel channel;
     private Boolean isBound = false;
 
     private OnClickListener listenerWifiSwitchButton = new OnClickListener() {
@@ -95,6 +96,9 @@ public class MainMenuActivity
         }
     };
 
+    /*
+    *
+    */
     private OnClickListener listenerInRangeButton = new OnClickListener() {
         public void onClick(View v){
             if (isBound) {
