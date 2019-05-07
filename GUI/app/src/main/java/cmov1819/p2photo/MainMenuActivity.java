@@ -112,23 +112,7 @@ public class MainMenuActivity
         }
     };
 
-    private ServiceConnection mConnection = new ServiceConnection() {
-        // callbacks for service binding, passed to bindService()
-
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            simWifiP2pManager = new SimWifiP2pManager(new Messenger(service));
-            channel = simWifiP2pManager.initialize(getApplication(), getMainLooper(), null);
-            isBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            simWifiP2pManager = null;
-            channel = null;
-            isBound = false;
-        }
-    };
+    private ServiceConnection mConnection =
 
     /*
      * Termite listeners
