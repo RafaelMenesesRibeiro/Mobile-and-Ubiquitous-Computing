@@ -265,13 +265,11 @@ public class LoginActivity extends AppCompatActivity {
         LogManager.logInfo(LogManager.LOGIN_TAG, msg);
         AuthStateManager authStateManager  = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
         if (authStateManager.hasValidAuthState()) {
-            msg = "Valid authentication state >>> starting new MainMenuActivity...";
-            LogManager.logInfo(LogManager.LOGIN_TAG, msg);
+            LogManager.logInfo(LogManager.LOGIN_TAG, "Valid authentication state");
             goHome(activity);
         }
         else {
-            msg = "Invalid authentication state >>> starting AuthenticationActivity...";
-            LogManager.logInfo(LogManager.LOGIN_TAG, msg);
+            LogManager.logInfo(LogManager.LOGIN_TAG, "Invalid authentication state");
             AuthorizationRequest authorizationRequest = authStateManager.getAuthorizationRequest();
             Intent authenticationIntent = new Intent(activity, AuthenticationActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(
