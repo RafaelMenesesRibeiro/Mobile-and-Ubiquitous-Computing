@@ -3,6 +3,7 @@ package cmov1819.p2photo;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.net.wifi.aware.WifiAwareManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -27,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.WifiDirectBroadcastReceiver;
 import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
@@ -49,6 +51,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     public static final String START_SCREEN = "initialScreen";
     public static final String HOME_SCREEN = SearchUserFragment.class.getName();
 
+    private static final WifiDirectBroadcastReceiver wifiDirectBroadcastReceiver;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
@@ -71,6 +74,7 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+        this.wifiDirectBroadcastReceiver = new WifiDirectBroadcastReceiver(this);
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
             goHome();
