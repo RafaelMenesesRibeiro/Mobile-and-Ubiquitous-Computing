@@ -1,21 +1,30 @@
 package cmov1819.p2photo;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Messenger;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -37,9 +46,13 @@ import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
-import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
+import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
+import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
+import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 
+import static android.widget.Toast.LENGTH_SHORT;
+import static android.widget.Toast.makeText;
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
@@ -50,7 +63,10 @@ import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_NETWORK_M
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION;
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION;
 
-public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainMenuActivity
+        extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener, SimWifiP2pManager.PeerListListener {
+
     public static final String MAIN_MENU_TAG = "MAIN MENU ACTIVITY";
     public static final String START_SCREEN = "initialScreen";
     public static final String HOME_SCREEN = SearchUserFragment.class.getName();
@@ -64,6 +80,80 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     private SimWifiP2pBroadcastReceiver simWifiP2pBroadcastReceiver;
     private SimWifiP2pManager.Channel channel;
     private Boolean isBound = false;
+
+    /*
+     * Listeners associated to buttons
+     */
+
+    private OnClickListener listenerWifiOnButton = new OnClickListener() {
+        public void onClick(View v){
+            Intent intent = new Intent(v.getContext(), SimWifiP2pService.class);
+            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+            isBound = true;
+        }
+    };
+
+    private OnClickListener listenerWifiOffButton = new OnClickListener() {
+        public void onClick(View v){
+            if (isBound) {
+                unbindService(mConnection);
+                isBound = false;
+            }
+        }
+    };
+
+    private OnClickListener listenerInRangeButton = new OnClickListener() {
+        public void onClick(View v){
+            if (isBound) {
+                simWifiP2pManager.requestPeers(channel,MainMenuActivity.this);
+            } else {
+                makeText(v.getContext(), "Service not bound", LENGTH_SHORT).show();
+            }
+        }
+    };
+
+    private ServiceConnection mConnection = new ServiceConnection() {
+        // callbacks for service binding, passed to bindService()
+
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            simWifiP2pManager = new SimWifiP2pManager(new Messenger(service));
+            channel = simWifiP2pManager.initialize(getApplication(), getMainLooper(), null);
+            isBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            simWifiP2pManager = null;
+            channel = null;
+            isBound = false;
+        }
+    };
+
+    /*
+     * Termite listeners
+     */
+
+    @Override
+    public void onPeersAvailable(SimWifiP2pDeviceList peers) {
+        StringBuilder peersString = new StringBuilder();
+
+        // compile list of devices in range
+        for (SimWifiP2pDevice device : peers.getDeviceList()) {
+            String deviceString = "" + device.deviceName + " (" + device.getVirtIp() + ")\n";
+            peersString.append(deviceString);
+        }
+
+        // display list of devices in range
+        new AlertDialog.Builder(this)
+                .setTitle("Devices in WiFi Range")
+                .setMessage(peersString.toString())
+                .setNeutralButton("Dismiss", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        // TODO
+                    }
+                }).show();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +177,12 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         if (savedInstanceState == null) {
             goHome(); // Go to application main page;
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(simWifiP2pBroadcastReceiver);
     }
 
     private void registerBroadcastReceiver() {
