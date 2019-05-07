@@ -51,6 +51,7 @@ import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.Channel;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 
 import static android.widget.Toast.LENGTH_SHORT;
 import static android.widget.Toast.makeText;
@@ -184,6 +185,7 @@ public class MainMenuActivity
     }
 
     private void registerBroadcastReceiver() {
+        SimWifiP2pSocketManager.Init(getApplicationContext());
         // register broadcast receiver
         IntentFilter filter = new IntentFilter();
         filter.addAction(WIFI_P2P_STATE_CHANGED_ACTION);
