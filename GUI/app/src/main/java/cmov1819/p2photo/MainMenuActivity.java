@@ -3,7 +3,6 @@ package cmov1819.p2photo;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.net.wifi.aware.WifiAwareManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -18,7 +17,6 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -39,7 +37,6 @@ import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static android.widget.Toast.LENGTH_SHORT;
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
@@ -51,9 +48,9 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     public static final String START_SCREEN = "initialScreen";
     public static final String HOME_SCREEN = SearchUserFragment.class.getName();
 
-    private static final WifiDirectBroadcastReceiver wifiDirectBroadcastReceiver;
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
+    private WifiDirectBroadcastReceiver wdBroadcastReceiver;
 
     private static Resources resources;
 
@@ -74,10 +71,10 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        this.wifiDirectBroadcastReceiver = new WifiDirectBroadcastReceiver(this);
+        this.wdBroadcastReceiver = new WifiDirectBroadcastReceiver(this);
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
-            goHome();
+            goHome(); // Go to application main page;
         }
     }
 
