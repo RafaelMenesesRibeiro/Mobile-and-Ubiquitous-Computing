@@ -114,7 +114,7 @@ public class MainMenuActivity
     };
 
     private ServiceConnection connection = new ServiceConnection() {
-        // callbacks for service binding, passed to bindService()
+        // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             simWifiP2pManager = new SimWifiP2pManager(new Messenger(service));
