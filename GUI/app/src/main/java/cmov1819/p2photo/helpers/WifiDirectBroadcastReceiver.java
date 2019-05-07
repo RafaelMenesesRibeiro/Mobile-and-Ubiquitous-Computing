@@ -1,17 +1,15 @@
 package cmov1819.p2photo.helpers;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.widget.Toast;
 
 import cmov1819.p2photo.MainMenuActivity;
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 
-import static android.widget.Toast.makeText;
 import static android.widget.Toast.LENGTH_SHORT;
+import static android.widget.Toast.makeText;
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.EXTRA_GROUP_INFO;
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION;
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION;
