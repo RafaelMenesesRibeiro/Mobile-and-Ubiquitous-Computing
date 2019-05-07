@@ -29,7 +29,6 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
-import cmov1819.p2photo.helpers.architectures.WirelessP2PArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -109,7 +108,7 @@ public class LoginActivity extends AppCompatActivity {
         String passwordValue = passwordEditText.getText().toString().trim();
 
         if (usernameValue.equals("") || passwordValue.equals("")) {
-            Toast.makeText(this, "Fill in username and password", LENGTH_LONG).show();
+            LogManager.toast(this, "Fill in username and password");
             return;
         }
 
@@ -136,7 +135,7 @@ public class LoginActivity extends AppCompatActivity {
             if (code == HttpURLConnection.HTTP_OK) {
                 msg = "Sign Up successful";
                 LogManager.logInfo(LogManager.SIGN_UP_TAG, msg);
-                Toast.makeText(getApplicationContext(), "Created account successfully", LENGTH_LONG).show();
+                LogManager.toast(this, "Created account successfully");
                 return true;
             } else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
@@ -144,20 +143,23 @@ public class LoginActivity extends AppCompatActivity {
                 if (reason.equals(getString(R.string.bad_user))) {
                     msg = "Sign Up unsuccessful. Username does not abide the rules... ";
                     LogManager.logError(LogManager.SIGN_UP_TAG, msg);
-                    Toast.makeText(getApplicationContext(), getString(R.string.bad_user), LENGTH_LONG).show();
-                } else if (reason.equals(getString(R.string.bad_pass))) {
+                    LogManager.toast(this, getString(R.string.bad_user));
+                }
+                else if (reason.equals(getString(R.string.bad_pass))) {
                     msg = "Sign Up unsuccessful the password does not abide the rules... ";
                     LogManager.logError(LogManager.SIGN_UP_TAG, msg);
-                    Toast.makeText(getApplicationContext(), getString(R.string.bad_pass), LENGTH_LONG).show();
+                    LogManager.toast(this, getString(R.string.bad_pass));
                 }
-            } else if (code == 422) {
+            }
+            else if (code == 422) {
                 msg = "Sign Up unsuccessful. The chosen username already exists.";
                 LogManager.logError(LogManager.SIGN_UP_TAG, msg);
-                Toast.makeText(getApplicationContext(), "Chosen username already exists. Choose another...", LENGTH_LONG).show();
-            } else {
+                LogManager.toast(this, "Chosen username already exists. Choose another...");
+            }
+            else {
                 msg = "Sign Up unsuccessful. Server response code: " + code;
                 LogManager.logError(LogManager.SIGN_UP_TAG, msg);
-                Toast.makeText(getApplicationContext(), "Unexpected error, try later...", LENGTH_LONG).show();
+                LogManager.toast(this, "Unexpected error, try later...");
             }
 
             return false;
@@ -219,21 +221,19 @@ public class LoginActivity extends AppCompatActivity {
                 (findViewById(R.id.passwordInputBox)).setVisibility(View.INVISIBLE);
                 msg = "Login operation succeded";
                 LogManager.logInfo(LogManager.LOGIN_TAG, msg);
-                Toast.makeText(getApplicationContext(), "Welcome " + username, LENGTH_LONG).show();
+                LogManager.toast(this, "Welcome " + username);
                 updateUsername(this, username);
             }
             else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 msg = "Login operation failed. The username or password are incorrect.";
                 LogManager.logError(LogManager.LOGIN_TAG, msg);
-                msg = "Incorrect credential combination";
-                Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
+                LogManager.toast(this, "Incorrect credential combination");
                 throw new FailedLoginException(msg);
             }
             else {
                 msg = "Login operation failed. Server error with response code: " + code;
                 LogManager.logError(LogManager.LOGIN_TAG, msg);
-                msg = "Unexpected error... Try again later";
-                Toast.makeText(getApplicationContext(), msg, LENGTH_LONG).show();
+                LogManager.toast(this, "Unexpected error... Try again later");
                 throw new FailedLoginException(msg);
             }
         }
@@ -250,6 +250,12 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    public static void goHome(Activity activity) {
+        Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
+        mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
+        activity.startActivity(mainMenuActivityIntent);
+    }
+
     /**********************************************************
      * GOOGLE API OAUTH HELPERS
      ***********************************************************/
@@ -257,17 +263,15 @@ public class LoginActivity extends AppCompatActivity {
     public static void tryEnablingPostAuthorizationFlows(View view, Activity activity) {
         String msg = "Trying to enable post authorization flows...";
         LogManager.logInfo(LogManager.LOGIN_TAG, msg);
-        AuthStateManager authStateManager  = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
+        AuthStateManager authStateManager =
+                ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
+        
         if (authStateManager.hasValidAuthState()) {
-            msg = "Valid authentication state >>> starting new MainMenuActivity...";
-            LogManager.logInfo(LogManager.LOGIN_TAG, msg);
-            Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
-            mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
-            activity.startActivity(mainMenuActivityIntent);
+            LogManager.logInfo(LogManager.LOGIN_TAG, "Valid authentication state");
+            goHome(activity);
         }
         else {
-            msg = "Invalid authentication state >>> starting AuthenticationActivity...";
-            LogManager.logInfo(LogManager.LOGIN_TAG, msg);
+            LogManager.logInfo(LogManager.LOGIN_TAG, "Invalid authentication state");
             AuthorizationRequest authorizationRequest = authStateManager.getAuthorizationRequest();
             Intent authenticationIntent = new Intent(activity, AuthenticationActivity.class);
             PendingIntent pendingIntent = PendingIntent.getActivity(

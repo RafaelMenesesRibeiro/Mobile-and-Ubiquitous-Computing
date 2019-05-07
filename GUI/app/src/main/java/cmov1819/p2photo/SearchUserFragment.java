@@ -51,7 +51,7 @@ public class SearchUserFragment extends Fragment {
     public void searchUserClicked(View view) throws BadInputException {
         String username = ((EditText) view.findViewById(R.id.usernameInputBox)).getText().toString();
         if (username.equals("")) {
-            Toast.makeText(this.getContext(), "The username cannot be empty.", Toast.LENGTH_LONG).show();
+            LogManager.toast(this.getActivity(), "The username cannot be empty.");
             return;
         }
         try {
@@ -61,13 +61,13 @@ public class SearchUserFragment extends Fragment {
             mainMenuActivity.goToListUsers(new ArrayList<>(usernames.keySet()));
         }
         catch (NoResultsException nrex) {
-            Toast.makeText(activity, "No results were found", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "No results were found");
         }
         catch (FailedOperationException foex) {
-            Toast.makeText(activity, "No users found", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "No users found");
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(activity, "Could not present users list", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "Could not present users list");
         }
     }
 

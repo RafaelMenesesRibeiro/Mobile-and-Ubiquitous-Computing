@@ -166,10 +166,6 @@ public class ViewCatalogFragment extends Fragment {
         LogManager.logViewCatalog(catalogID, catalogTitle);
     }
 
-    public static void populateGridWifiDirectArch(Activity activity, View view, String catalogID, String catalogTitle) {
-        // TODO //
-    }
-
     public static void drawImages(View view, final Context context, List<Bitmap> contents) {
         GridView grid = view.findViewById(R.id.catalogGrid);
         Adapter adapter = grid.getAdapter();
@@ -183,12 +179,6 @@ public class ViewCatalogFragment extends Fragment {
             }
         }
         grid.setAdapter(new ImageGridAdapter(context, contents));
-        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(context, "IMAGE WAS CLICKED: " + position, Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     private void addUserClicked() {
@@ -197,7 +187,7 @@ public class ViewCatalogFragment extends Fragment {
             mainMenuActivity.goToAddUser(catalogID);
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(getContext(), "Could not present add new member screen", Toast.LENGTH_LONG).show();
+            LogManager.toast(getActivity(),"Could not present add new member screen");
         }
     }
 
@@ -207,7 +197,7 @@ public class ViewCatalogFragment extends Fragment {
             mainMenuActivity.goToAddPhoto(catalogID);
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(getContext(), "Could not present add new photo screen", Toast.LENGTH_LONG).show();
+            LogManager.toast(getActivity(), "Could not present add new photo screen");
         }
     }
 

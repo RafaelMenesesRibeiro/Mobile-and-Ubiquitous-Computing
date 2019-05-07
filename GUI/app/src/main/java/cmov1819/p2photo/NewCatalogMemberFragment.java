@@ -76,7 +76,7 @@ public class NewCatalogMemberFragment extends Fragment {
         String username = usernameInput.getText().toString();
 
         if (username.equals("")) {
-            Toast.makeText(getContext(), "The username cannot by empty", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "The username cannot by empty");
             return;
         }
 
@@ -87,16 +87,16 @@ public class NewCatalogMemberFragment extends Fragment {
             mainMenuActivity.goToCatalog(catalogID, catalogTitle);
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(activity, "Could not present new album", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "Could not present new album");
         }
         catch (FailedOperationException foex) {
-            Toast.makeText(activity, "The add user to album operation failed. Try again later", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "The add user to album operation failed. Try again later");
         }
         catch (NoMembershipException nmex) {
-            Toast.makeText(activity, "The add user to album operation failed. No membership", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "The add user to album operation failed. No membership");
         }
         catch (UsernameException uex) {
-            Toast.makeText(activity, "The add user to album operation failed. User does not exist", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "The add user to album operation failed. User does not exist");
         }
     }
 

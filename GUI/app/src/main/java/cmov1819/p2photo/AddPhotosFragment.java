@@ -156,7 +156,7 @@ public class AddPhotosFragment extends Fragment {
             mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(activity, "Failed to add photo", LENGTH_SHORT).show();
+            LogManager.toast(activity, "Failed to add photo");
         }
         catch (FailedOperationException ex) {
             String msg = "Add Photo Operation unsuccessful";
@@ -171,7 +171,7 @@ public class AddPhotosFragment extends Fragment {
         if (googleDriveIdentifiers == null) {
             String msg = "Failed to obtain googleDriveIdentifiers. Found ErrorResponse";
             LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
-            Toast.makeText(activity, "Failed to add photo", LENGTH_SHORT).show();
+            LogManager.toast(activity, "Failed to add photo");
             throw new FailedOperationException();
         }
 
@@ -187,10 +187,6 @@ public class AddPhotosFragment extends Fragment {
                 androidFilePath,
                 authStateManager.getAuthState()
         );
-    }
-
-    public static void addPhotoWifiDirectArch(Activity activity, String catalogId, File androidFilePath) {
-        // TODO //
     }
 
     private static HashMap<String, String> getGoogleDriveIdentifiers(Activity activity, String catalogId) throws FailedOperationException {
@@ -209,13 +205,13 @@ public class AddPhotosFragment extends Fragment {
                 String reason = ((ErrorResponse) result.getPayload()).getReason();
                 if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     LogManager.logError(LogManager.ADD_PHOTO_TAG, reason);
-                    Toast.makeText(activity, "Session timed out, please login again", LENGTH_SHORT).show();
+                    LogManager.toast(activity, "Session timed out, please login again");
                     activity.startActivity(new Intent(activity, LoginActivity.class));
                     return null;
                 }
                 else {
                     LogManager.logError(LogManager.ADD_PHOTO_TAG, reason);
-                    Toast.makeText(activity, "Something went wrong", LENGTH_LONG).show();
+                    LogManager.toast(activity, "Something went wrong");
                     return null;
                 }
             }

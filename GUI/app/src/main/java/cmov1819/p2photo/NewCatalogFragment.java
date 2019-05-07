@@ -14,16 +14,26 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -31,19 +41,16 @@ import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.CatalogUserPhotos;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
-import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
-import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static android.widget.Toast.LENGTH_LONG;
+import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NewCatalogFragment extends Fragment {
     private Activity activity;
@@ -74,8 +81,7 @@ public class NewCatalogFragment extends Fragment {
         String catalogTitle = titleInput.getText().toString();
 
         if (catalogTitle.equals("")) {
-            Toast toast = Toast.makeText(this.getContext(), "Enter a name for the album", Toast.LENGTH_LONG);
-            toast.show();
+            LogManager.toast(activity, "Enter a name for the album");
             return;
         }
 
@@ -86,10 +92,10 @@ public class NewCatalogFragment extends Fragment {
             mainMenuActivity.goToCatalog(catalogId, catalogTitle);
         }
         catch (FailedOperationException foex) {
-            Toast.makeText(this.getContext(), "The create catalog operation failed. Try again later", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "The create catalog operation failed. Try again later");
         }
         catch (NullPointerException | ClassCastException ex) {
-            Toast.makeText(activity, "Could not present new catalog", Toast.LENGTH_LONG).show();
+            LogManager.toast(activity, "Could not present new catalog");
         }
     }
 
@@ -157,12 +163,12 @@ public class NewCatalogFragment extends Fragment {
                 String reason = ((ErrorResponse) result.getPayload()).getReason();
                 if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
-                    Toast.makeText(context, "Session timed out, please login again", Toast.LENGTH_SHORT).show();
+                    LogManager.toast(((Activity) context), "Session timed out, please login again");
                     context.startActivity(new Intent(context, LoginActivity.class));
                 }
                 else {
                     LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
-                    Toast.makeText(context, "Something went wrong", LENGTH_LONG).show();
+                    LogManager.toast(((Activity) context), "Something went wrong");
                 }
             }
 
@@ -184,26 +190,105 @@ public class NewCatalogFragment extends Fragment {
                                                      final String catalogId,
                                                      final String catalogTitle) {
 
-        String username = SessionManager.getUsername(activity);
-        String error = "Failed to create catalog slice";
+        final String username = SessionManager.getUsername(activity);
+
         // Make catalog folder if it doesn't exist in private storage, otherwise retrieve it
         java.io.File catalogFolder = activity.getDir(catalogId, Context.MODE_PRIVATE);
         // Create catalog.json file
         try {
+
             // Create file content representation
-            List<CatalogUserPhotos> catalogFileContents = new ArrayList<>();
-            catalogFileContents.add(new CatalogUserPhotos(username, new ArrayList<String>()));
+            Map<String, List<String>> membersPhotosMap = new HashMap<>();
+            membersPhotosMap.put(username, new ArrayList<String>());
+            JSONObject memberPhotosMapObject = new JSONObject(membersPhotosMap);
+
             JSONObject catalogFile = new JSONObject();
+            catalogFile.put("catalogId", catalogId);
             catalogFile.put("catalogTitle", catalogTitle);
-            catalogFile.put("users", catalogFileContents);
+            catalogFile.put("membersPhotos", memberPhotosMapObject);
             // Write them to application storage space
-            String filePath = catalogFolder.getAbsolutePath() + "/catalog.json";
-            FileOutputStream outputStream = activity.openFileOutput(filePath, Context.MODE_PRIVATE);
+            String fileName = String.format("catalog_%s.json", catalogId);
+            FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
             outputStream.write(catalogFile.toString().getBytes("UTF-8"));
             outputStream.close();
         } catch (JSONException | IOException exc) {
-            Toast.makeText(activity, error, Toast.LENGTH_SHORT).show();
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
+            LogManager.toast(activity, "Failed to create catalog slice");
         }
+    }
+
+    public static void mergeCatalogSlicesWifiDirectArch(final Activity activity,
+                                                        final String catalogId,
+                                                        final JSONObject anotherCatalogFileContents) {
+
+        // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
+        try {
+            // Load contents
+            String fileName = String.format("catalog_%s.json", catalogId);
+            InputStream inputStream = activity.openFileInput(fileName);
+            String thisCatalogFileContentsString = inputStreamToString(inputStream);
+            JSONObject thisCatalogFileContents = new JSONObject(thisCatalogFileContentsString);
+            JSONObject mergedContents =  mergeCatalogFileContents(thisCatalogFileContents, anotherCatalogFileContents);
+            if (mergedContents == null) {
+                Toast.makeText(activity, "Couldn't update catalog file", Toast.LENGTH_SHORT).show();
+                LogManager.logWarning(LogManager.NEW_CATALOG_SLICE_TAG, "Catalog merging resulted in null JSONObject");
+            } else {
+                FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
+                outputStream.write(mergedContents.toString().getBytes("UTF-8"));
+                outputStream.close();
+            }
+        } catch (IOException | JSONException exc) {
+            LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
+            LogManager.toast(activity, "Couldn't read stored catalog slice");
+        }
+    }
+
+    private static JSONObject mergeCatalogFileContents(JSONObject thisFile, JSONObject otherFile) throws JSONException {
+        String thisId = thisFile.getString("catalogId");
+        String otherId = otherFile.getString("catalogId");
+
+        if (!thisId.equals(otherId)) {
+            return null;
+        }
+
+        JSONObject thisMembersPhotosMap = thisFile.getJSONObject("membersPhotos");
+        JSONObject anotherMembersPhotosMap = otherFile.getJSONObject("membersPhotos");
+
+        JSONObject mergedMembersPhotoMap = mergeMaps(thisMembersPhotosMap, anotherMembersPhotosMap);
+
+        JSONObject mergedCatalogFileContents = new JSONObject();
+        mergedCatalogFileContents.put("catalogId", thisId);
+        mergedCatalogFileContents.put("catalogTitle", thisFile.getString("catalogTitle"));
+        mergedCatalogFileContents.put("membersPhotos", mergedMembersPhotoMap);
+
+        return mergedCatalogFileContents;
+    }
+
+    private static JSONObject mergeMaps(JSONObject thisMap, JSONObject receivedMap) {
+        JSONObject mergedMap = new JSONObject();
+        Iterator<String> receivedMembers = receivedMap.keys();
+        while (receivedMembers.hasNext()) {
+            String currentMember = receivedMembers.next();
+            try {
+                if (thisMap.has(currentMember)) {
+                    List<String> thisCurrentMemberPhotos = jsonArrayToArrayList(receivedMap.getJSONArray(currentMember));
+                    List<String> receivedCurrentMemberPhotos = jsonArrayToArrayList(thisMap.getJSONArray(currentMember));
+                    thisCurrentMemberPhotos.addAll(receivedCurrentMemberPhotos);
+                    List<String> mergedCurrentMemberPhotos = new ArrayList<>(new HashSet<>(thisCurrentMemberPhotos));
+                    mergedMap.put(currentMember, mergedCurrentMemberPhotos);
+                }
+                else {
+                    mergedMap.put(currentMember, receivedMap.getJSONArray(currentMember));
+                }
+            } catch (JSONException jsone) {
+                continue;
+            }
+        }
+        return mergedMap;
+    }
+
+    public static List<String> jsonArrayToArrayList(JSONArray jsonArray) {
+        //noinspection UnstableApiUsage
+        return new Gson().fromJson(jsonArray.toString(), new TypeToken<List<String>>(){}.getType());
     }
 }

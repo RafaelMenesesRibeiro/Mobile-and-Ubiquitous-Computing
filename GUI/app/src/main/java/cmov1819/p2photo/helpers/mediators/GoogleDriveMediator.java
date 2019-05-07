@@ -1,6 +1,7 @@
 package cmov1819.p2photo.helpers.mediators;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -29,12 +30,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -47,6 +46,10 @@ import cmov1819.p2photo.NewCatalogFragment;
 import cmov1819.p2photo.ViewCatalogFragment;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import okhttp3.MediaType;
+
+import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayOutputStreamToBitmap;
+import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToBitmap;
+import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 
 @SuppressLint("StaticFieldLeak")
 public class GoogleDriveMediator {
@@ -165,7 +168,7 @@ public class GoogleDriveMediator {
                         File parentFolderFile = files.first;
                         File catalogJsonFile = files.second;
                         if (catalogJsonFile == null) {
-                            Toast.makeText(context, "Couldn't create catalog", Toast.LENGTH_LONG).show();
+                            LogManager.toast((Activity) context, "Couldn't create catalog");
                         }
                         else {
                             NewCatalogFragment.newCatalogSliceCloudArch(
@@ -175,7 +178,7 @@ public class GoogleDriveMediator {
                                     catalogJsonFile.getId(),
                                     catalogJsonFile.getWebContentLink()
                             );
-                            Toast.makeText(context, "Catalog created", Toast.LENGTH_LONG).show();
+                            LogManager.toast((Activity) context, "Catalog created");
                         }
                     }
                 }.execute(accessToken);
@@ -242,9 +245,10 @@ public class GoogleDriveMediator {
                     @Override
                     protected void onPostExecute(File file) {
                         if (file == null) {
-                            Toast.makeText(context, "Couldn't upload photo", Toast.LENGTH_LONG).show();
-                        } else {
-                            Toast.makeText(context, "Upload complete", Toast.LENGTH_LONG).show();
+                            LogManager.toast((Activity) context, "Couldn't upload photo");
+                        }
+                        else {
+                            LogManager.toast((Activity) context, "Upload complete");
                         }
                     }
                 }.execute(accessToken);
@@ -411,14 +415,7 @@ public class GoogleDriveMediator {
                 .get(googleDriveCatalogId)
                 .executeMediaAsInputStream();
 
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        String line;
-        StringBuilder stringBuilder = new StringBuilder();
-        while ((line = bufferedReader.readLine()) != null) {
-            stringBuilder.append(line);
-        }
-
-        return stringBuilder.toString();
+        return inputStreamToString(inputStream);
     }
 
     private String readTxtFileWithWebContentLink(String webContentLink) throws IOException {
@@ -429,15 +426,7 @@ public class GoogleDriveMediator {
 
         InputStream inputStream = new URL(webContentLink).openStream();
 
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        String line;
-        StringBuilder stringBuilder = new StringBuilder();
-
-        while ((line = bufferedReader.readLine()) != null) {
-            stringBuilder.append(line);
-        }
-
-        return stringBuilder.toString();
+        return inputStreamToString(inputStream);
     }
 
     private Bitmap readImgFileContentsWithId(String fileId, String mimeType) throws IOException {
@@ -454,30 +443,18 @@ public class GoogleDriveMediator {
     }
 
     private Bitmap readImgFileWithWebContentLink(Context context, String webContentLink) throws IOException {
-        String msg = ">>> Reading image file contents using webContentLink...";
-        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
-        msg = "::: " + webContentLink;
-        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
-
+        LogManager.logInfo(GOOGLE_DRIVE_TAG, ">>> Reading image file contents using webContentLink...");
         InputStream inputStream = new URL(webContentLink).openStream();
-
-        byte[] bitmapBytes = IOUtils.toByteArray(inputStream);
-
-        return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+        return inputStreamToBitmap(inputStream);
     }
 
     private Bitmap downloadImgFileWithId(String fileId, String mimeType) throws IOException {
-        String msg = ">>> Reading image file contents...";
-        LogManager.logInfo(GOOGLE_DRIVE_TAG, msg);
-
+        LogManager.logInfo(GOOGLE_DRIVE_TAG,  ">>> Reading image file contents...");
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         driveService.files()
                 .get(fileId)
                 .executeMediaAndDownloadTo(outputStream);
-
-        byte[] bitmapBytes = outputStream.toByteArray();
-
-        return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+        return byteArrayOutputStreamToBitmap(outputStream);
     }
 
     /**********************************************************
