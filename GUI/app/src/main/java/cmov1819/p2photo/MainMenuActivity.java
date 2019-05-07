@@ -2,6 +2,7 @@ package cmov1819.p2photo;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -26,7 +27,7 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.WifiDirectBroadcastReceiver;
+import cmov1819.p2photo.helpers.SimWifiP2pBroadcastReceiver;
 import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
@@ -36,23 +37,33 @@ import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
+import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
+import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.NO_CATALOG_SELECTED;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
+import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION;
+import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION;
+import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION;
+import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION;
 
 public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     public static final String MAIN_MENU_TAG = "MAIN MENU ACTIVITY";
     public static final String START_SCREEN = "initialScreen";
     public static final String HOME_SCREEN = SearchUserFragment.class.getName();
 
+    private static Resources resources;
+
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
-    private WifiDirectBroadcastReceiver wdBroadcastReceiver;
 
-    private static Resources resources;
+    private SimWifiP2pManager simWifiP2pManager;
+    private SimWifiP2pBroadcastReceiver simWifiP2pBroadcastReceiver;
+    private SimWifiP2pManager.Channel channel;
+    private Boolean isBound = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,11 +82,22 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        this.wdBroadcastReceiver = new WifiDirectBroadcastReceiver(this);
+        registerBroadcastReceiver();
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
             goHome(); // Go to application main page;
         }
+    }
+
+    private void registerBroadcastReceiver() {
+        // register broadcast receiver
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(WIFI_P2P_STATE_CHANGED_ACTION);
+        filter.addAction(WIFI_P2P_PEERS_CHANGED_ACTION);
+        filter.addAction(WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
+        filter.addAction(WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
+        simWifiP2pBroadcastReceiver = new SimWifiP2pBroadcastReceiver(this);
+        registerReceiver(simWifiP2pBroadcastReceiver, filter);
     }
 
     @Override
