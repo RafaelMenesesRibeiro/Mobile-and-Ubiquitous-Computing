@@ -5,13 +5,16 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.net.HttpURLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -32,6 +35,7 @@ import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
+import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_GOOGLE_IDENTIFIERS;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
@@ -187,7 +191,37 @@ public class CloudBackedArchitecture extends BaseArchitecture {
 
     @Override
     public void viewCatalog(Activity activity, View view, String catalogID, String catalogTitle) {
-        ViewCatalogFragment.populateGridCloudArch(activity, view, catalogID, catalogTitle);
+        List<String> googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(activity, catalogID);
+        TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
+        catalogTitleTextView.setText(catalogTitle);
+
+        GoogleDriveMediator googleDriveMediator = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getGoogleDriveMediator(activity);
+        AuthStateManager authStateManager = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
+
+        for (String googleCatalogFileId : googleSliceFileIdentifiersList) {
+            googleDriveMediator.viewCatalogSlicePhotos(activity, view, googleCatalogFileId, authStateManager.getAuthState()
+            );
+        }
+        LogManager.logViewCatalog(catalogID, catalogTitle);
+    }
+
+    private static List<String> getGoogleSliceFileIdentifiersList(Activity activity, String catalogID) {
+        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.view_catalog) +
+                "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
+
+        try {
+            RequestData requestData = new RequestData(activity, GET_CATALOG, url);
+            ResponseData responseData = new QueryManager().execute(requestData).get();
+            if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
+                SuccessResponse payload = (SuccessResponse) responseData.getPayload();
+                return (List<String> ) payload.getResult();
+            }
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            LogManager.logError(LogManager.VIEW_CATALOG_TAG, ex.getMessage());
+        }
+        return new ArrayList<>();
     }
 
     /**********************************************************
