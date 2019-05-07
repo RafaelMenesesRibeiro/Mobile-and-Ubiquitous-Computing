@@ -16,10 +16,10 @@ import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_NETWORK_M
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION;
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION;
 
-public class WifiDirectBroadcastReceiver extends BroadcastReceiver {
+public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
     private MainMenuActivity activity;
 
-    public WifiDirectBroadcastReceiver(MainMenuActivity activity) {
+    public SimWifiP2pBroadcastReceiver(MainMenuActivity activity) {
         super();
         this.activity = activity;
     }
