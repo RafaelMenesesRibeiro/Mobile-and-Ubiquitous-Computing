@@ -22,8 +22,6 @@
         tools:replace="android:icon"
         tools:targetApi="m">
 
-        <service android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService"/>
-
         <activity android:name=".LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -46,6 +44,7 @@
 
         <activity android:name=".MainMenuActivity" />
 
+        <service android:name="pt.inesc.termite.wifidirect.service.SimWifiP2pService"/>
     </application>
 
 </manifest>

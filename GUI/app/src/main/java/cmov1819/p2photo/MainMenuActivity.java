@@ -46,6 +46,7 @@ import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
+import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
@@ -80,21 +81,6 @@ public class MainMenuActivity
     private SimWifiP2pBroadcastReceiver simWifiP2pBroadcastReceiver;
     private Channel channel;
 
-    private ServiceConnection connection = new ServiceConnection() {
-        // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            simWifiP2pManager = new SimWifiP2pManager(new Messenger(service));
-            channel = simWifiP2pManager.initialize(getApplication(), getMainLooper(), null);
-        }
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            // Our WiFi service is always on
-            simWifiP2pManager = null;
-            channel = null;
-        }
-    };
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -113,6 +99,7 @@ public class MainMenuActivity
         toggle.syncState();
 
         registerBroadcastReceiver();
+
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
             goHome(); // Go to application main page;
@@ -120,25 +107,47 @@ public class MainMenuActivity
     }
 
     private void registerBroadcastReceiver() {
-        SimWifiP2pSocketManager.Init(getApplicationContext());
-        // register broadcast receiver
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(WIFI_P2P_STATE_CHANGED_ACTION);
-        filter.addAction(WIFI_P2P_PEERS_CHANGED_ACTION);
-        filter.addAction(WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
-        filter.addAction(WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        simWifiP2pBroadcastReceiver = new SimWifiP2pBroadcastReceiver(this);
-        registerReceiver(simWifiP2pBroadcastReceiver, filter);
+        SimWifiP2pSocketManager.Init(this);
 
         // WiFi is always on - Battery drainage is cool, because people buy new phones
         Intent intent = new Intent(this, SimWifiP2pService.class);
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
+        // register broadcast receiver
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
+        simWifiP2pBroadcastReceiver = new SimWifiP2pBroadcastReceiver(this);
+        registerReceiver(simWifiP2pBroadcastReceiver, filter);
     }
+
+    private ServiceConnection connection = new ServiceConnection() {
+        // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            LogManager.logError("MAIN", "on servercice connected");
+            simWifiP2pManager = new SimWifiP2pManager(new Messenger(service));
+            channel = simWifiP2pManager.initialize(getApplication(), getMainLooper(), null);
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            LogManager.logError("MAIN", "on servercice disconenetec");
+            // Our WiFi service is always on
+            simWifiP2pManager = null;
+            channel = null;
+        }
+    };
 
     @Override
     public void onPause() {
+
+        LogManager.logError("MAIN", "ON PAUSE \n\n\n\n on pause");
+
         super.onPause();
-        unregisterReceiver(simWifiP2pBroadcastReceiver);
+        // TODO - What is this? //
+        // unregisterReceiver(simWifiP2pBroadcastReceiver);
     }
 
     /** Searches vicinity for nearby phones; */
@@ -152,6 +161,8 @@ public class MainMenuActivity
 
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
+        LogManager.logError("TAG", "ON PEERS AVAILABLE CALLED \n\n\n\n NOT WHAT?");
+
         StringBuilder peersString = new StringBuilder();
 
         // compile list of devices in range

@@ -40,6 +40,14 @@ repositories {
     }
 }
 
+allprojects {
+    repositories {
+        flatDir {
+            dirs 'libs'
+        }
+    }
+}
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     // Accessing Google Drive using Google REST API
@@ -66,8 +74,10 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-core:2.9.6'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.7.3'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.7.3'
-    implementation(name:'Termite-WifiP2P-API', ext:'aar')
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    implementation(name:'Termite-WifiP2P-API', ext:'aar')
 }
