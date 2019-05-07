@@ -1,9 +1,13 @@
-package cmov1819.p2photo.helpers.architectures;
+package cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.net.HttpURLConnection;
@@ -11,14 +15,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-import cmov1819.p2photo.AddPhotosFragment;
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.R;
 import cmov1819.p2photo.ViewCatalogFragment;
+import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.architectures.BaseArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -40,6 +45,10 @@ public class CloudBackedArchitecture extends BaseArchitecture {
     public void setup(View view, LoginActivity loginActivity) {
         LoginActivity.tryEnablingPostAuthorizationFlows(view, loginActivity);
     }
+
+    /**********************************************************
+     * ADD PHOTO
+     ***********************************************************/
 
     @Override
     public void addPhoto(FragmentActivity activity, String catalogId, File androidFilePath) throws FailedOperationException {
@@ -64,32 +73,6 @@ public class CloudBackedArchitecture extends BaseArchitecture {
                 androidFilePath,
                 authStateManager.getAuthState()
         );
-    }
-
-    @Override
-    public void newCatalogSlice(Activity activity, String catalogID, String catalogTitle) {
-        GoogleDriveMediator googleDriveMediator = getGoogleDriveMediator(activity);
-        AuthStateManager authStateManager = getAuthStateManager(activity);
-        googleDriveMediator.newCatalogSlice(
-                activity,
-                catalogTitle,
-                catalogID,
-                authStateManager.getAuthState()
-        );
-    }
-
-    @Override
-    public void viewCatalog(Activity activity, View view, String catalogID, String catalogTitle) {
-        ViewCatalogFragment.populateGridCloudArch(activity, view, catalogID, catalogTitle);
-    }
-
-    public GoogleDriveMediator getGoogleDriveMediator(Activity activity) {
-        AuthStateManager authStateManager = AuthStateManager.getInstance(activity);
-        return GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
-    }
-
-    public AuthStateManager getAuthStateManager(Activity activity) {
-        return AuthStateManager.getInstance(activity);
     }
 
     private static HashMap<String, String> getGoogleDriveIdentifiers(Activity activity, String catalogId) throws FailedOperationException {
@@ -130,4 +113,95 @@ public class CloudBackedArchitecture extends BaseArchitecture {
             throw new FailedOperationException(ex.getMessage());
         }
     }
+
+    /**********************************************************
+     * NEW CATALOG SLICE
+     ***********************************************************/
+
+    @Override
+    public void newCatalogSlice(Activity activity, String catalogID, String catalogTitle) {
+        GoogleDriveMediator googleDriveMediator = getGoogleDriveMediator(activity);
+        AuthStateManager authStateManager = getAuthStateManager(activity);
+        googleDriveMediator.newCatalogSlice(
+                activity,
+                catalogTitle,
+                catalogID,
+                authStateManager.getAuthState()
+        );
+    }
+
+    public static void createCatalogSlice(final Context context,
+                                          final String catalogId,
+                                          final String parentFolderGoogleId,
+                                          final String catalogFileGoogleId,
+                                          final String webContentLink) {
+        try {
+            JSONObject requestBody = new JSONObject();
+
+            requestBody.put("parentFolderGoogleId", parentFolderGoogleId);
+            requestBody.put("catalogFileGoogleId", catalogFileGoogleId);
+            requestBody.put("webContentLink", webContentLink);
+            requestBody.put("calleeUsername", getUsername((Activity)context));
+
+            String url =
+                    context.getString(R.string.p2photo_host) + context.getString(R.string.new_catalog_slice) + catalogId;
+
+            RequestData requestData = new PutRequestData(
+                    (Activity)context, RequestData.RequestType.NEW_CATALOG_SLICE, url, requestBody
+            );
+
+            ResponseData result = new QueryManager().execute(requestData).get();
+
+            int code = result.getServerCode();
+
+            if (code != HttpURLConnection.HTTP_OK) {
+                String reason = ((ErrorResponse) result.getPayload()).getReason();
+                if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
+                    LogManager.toast(((Activity) context), "Session timed out, please login again");
+                    context.startActivity(new Intent(context, LoginActivity.class));
+                }
+                else {
+                    LogManager.logError(LogManager.NEW_CATALOG_TAG, reason);
+                    LogManager.toast(((Activity) context), "Something went wrong");
+                }
+            }
+
+        }
+        catch (JSONException ex) {
+            String msg = "JSONException: " + ex.getMessage();
+            LogManager.logError(LogManager.NEW_CATALOG_TAG, msg);
+            throw new FailedOperationException(ex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            String msg = "New Catalog unsuccessful. " + ex.getMessage();
+            LogManager.logError(LogManager.NEW_CATALOG_TAG, msg);
+            throw new FailedOperationException(ex.getMessage());
+        }
+    }
+
+    /**********************************************************
+     * VIEW CATALOG
+     ***********************************************************/
+
+    @Override
+    public void viewCatalog(Activity activity, View view, String catalogID, String catalogTitle) {
+        ViewCatalogFragment.populateGridCloudArch(activity, view, catalogID, catalogTitle);
+    }
+
+    /**********************************************************
+     * GOOGLE DRIVE HELPERS
+     ***********************************************************/
+
+    public GoogleDriveMediator getGoogleDriveMediator(Activity activity) {
+        AuthStateManager authStateManager = AuthStateManager.getInstance(activity);
+        return GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
+    }
+
+    public AuthStateManager getAuthStateManager(Activity activity) {
+        return AuthStateManager.getInstance(activity);
+    }
+
+
 }

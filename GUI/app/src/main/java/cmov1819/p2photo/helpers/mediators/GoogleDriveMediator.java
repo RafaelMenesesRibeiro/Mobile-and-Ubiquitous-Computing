@@ -9,7 +9,6 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Pair;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.gms.common.util.IOUtils;
 import com.google.api.client.auth.oauth2.Credential;
@@ -42,8 +41,8 @@ import java.util.List;
 
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainApplication;
-import cmov1819.p2photo.NewCatalogFragment;
 import cmov1819.p2photo.ViewCatalogFragment;
+import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import okhttp3.MediaType;
 
@@ -171,12 +170,12 @@ public class GoogleDriveMediator {
                             LogManager.toast((Activity) context, "Couldn't create catalog");
                         }
                         else {
-                            NewCatalogFragment.newCatalogSliceCloudArch(
-                                    context,
-                                    p2photoId,
-                                    parentFolderFile.getId(),
-                                    catalogJsonFile.getId(),
-                                    catalogJsonFile.getWebContentLink()
+                            CloudBackedArchitecture.createCatalogSlice(
+                                context,
+                                p2photoId,
+                                parentFolderFile.getId(),
+                                catalogJsonFile.getId(),
+                                catalogJsonFile.getWebContentLink()
                             );
                             LogManager.toast((Activity) context, "Catalog created");
                         }
