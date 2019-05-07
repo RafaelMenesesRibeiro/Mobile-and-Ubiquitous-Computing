@@ -81,23 +81,16 @@ public class MainMenuActivity
     private SimWifiP2pManager.Channel channel;
     private Boolean isBound = false;
 
-    /*
-     * Listeners associated to buttons
-     */
-
-    private OnClickListener listenerWifiOnButton = new OnClickListener() {
-        public void onClick(View v){
-            Intent intent = new Intent(v.getContext(), SimWifiP2pService.class);
-            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-            isBound = true;
-        }
-    };
-
-    private OnClickListener listenerWifiOffButton = new OnClickListener() {
+    private OnClickListener listenerWifiSwitchButton = new OnClickListener() {
         public void onClick(View v){
             if (isBound) {
-                unbindService(mConnection);
+                unbindService(connection);
                 isBound = false;
+            }
+            else {
+                Intent intent = new Intent(v.getContext(), SimWifiP2pService.class);
+                bindService(intent, connection, Context.BIND_AUTO_CREATE);
+                isBound = true;
             }
         }
     };
@@ -112,12 +105,25 @@ public class MainMenuActivity
         }
     };
 
-    private ServiceConnection mConnection =
+    private ServiceConnection connection = new ServiceConnection() {
+        // callbacks for service binding, passed to bindService()
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            simWifiP2pManager = new SimWifiP2pManager(new Messenger(service));
+            channel = simWifiP2pManager.initialize(getApplication(), getMainLooper(), null);
+            isBound = true;
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            simWifiP2pManager = null;
+            channel = null;
+            isBound = false;
+        }
+    };
 
     /*
      * Termite listeners
      */
-
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
         StringBuilder peersString = new StringBuilder();
