@@ -36,12 +36,12 @@ import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 
 public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
-    public void handlePendingMemberships(Activity activity) {
+    public void handlePendingMemberships(final Activity activity) {
         MainMenuActivity.handlePendingMembershipsWifiDirect(activity);
     }
 
     @Override
-    public void setup(View view, LoginActivity loginActivity) {
+    public void setup(final View view, final LoginActivity loginActivity) {
         LoginActivity.goHome(loginActivity);
     }
 
@@ -50,7 +50,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
      ***********************************************************/
 
     @Override
-    public void addPhoto(FragmentActivity activity, String catalogId, File file) throws FailedOperationException {
+    public void addPhoto(final FragmentActivity activity, String catalogId, File file) throws FailedOperationException {
         // Reads the temp image's bytes.
         int fileLength = (int) file.length();
         byte[] fileContents = new byte[fileLength];
@@ -112,7 +112,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
      ***********************************************************/
 
     @Override
-    public void newCatalogSlice(Activity activity, String catalogID, String catalogTitle) {
+    public void newCatalogSlice(final Activity activity, String catalogID, String catalogTitle) {
         final String username = SessionManager.getUsername(activity);
 
         // Make catalog folder if it doesn't exist in private storage, otherwise retrieve it
@@ -146,7 +146,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
      ***********************************************************/
 
     @Override
-    public void viewCatalog(Activity activity, View view, String catalogID, String catalogTitle) {
+    public void viewCatalog(final Activity activity, final View view, String catalogID, String catalogTitle) {
         List<Bitmap> bitmaps = ImageLoading.getBitmapsFromFileStorage(activity, catalogID);
         ViewCatalogFragment.drawImages(view, activity, bitmaps);
         LogManager.logViewCatalog(catalogID, catalogTitle);

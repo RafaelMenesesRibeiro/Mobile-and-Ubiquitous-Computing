@@ -41,12 +41,12 @@ import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class CloudBackedArchitecture extends BaseArchitecture {
     @Override
-    public void handlePendingMemberships(Activity activity) {
+    public void handlePendingMemberships(final Activity activity) {
         MainMenuActivity.handlePendingMembershipsCloudArch(activity);
     }
 
     @Override
-    public void setup(View view, LoginActivity loginActivity) {
+    public void setup(final View view, final LoginActivity loginActivity) {
         LoginActivity.tryEnablingPostAuthorizationFlows(view, loginActivity);
     }
 
@@ -55,7 +55,7 @@ public class CloudBackedArchitecture extends BaseArchitecture {
      ***********************************************************/
 
     @Override
-    public void addPhoto(FragmentActivity activity, String catalogId, File androidFilePath) throws FailedOperationException {
+    public void addPhoto(final FragmentActivity activity, String catalogId, File androidFilePath) throws FailedOperationException {
         HashMap<String, String> googleDriveIdentifiers = getGoogleDriveIdentifiers(activity, catalogId);
 
         if (googleDriveIdentifiers == null) {
@@ -79,7 +79,8 @@ public class CloudBackedArchitecture extends BaseArchitecture {
         );
     }
 
-    private static HashMap<String, String> getGoogleDriveIdentifiers(Activity activity, String catalogId) throws FailedOperationException {
+    private static HashMap<String, String> getGoogleDriveIdentifiers(final Activity activity, String catalogId)
+            throws FailedOperationException {
         try {
             String baseUrl = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_google_identifiers);
 
@@ -123,7 +124,7 @@ public class CloudBackedArchitecture extends BaseArchitecture {
      ***********************************************************/
 
     @Override
-    public void newCatalogSlice(Activity activity, String catalogID, String catalogTitle) {
+    public void newCatalogSlice(final Activity activity, String catalogID, String catalogTitle) {
         GoogleDriveMediator googleDriveMediator = getGoogleDriveMediator(activity);
         AuthStateManager authStateManager = getAuthStateManager(activity);
         googleDriveMediator.newCatalogSlice(
@@ -190,7 +191,7 @@ public class CloudBackedArchitecture extends BaseArchitecture {
      ***********************************************************/
 
     @Override
-    public void viewCatalog(Activity activity, View view, String catalogID, String catalogTitle) {
+    public void viewCatalog(final Activity activity, final View view, String catalogID, String catalogTitle) {
         List<String> googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(activity, catalogID);
         TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
         catalogTitleTextView.setText(catalogTitle);
@@ -205,7 +206,7 @@ public class CloudBackedArchitecture extends BaseArchitecture {
         LogManager.logViewCatalog(catalogID, catalogTitle);
     }
 
-    private static List<String> getGoogleSliceFileIdentifiersList(Activity activity, String catalogID) {
+    private static List<String> getGoogleSliceFileIdentifiersList(final Activity activity, String catalogID) {
         String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.view_catalog) +
                 "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
 
@@ -228,12 +229,12 @@ public class CloudBackedArchitecture extends BaseArchitecture {
      * GOOGLE DRIVE HELPERS
      ***********************************************************/
 
-    public GoogleDriveMediator getGoogleDriveMediator(Activity activity) {
+    public GoogleDriveMediator getGoogleDriveMediator(final Activity activity) {
         AuthStateManager authStateManager = AuthStateManager.getInstance(activity);
         return GoogleDriveMediator.getInstance(authStateManager.getAuthState().getAccessToken());
     }
 
-    public AuthStateManager getAuthStateManager(Activity activity) {
+    public AuthStateManager getAuthStateManager(final Activity activity) {
         return AuthStateManager.getInstance(activity);
     }
 
