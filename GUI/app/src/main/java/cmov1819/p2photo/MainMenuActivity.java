@@ -53,8 +53,6 @@ import pt.inesc.termite.wifidirect.SimWifiP2pManager.Channel;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 
-import static android.widget.Toast.LENGTH_SHORT;
-import static android.widget.Toast.makeText;
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
@@ -81,38 +79,6 @@ public class MainMenuActivity
     private SimWifiP2pManager simWifiP2pManager;
     private SimWifiP2pBroadcastReceiver simWifiP2pBroadcastReceiver;
     private Channel channel;
-    private Boolean isBound = false;
-
-    /*
-     * Turns wifi-direct on / off
-     */
-    private OnClickListener listenerWifiSwitchButton = new OnClickListener() {
-        public void onClick(View view){
-            if (isBound) {
-                unbindService(connection);
-                isBound = false;
-            }
-            else {
-                // Bind termite service
-                Intent intent = new Intent(view.getContext(), SimWifiP2pService.class);
-                bindService(intent, connection, Context.BIND_AUTO_CREATE);
-                isBound = true;
-            }
-        }
-    };
-
-    /*
-     * Searches vicinity for nearby phones;
-     */
-    private OnClickListener listenerInRangeButton = new OnClickListener() {
-        public void onClick(View view){
-            if (isBound) {
-                simWifiP2pManager.requestPeers(channel,MainMenuActivity.this);
-            } else {
-                makeText(view.getContext(), "Service not bound", LENGTH_SHORT).show();
-            }
-        }
-    };
 
     private ServiceConnection connection = new ServiceConnection() {
         // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
@@ -120,39 +86,14 @@ public class MainMenuActivity
         public void onServiceConnected(ComponentName className, IBinder service) {
             simWifiP2pManager = new SimWifiP2pManager(new Messenger(service));
             channel = simWifiP2pManager.initialize(getApplication(), getMainLooper(), null);
-            isBound = true;
         }
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
+            // Our WiFi service is always on
             simWifiP2pManager = null;
             channel = null;
-            isBound = false;
         }
     };
-
-    /*
-     * Termite listeners
-     */
-    @Override
-    public void onPeersAvailable(SimWifiP2pDeviceList peers) {
-        StringBuilder peersString = new StringBuilder();
-
-        // compile list of devices in range
-        for (SimWifiP2pDevice device : peers.getDeviceList()) {
-            String deviceString = "" + device.deviceName + " (" + device.getVirtIp() + ")\n";
-            peersString.append(deviceString);
-        }
-
-        // display list of devices in range
-        new AlertDialog.Builder(this)
-                .setTitle("Devices in WiFi Range")
-                .setMessage(peersString.toString())
-                .setNeutralButton("Dismiss", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        // TODO
-                    }
-                }).show();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -178,12 +119,6 @@ public class MainMenuActivity
         }
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        unregisterReceiver(simWifiP2pBroadcastReceiver);
-    }
-
     private void registerBroadcastReceiver() {
         SimWifiP2pSocketManager.Init(getApplicationContext());
         // register broadcast receiver
@@ -194,8 +129,45 @@ public class MainMenuActivity
         filter.addAction(WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
         simWifiP2pBroadcastReceiver = new SimWifiP2pBroadcastReceiver(this);
         registerReceiver(simWifiP2pBroadcastReceiver, filter);
+
+        // WiFi is always on - Battery drainage is cool, because people buy new phones
+        Intent intent = new Intent(this, SimWifiP2pService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(simWifiP2pBroadcastReceiver);
+    }
+
+    /** Searches vicinity for nearby phones; */
+    private OnClickListener listenerInRangeButton = new OnClickListener() {
+        public void onClick(View view){
+            simWifiP2pManager.requestPeers(channel,MainMenuActivity.this);
+        }
+    };
+
+    /** Termite listeners */
+
+    @Override
+    public void onPeersAvailable(SimWifiP2pDeviceList peers) {
+        StringBuilder peersString = new StringBuilder();
+
+        // compile list of devices in range
+        for (SimWifiP2pDevice device : peers.getDeviceList()) {
+            String deviceString = "" + device.deviceName + " (" + device.getVirtIp() + ")\n";
+            peersString.append(deviceString);
+        }
+
+        // display list of devices in range
+        new AlertDialog.Builder(this)
+                .setTitle("Devices in WiFi Range")
+                .setMessage(peersString.toString())
+                .setNeutralButton("Dismiss", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {}}).show();
+    }
+    
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
