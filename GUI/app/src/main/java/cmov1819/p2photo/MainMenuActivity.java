@@ -82,14 +82,18 @@ public class MainMenuActivity
     private Channel channel;
     private Boolean isBound = false;
 
+    /*
+     * Turns wifi-direct on / off
+     */
     private OnClickListener listenerWifiSwitchButton = new OnClickListener() {
-        public void onClick(View v){
+        public void onClick(View view){
             if (isBound) {
                 unbindService(connection);
                 isBound = false;
             }
             else {
-                Intent intent = new Intent(v.getContext(), SimWifiP2pService.class);
+                // Bind termite service
+                Intent intent = new Intent(view.getContext(), SimWifiP2pService.class);
                 bindService(intent, connection, Context.BIND_AUTO_CREATE);
                 isBound = true;
             }
@@ -97,14 +101,14 @@ public class MainMenuActivity
     };
 
     /*
-    *
-    */
+     * Searches vicinity for nearby phones;
+     */
     private OnClickListener listenerInRangeButton = new OnClickListener() {
-        public void onClick(View v){
+        public void onClick(View view){
             if (isBound) {
                 simWifiP2pManager.requestPeers(channel,MainMenuActivity.this);
             } else {
-                makeText(v.getContext(), "Service not bound", LENGTH_SHORT).show();
+                makeText(view.getContext(), "Service not bound", LENGTH_SHORT).show();
             }
         }
     };
@@ -245,8 +249,8 @@ public class MainMenuActivity
     }
 
     /**********************************************************
-    * MEMBERSHIP VERIFICATION METHODS
-    ***********************************************************/
+     * MEMBERSHIP VERIFICATION METHODS
+     ***********************************************************/
 
     public static void handlePendingMembershipsCloudArch(Activity activity) {
         Map<String, String> membershipMapping = ViewUserCatalogsFragment.getMembershipGoogleDriveIDs(activity);
