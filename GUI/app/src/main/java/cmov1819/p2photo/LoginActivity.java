@@ -263,7 +263,9 @@ public class LoginActivity extends AppCompatActivity {
     public static void tryEnablingPostAuthorizationFlows(View view, Activity activity) {
         String msg = "Trying to enable post authorization flows...";
         LogManager.logInfo(LogManager.LOGIN_TAG, msg);
-        AuthStateManager authStateManager  = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
+        AuthStateManager authStateManager =
+                ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
+        
         if (authStateManager.hasValidAuthState()) {
             LogManager.logInfo(LogManager.LOGIN_TAG, "Valid authentication state");
             goHome(activity);
