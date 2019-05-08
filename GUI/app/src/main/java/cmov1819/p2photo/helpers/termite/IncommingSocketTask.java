@@ -42,7 +42,7 @@ public class IncommingSocketTask extends AsyncTask<Object, String, Void> {
                     // Process values
                     JSONObject jsonObject = new JSONObject(incommingJsonData);
 
-                    if (jsonObject.has("")) // TODO 
+                    if (jsonObject.has("")) // TODO
                     // Close interaction
                     socket.getOutputStream().write(("\n").getBytes());
                 } catch (IOException ioe) {
