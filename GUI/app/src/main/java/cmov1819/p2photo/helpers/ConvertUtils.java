@@ -11,6 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 
 public class ConvertUtils {
     public static String inputStreamToString(InputStream inputStream) throws IOException {
@@ -31,5 +32,15 @@ public class ConvertUtils {
     public static Bitmap byteArrayOutputStreamToBitmap(ByteArrayOutputStream outputStream) throws IOException {
         byte[] bitmapBytes = outputStream.toByteArray();
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+    }
+
+    public static byte[] objectToByteArray(Object object) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(object);
+        byte[] result = bos.toByteArray();
+        oos.close();
+        bos.close();
+        return result;
     }
 }
