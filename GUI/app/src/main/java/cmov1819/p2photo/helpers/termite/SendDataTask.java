@@ -3,13 +3,12 @@ package cmov1819.p2photo.helpers.termite;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import org.mortbay.jetty.Main;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import cmov1819.p2photo.MainMenuActivity;
+import cmov1819.p2photo.R;
+import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
 public class SendDataTask extends AsyncTask<Object, String, Void> {
@@ -23,17 +22,22 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
     @Override
     protected Void doInBackground(final Object... params) {
-        MainMenuActivity requestingActivity = (MainMenuActivity) params[0];
-        SimWifiP2pSocket raClientSocket = requestingActivity.getClientSocket();
-        byte[] data = (byte[]) params[1];
+        P2PhotoWiFiDirectManager wiFiDirectManager = (P2PhotoWiFiDirectManager) params[0];
+        SimWifiP2pDevice targetDevice = (SimWifiP2pDevice) params[1];
+        byte[] data = (byte[]) params[2];
+
         try {
-            raClientSocket.getOutputStream().write(data);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(raClientSocket.getInputStream()));
+            // Construct a new clientSocket
+            SimWifiP2pSocket clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), R.string.termite_port);
+            // Send data to target device
+            clientSocket.getOutputStream().write(wiFiDirectManager.getmUsername().getBytes());
+            clientSocket.getOutputStream().write(data);
+            // Read any reply from target device
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             bufferedReader.readLine();
-            raClientSocket.close(); // TODO this is likely incorrect, we might want to keep the socket open.
+            clientSocket.close();
         } catch (IOException ioe) {
             Log.e(SENDD_DATA_TASK_TAG, "Error: " + ioe.getMessage());
-
         }
         return null;
     }
