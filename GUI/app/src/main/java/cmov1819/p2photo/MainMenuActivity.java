@@ -80,6 +80,7 @@ public class MainMenuActivity
     private SimWifiP2pManager.Channel mChannel;
 
     private P2PhotoWiFiDirectManager wiFiDirectManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -131,6 +132,8 @@ public class MainMenuActivity
         Intent intent = new Intent(this, SimWifiP2pService.class);
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
+        this.wiFiDirectManager = new P2PhotoWiFiDirectManager(this, SessionManager.getUsername(this), null);
+        wiFiDirectManager.setServerSocket();
     }
 
     /**********************************************************
