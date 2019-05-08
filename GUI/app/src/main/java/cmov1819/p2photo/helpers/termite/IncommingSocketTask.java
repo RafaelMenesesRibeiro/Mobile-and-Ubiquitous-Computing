@@ -27,12 +27,12 @@ public class IncommingSocketTask extends AsyncTask<Object, String, Void> {
         Log.d(INCOMMING_TASK_TAG, "Started incomming communication task (" + this.hashCode() + ").");
 
         try {
-            MainMenuActivity requestingActivity = (MainMenuActivity) params[0];
+            P2PhotoWiFiDirectManager wiFiDirectManager = (P2PhotoWiFiDirectManager) params[0];
             // setup a server socket on MainMenuActivity
-            requestingActivity.setServerSocket(new SimWifiP2pSocketServer(R.string.termite_port));
+            wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(R.string.termite_port));
             // set server socket to listen to incomming requests indefinetly
             while (!Thread.currentThread().isInterrupted()) {
-                SimWifiP2pSocket socket = requestingActivity.getServerSocket().accept();
+                SimWifiP2pSocket socket = wiFiDirectManager.getServerSocket().accept();
                 try {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     publishProgress(bufferedReader.readLine());
