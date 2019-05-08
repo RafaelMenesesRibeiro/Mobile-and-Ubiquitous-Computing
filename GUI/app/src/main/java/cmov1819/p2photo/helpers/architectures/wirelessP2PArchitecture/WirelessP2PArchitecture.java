@@ -6,19 +6,17 @@ import android.graphics.Bitmap;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -31,7 +29,6 @@ import cmov1819.p2photo.helpers.architectures.BaseArchitecture;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 
-import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToBitmap;
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 
 public class WirelessP2PArchitecture extends BaseArchitecture {
@@ -41,8 +38,13 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
     }
 
     @Override
-    public void setup(final View view, final LoginActivity loginActivity) {
-        LoginActivity.goHome(loginActivity);
+    public void setup(final View view, final LoginActivity loginActivity) throws FailedOperationException {
+        try {
+            LoginActivity.initializeSymmetricKey(loginActivity);
+        }
+        catch (SignatureException ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
     }
 
     /**********************************************************
