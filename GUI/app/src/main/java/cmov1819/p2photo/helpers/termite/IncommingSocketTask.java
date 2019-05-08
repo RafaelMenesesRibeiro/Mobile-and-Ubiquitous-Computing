@@ -3,6 +3,9 @@ package cmov1819.p2photo.helpers.termite;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -33,11 +36,20 @@ public class IncommingSocketTask extends AsyncTask<Object, String, Void> {
             while (!Thread.currentThread().isInterrupted()) {
                 SimWifiP2pSocket socket = wiFiDirectManager.getServerSocket().accept();
                 try {
+                    // Read from input stream
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    publishProgress(bufferedReader.readLine());
+                    String incommingJsonData = bufferedReader.readLine();
+                    // Process values
+                    JSONObject jsonObject = new JSONObject(incommingJsonData);
+
+                    if (jsonObject.has("")) // TODO 
+                    // Close interaction
                     socket.getOutputStream().write(("\n").getBytes());
                 } catch (IOException ioe) {
                     Log.e(INCOMMING_TASK_TAG, "Error reading socket: " + ioe.getMessage());
+                } catch (JSONException jsone) {
+                    Log.e(INCOMMING_TASK_TAG, "Error reading socket: malformed json request");
+
                 } finally {
                     socket.close();
                 }
