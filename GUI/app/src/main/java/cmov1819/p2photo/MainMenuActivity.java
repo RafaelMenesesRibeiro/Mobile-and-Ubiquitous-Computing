@@ -439,4 +439,12 @@ public class MainMenuActivity
     public void setServerSocket(SimWifiP2pSocketServer newSocket) {
         this.mServerSocket = newSocket;
     }
+
+    public SimWifiP2pSocket getClientSocket() {
+        return mClientSocket;
+    }
+
+    public void setClientSocket(SimWifiP2pSocket mClientSocket) {
+        this.mClientSocket = mClientSocket;
+    }
 }
