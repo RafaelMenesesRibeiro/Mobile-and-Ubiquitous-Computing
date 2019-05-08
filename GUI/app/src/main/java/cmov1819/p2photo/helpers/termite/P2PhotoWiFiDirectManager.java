@@ -38,7 +38,7 @@ public class P2PhotoWiFiDirectManager {
         this.mMacAddress = macAddress;
         this.mServerSocket = null;
         this.mClientSocket = null;
-        this.socketManager = new P2PhotoSocketManager(activity, this);
+        this.socketManager = new P2PhotoSocketManager(this);
     }
 
     /**********************************************************
