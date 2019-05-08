@@ -1,5 +1,6 @@
 package cmov1819.p2photo.helpers;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
@@ -59,6 +60,7 @@ public class CryptoUtils {
         }
     }
 
+    @TargetApi(Build.VERSION_CODES.M)
     public static SecretKey generateAes256Key() {
         try {
             KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES);
