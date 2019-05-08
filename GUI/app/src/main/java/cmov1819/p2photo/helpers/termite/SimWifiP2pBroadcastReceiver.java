@@ -18,6 +18,7 @@ import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHA
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION;
 
 public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
+    private static final String BROADCAST_RECEIVER_TAG = "BROADCAST RECEIVER";
     private MainMenuActivity activity;
 
     public SimWifiP2pBroadcastReceiver(MainMenuActivity activity) {
@@ -28,11 +29,11 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        LogManager.logError("BROADCAST RECEIVER", "ON RECEIVE \n\n\n\n got on receive");
+        LogManager.logError(BROADCAST_RECEIVER_TAG, "Received termite notification...");
 
         String action = intent.getAction();
 
-        LogManager.logError("BORADCAST RECEIVER", "ACTION : " + action);
+        LogManager.logError(BROADCAST_RECEIVER_TAG, "Action: " + action);
 
         if (WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
             int state = intent.getIntExtra(SimWifiP2pBroadcast.EXTRA_WIFI_STATE, -1);
