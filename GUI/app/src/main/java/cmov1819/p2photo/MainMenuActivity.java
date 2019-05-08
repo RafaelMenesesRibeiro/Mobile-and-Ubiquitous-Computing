@@ -108,7 +108,7 @@ public class MainMenuActivity
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        registerBroadcastReceiver();
+        registerTermite();
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
@@ -116,7 +116,7 @@ public class MainMenuActivity
         }
     }
 
-    private void registerBroadcastReceiver() {
+    private void registerTermite() {
         SimWifiP2pSocketManager.Init(this);
 
         // WiFi is always on - Battery drainage is cool, because people buy new phones
