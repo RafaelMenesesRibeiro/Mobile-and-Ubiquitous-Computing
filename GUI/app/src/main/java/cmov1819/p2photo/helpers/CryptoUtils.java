@@ -25,16 +25,9 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 public class CryptoUtils {
-    private static final String SYMMETRIC_CYPHER_PROPS = "AES/CBC/PKCS5Padding";
+    private static final String SYMMETRIC_CYPHER_PROPS = "AES/GSM/PKCS5Padding";
     private static final String KEY_STORE_PROVIDER = "AndroidKeyStore";
     private static final String KEY_STORE_ALIAS = "MOC_1819_P2PHOTO_ALIAS";
-
-    private static final IvParameterSpec IV_PARAMETER_SPEC = new IvParameterSpec(new byte[]
-            { 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00 });
 
     private static  SecretKey secretKey;
 
@@ -66,23 +59,42 @@ public class CryptoUtils {
         }
     }
 
-    public static byte[] encrypt(byte[] plainBytes) throws SignatureException {
-        return symmetricCipher(Cipher.ENCRYPT_MODE, plainBytes);
+    public static SecretKey generateAes256Key() {
+        try {
+            KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES);
+            return keyGenerator.generateKey();
+        }
+        catch (NoSuchAlgorithmException e) {
+            // Should never be here.
+            return null;
+        }
     }
 
-    public static byte[] decrypt(byte[] cipheredBytes) throws SignatureException {
-        return symmetricCipher(Cipher.DECRYPT_MODE, cipheredBytes);
+    public static byte[] cipherWithAes256(SecretKey key, byte[] plainBytes) throws SignatureException {
+        return symmetricCipher(Cipher.ENCRYPT_MODE, key, plainBytes);
     }
 
-    private static byte[] symmetricCipher(int mode, byte[] initialBytes) throws SignatureException {
+    public static byte[] cipherWithAes256(byte[] plainBytes) throws SignatureException {
+        return symmetricCipher(Cipher.ENCRYPT_MODE, CryptoUtils.secretKey, plainBytes);
+    }
+
+    public static byte[] decipherWithAes256(SecretKey key, byte[] cipheredBytes) throws SignatureException {
+        return symmetricCipher(Cipher.DECRYPT_MODE, key, cipheredBytes);
+    }
+
+    public static byte[] decipherWithAes256(byte[] cipheredBytes) throws SignatureException {
+        return symmetricCipher(Cipher.DECRYPT_MODE, CryptoUtils.secretKey, cipheredBytes);
+    }
+
+    private static byte[] symmetricCipher(int mode, SecretKey key, byte[] initialBytes) throws SignatureException {
         Cipher cipher;
         try {
             cipher = Cipher.getInstance(SYMMETRIC_CYPHER_PROPS);
-            cipher.init(mode, CryptoUtils.secretKey, CryptoUtils.IV_PARAMETER_SPEC);
+            cipher.init(mode, key);
             return cipher.doFinal(initialBytes);
         }
         catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException |
-                IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException ex) {
+                IllegalBlockSizeException | BadPaddingException ex) {
             // TODO - Change throw type//
             throw new SignatureException(ex.getMessage());
         }
