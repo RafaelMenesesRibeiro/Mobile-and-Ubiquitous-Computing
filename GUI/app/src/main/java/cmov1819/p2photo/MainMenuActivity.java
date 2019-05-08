@@ -49,6 +49,7 @@ import cmov1819.p2photo.msgtypes.SuccessResponse;
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
+import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
@@ -65,7 +66,7 @@ import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class MainMenuActivity
         extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, SimWifiP2pManager.PeerListListener {
+        implements NavigationView.OnNavigationItemSelectedListener, SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
 
     public static final String MAIN_MENU_TAG = "MAIN MENU ACTIVITY";
     public static final String START_SCREEN = "initialScreen";
@@ -88,12 +89,7 @@ public class MainMenuActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        this.mBroadcast = new SimWifiP2pBroadcast();
-        this.mBroadcastReceiver = null;
-        this.mManager = null;
-        this.mChannel = null;
-        this.mServerSocket = null;
-        this.mClientSocket = null;
+        initTermiteAttributes();
 
         MainMenuActivity.resources = getResources();
 
@@ -108,7 +104,7 @@ public class MainMenuActivity
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        registerTermite();
+        basicTermiteSetup();
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
@@ -116,7 +112,16 @@ public class MainMenuActivity
         }
     }
 
-    private void registerTermite() {
+    private void initTermiteAttributes() {
+        this.mBroadcast = new SimWifiP2pBroadcast();
+        this.mBroadcastReceiver = null;
+        this.mManager = null;
+        this.mChannel = null;
+        this.mServerSocket = null;
+        this.mClientSocket = null;
+    }
+
+    private void basicTermiteSetup() {
         // initialize the WiFi Direct Simulator API
         SimWifiP2pSocketManager.Init(this);
 
@@ -131,8 +136,13 @@ public class MainMenuActivity
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
         mBroadcastReceiver = new SimWifiP2pBroadcastReceiver(this);
+
         registerReceiver(mBroadcastReceiver, filter);
     }
+
+    /**********************************************************
+     * TERMITE MANAGEMENT ATTRIBUTES AND METHODS
+     **********************************************************/
 
     private ServiceConnection connection = new ServiceConnection() {
         // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
@@ -168,7 +178,9 @@ public class MainMenuActivity
         }
     };
 
-    /** Termite listeners */
+    /**********************************************************
+     * TERMITE PEER LISTENER (PeerListListener Impl)
+     **********************************************************/
 
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
@@ -189,7 +201,20 @@ public class MainMenuActivity
                 .setNeutralButton("Dismiss", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {}}).show();
     }
-    
+
+    /**********************************************************
+     * TERMITE GROUP LISTENER (GroupInfoListener Impl)
+     **********************************************************/
+
+    @Override
+    public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
+        // TODO
+    }
+
+    /**********************************************************
+     * NAVIGATION METHODS
+     **********************************************************/
+
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
         switch (menuItem.getItemId()) {
