@@ -1,13 +1,16 @@
 package cmov1819.p2photo.helpers.termite;
 
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.mortbay.thread.Timeout;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Collections;
 
 import javax.crypto.SecretKey;
 
@@ -24,9 +27,8 @@ public class P2PhotoWiFiDirectManager {
     private final String mUsername;
     private final String mMacAddress;
 
-    private SimWifiP2pSocketServer mServerSocket;
-    private SimWifiP2pSocket mClientSocket;
     private P2PhotoSocketManager socketManager;
+    private SimWifiP2pSocketServer mServerSocket;
 
     /**********************************************************
      * CONSTRUCTORS
@@ -37,7 +39,6 @@ public class P2PhotoWiFiDirectManager {
         this.mUsername = username;
         this.mMacAddress = macAddress;
         this.mServerSocket = null;
-        this.mClientSocket = null;
         this.socketManager = new P2PhotoSocketManager(this);
     }
 
@@ -127,15 +128,11 @@ public class P2PhotoWiFiDirectManager {
         return mServerSocket;
     }
 
+    public void setServerSocket() {
+        new IncommingSocketTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this);
+    }
+
     public void setServerSocket(SimWifiP2pSocketServer newSocket) {
         this.mServerSocket = newSocket;
-    }
-
-    public SimWifiP2pSocket getClientSocket() {
-        return mClientSocket;
-    }
-
-    public void setClientSocket(SimWifiP2pSocket mClientSocket) {
-        this.mClientSocket = mClientSocket;
     }
 }
