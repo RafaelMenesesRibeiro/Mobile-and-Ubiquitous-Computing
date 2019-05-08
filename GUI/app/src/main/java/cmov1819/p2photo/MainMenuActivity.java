@@ -50,19 +50,18 @@ import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.Channel;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.NO_CATALOG_SELECTED;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
-import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION;
-import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION;
-import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION;
-import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION;
+
+
 
 public class MainMenuActivity
         extends AppCompatActivity
@@ -77,14 +76,25 @@ public class MainMenuActivity
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
-    private SimWifiP2pManager simWifiP2pManager;
-    private SimWifiP2pBroadcastReceiver simWifiP2pBroadcastReceiver;
-    private Channel channel;
+    private SimWifiP2pBroadcast mBroadcast;
+    private SimWifiP2pBroadcastReceiver mBroadcastReceiver;
+    private SimWifiP2pManager mManager;
+    private SimWifiP2pManager.Channel mChannel;
+    private SimWifiP2pSocketServer mServerSocket;
+    private SimWifiP2pSocket mClientSocket;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+
+        this.mBroadcast = new SimWifiP2pBroadcast();
+        this.mBroadcastReceiver = null;
+        this.mManager = null;
+        this.mChannel = null;
+        this.mServerSocket = null;
+        this.mClientSocket = null;
+
         MainMenuActivity.resources = getResources();
 
         ArchitectureManager.systemArchitecture.handlePendingMemberships(this);
@@ -119,8 +129,8 @@ public class MainMenuActivity
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        simWifiP2pBroadcastReceiver = new SimWifiP2pBroadcastReceiver(this);
-        registerReceiver(simWifiP2pBroadcastReceiver, filter);
+        mBroadcastReceiver = new SimWifiP2pBroadcastReceiver(this);
+        registerReceiver(mBroadcastReceiver, filter);
     }
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -128,15 +138,15 @@ public class MainMenuActivity
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             LogManager.logError("MAIN", "on servercice connected");
-            simWifiP2pManager = new SimWifiP2pManager(new Messenger(service));
-            channel = simWifiP2pManager.initialize(getApplication(), getMainLooper(), null);
+            mManager = new SimWifiP2pManager(new Messenger(service));
+            mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
         }
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             LogManager.logError("MAIN", "on servercice disconenetec");
             // Our WiFi service is always on
-            simWifiP2pManager = null;
-            channel = null;
+            mManager = null;
+            mChannel = null;
         }
     };
 
@@ -147,13 +157,13 @@ public class MainMenuActivity
 
         super.onPause();
         // TODO - What is this? //
-        // unregisterReceiver(simWifiP2pBroadcastReceiver);
+        // unregisterReceiver(mBroadcastReceiver);
     }
 
     /** Searches vicinity for nearby phones; */
     private OnClickListener listenerInRangeButton = new OnClickListener() {
         public void onClick(View view){
-            simWifiP2pManager.requestPeers(channel,MainMenuActivity.this);
+            mManager.requestPeers(mChannel,MainMenuActivity.this);
         }
     };
 
