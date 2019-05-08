@@ -12,21 +12,22 @@ import cmov1819.p2photo.R;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
-public class IncommingCommunicationTask extends AsyncTask<MainMenuActivity, String, Void> {
+public class IncommingCommunicationTask extends AsyncTask<Object, String, Void> {
 
     private static final String INCOMMING_TASK_TAG = "INCOMMING COMMUNICATION";
 
     @Override
-    protected Void doInBackground(final MainMenuActivity... activities) {
+    protected Void doInBackground(final Object... params) {
 
         Log.d(INCOMMING_TASK_TAG, "Started incomming communication task (" + this.hashCode() + ").");
 
         try {
+            MainMenuActivity requestingActivity = (MainMenuActivity) params[0];
             // setup a server socket on MainMenuActivity
-            activities[0].setServerSocket(new SimWifiP2pSocketServer(R.string.termite_port));
+            requestingActivity.setServerSocket(new SimWifiP2pSocketServer(R.string.termite_port));
             // set server socket to listen to incomming requests indefinetly
             while (!Thread.currentThread().isInterrupted()) {
-                SimWifiP2pSocket socket = activities[0].getServerSocket().accept();
+                SimWifiP2pSocket socket = requestingActivity.getServerSocket().accept();
                 try {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     publishProgress(bufferedReader.readLine());
