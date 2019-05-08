@@ -117,6 +117,7 @@ public class MainMenuActivity
     }
 
     private void registerTermite() {
+        // initialize the WiFi Direct Simulator API
         SimWifiP2pSocketManager.Init(this);
 
         // WiFi is always on - Battery drainage is cool, because people buy new phones
