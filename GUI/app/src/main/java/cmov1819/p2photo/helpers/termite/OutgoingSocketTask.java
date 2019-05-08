@@ -9,7 +9,7 @@ import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.R;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
-public class OutgoingCommunicationTask extends AsyncTask<Object, Void, String> {
+public class OutgoingSocketTask extends AsyncTask<Object, Void, String> {
 
     private static final String OUTGOING_TASK_TAG = "OUTGOING COMMUNICATION";
 

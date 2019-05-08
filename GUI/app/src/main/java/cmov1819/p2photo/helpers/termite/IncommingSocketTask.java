@@ -12,7 +12,7 @@ import cmov1819.p2photo.R;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
-public class IncommingCommunicationTask extends AsyncTask<Object, String, Void> {
+public class IncommingSocketTask extends AsyncTask<Object, String, Void> {
 
     private static final String INCOMMING_TASK_TAG = "INCOMMING COMMUNICATION";
 
