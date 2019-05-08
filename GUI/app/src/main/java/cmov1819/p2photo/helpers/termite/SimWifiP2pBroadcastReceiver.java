@@ -1,4 +1,4 @@
-package cmov1819.p2photo.helpers;
+package cmov1819.p2photo.helpers.termite;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
