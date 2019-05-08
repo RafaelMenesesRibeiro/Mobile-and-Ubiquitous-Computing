@@ -36,7 +36,7 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.SimWifiP2pBroadcastReceiver;
+import cmov1819.p2photo.helpers.termite.SimWifiP2pBroadcastReceiver;
 import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
@@ -426,5 +426,17 @@ public class MainMenuActivity
             @Override
             public void afterTextChanged(Editable s) { /* Do nothing */ }
         });
+    }
+
+    /**********************************************************
+     * GETTERS AND SETTERS
+     ***********************************************************/
+
+    public SimWifiP2pSocketServer getServerSocket() {
+        return mServerSocket;
+    }
+
+    public void setServerSocket(SimWifiP2pSocketServer newSocket) {
+        this.mServerSocket = newSocket;
     }
 }
