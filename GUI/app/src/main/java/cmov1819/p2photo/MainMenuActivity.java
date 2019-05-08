@@ -3,7 +3,6 @@ package cmov1819.p2photo;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -17,7 +16,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -77,7 +75,7 @@ public class MainMenuActivity
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
-    private SimWifiP2pBroadcast mBroadcast;
+    private SimWifiP2pBroadcast mBroadcaster;
     private SimWifiP2pBroadcastReceiver mBroadcastReceiver;
     private SimWifiP2pManager mManager;
     private SimWifiP2pManager.Channel mChannel;
@@ -113,7 +111,7 @@ public class MainMenuActivity
     }
 
     private void initTermiteAttributes() {
-        this.mBroadcast = new SimWifiP2pBroadcast();
+        this.mBroadcaster = new SimWifiP2pBroadcast();
         this.mBroadcastReceiver = null;
         this.mManager = null;
         this.mChannel = null;
