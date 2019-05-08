@@ -14,7 +14,12 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 public class IncommingSocketTask extends AsyncTask<Object, String, Void> {
 
-    private static final String INCOMMING_TASK_TAG = "INCOMMING COMMUNICATION";
+    private static final String INCOMMING_TASK_TAG = "INCOMMING SOCKET";
+
+    @Override
+    protected void onPreExecute() {
+        // TODO if pre processing is required
+    }
 
     @Override
     protected Void doInBackground(final Object... params) {
@@ -32,17 +37,22 @@ public class IncommingSocketTask extends AsyncTask<Object, String, Void> {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     publishProgress(bufferedReader.readLine());
                     socket.getOutputStream().write(("\n").getBytes());
-                } catch (IOException e) {
-                    Log.d(INCOMMING_TASK_TAG, "Error reading socket: " + e.getMessage());
+                } catch (IOException ioe) {
+                    Log.e(INCOMMING_TASK_TAG, "Error reading socket: " + ioe.getMessage());
                 } finally {
                     socket.close();
                 }
             }
-        } catch (IOException e) {
-            Log.d(INCOMMING_TASK_TAG, "Socket error: " + e.getMessage());
+        } catch (IOException ioe) {
+            Log.e(INCOMMING_TASK_TAG, "Socket error: " + ioe.getMessage());
         }
 
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void result) {
+        // TODO investigate if we want to do something after doInBackground ends
     }
 
 }
