@@ -184,22 +184,13 @@ public class MainMenuActivity
 
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
-        LogManager.logError("TAG", "ON PEERS AVAILABLE CALLED \n\n\n\n NOT WHAT?");
-
         StringBuilder peersString = new StringBuilder();
-
         // compile list of devices in range
         for (SimWifiP2pDevice device : peers.getDeviceList()) {
+            // TODO we can use getVirtIp() to obtain IPs to open TCP connections with WiFi Direct
             String deviceString = "" + device.deviceName + " (" + device.getVirtIp() + ")\n";
             peersString.append(deviceString);
         }
-
-        // display list of devices in range
-        new AlertDialog.Builder(this)
-                .setTitle("Devices in WiFi Range")
-                .setMessage(peersString.toString())
-                .setNeutralButton("Dismiss", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {}}).show();
     }
 
     /**********************************************************
@@ -208,7 +199,13 @@ public class MainMenuActivity
 
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
-        // TODO
+        // compile list of network members
+        StringBuilder peersStr = new StringBuilder();
+        for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
+            SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
+            String devstr = "" + deviceName + " (" + ((device == null)?"??":device.getVirtIp()) + ")\n";
+            peersStr.append(devstr);
+        }
     }
 
     /**********************************************************
