@@ -3,6 +3,7 @@ package cmov1819.p2photo.helpers;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.util.Base64;
 
 import com.google.android.gms.common.util.IOUtils;
 
@@ -11,6 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 public class ConvertUtils {
     public static String inputStreamToString(InputStream inputStream) throws IOException {
@@ -32,4 +35,28 @@ public class ConvertUtils {
         byte[] bitmapBytes = outputStream.toByteArray();
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
+
+    public static byte[] utf8StringToByteArray(String string) {
+        try {
+            return string.getBytes("UTF-8");
+        } catch (UnsupportedEncodingException uee) {
+            return null;
+        }
+    }
+    public static String byteArrayToBase64String(byte[] data) {
+        return Base64.encodeToString(data, Base64.DEFAULT);
+    }
+
+    public static byte[] base64StringToByteArray(String string) {
+        return Base64.decode(string, Base64.DEFAULT);
+    }
+
+    public static String byteArrayToUtf8(byte[] data) {
+        try {
+            return new String(data, "UTF-8");
+        } catch (UnsupportedEncodingException uee) {
+            return null;
+        }
+    }
+
 }
