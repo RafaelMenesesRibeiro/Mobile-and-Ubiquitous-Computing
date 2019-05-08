@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.termite.P2PhotoWiFiDirectManager;
 import cmov1819.p2photo.helpers.termite.SimWifiP2pBroadcastReceiver;
 import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
@@ -61,7 +62,6 @@ import static cmov1819.p2photo.ViewCatalogFragment.NO_CATALOG_SELECTED;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 
-
 public class MainMenuActivity
         extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
@@ -75,13 +75,11 @@ public class MainMenuActivity
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
-    private SimWifiP2pBroadcast mBroadcaster;
     private SimWifiP2pBroadcastReceiver mBroadcastReceiver;
     private SimWifiP2pManager mManager;
     private SimWifiP2pManager.Channel mChannel;
-    private SimWifiP2pSocketServer mServerSocket;
-    private SimWifiP2pSocket mClientSocket;
 
+    private P2PhotoWiFiDirectManager wiFiDirectManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -111,21 +109,14 @@ public class MainMenuActivity
     }
 
     private void initTermiteAttributes() {
-        this.mBroadcaster = new SimWifiP2pBroadcast();
         this.mBroadcastReceiver = null;
         this.mManager = null;
         this.mChannel = null;
-        this.mServerSocket = null;
-        this.mClientSocket = null;
     }
 
     private void basicTermiteSetup() {
         // initialize the WiFi Direct Simulator API
         SimWifiP2pSocketManager.Init(this);
-
-        // WiFi is always on - Battery drainage is cool, because people buy new phones
-        Intent intent = new Intent(this, SimWifiP2pService.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
         // register broadcast receiver
         IntentFilter filter = new IntentFilter();
@@ -134,8 +125,12 @@ public class MainMenuActivity
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
         mBroadcastReceiver = new SimWifiP2pBroadcastReceiver(this);
-
         registerReceiver(mBroadcastReceiver, filter);
+
+        // WiFi is always on - Battery drainage is cool, because people buy new phones
+        Intent intent = new Intent(this, SimWifiP2pService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
     }
 
     /**********************************************************
@@ -426,20 +421,4 @@ public class MainMenuActivity
     /**********************************************************
      * GETTERS AND SETTERS
      ***********************************************************/
-
-    public SimWifiP2pSocketServer getServerSocket() {
-        return mServerSocket;
-    }
-
-    public void setServerSocket(SimWifiP2pSocketServer newSocket) {
-        this.mServerSocket = newSocket;
-    }
-
-    public SimWifiP2pSocket getClientSocket() {
-        return mClientSocket;
-    }
-
-    public void setClientSocket(SimWifiP2pSocket mClientSocket) {
-        this.mClientSocket = mClientSocket;
-    }
 }
