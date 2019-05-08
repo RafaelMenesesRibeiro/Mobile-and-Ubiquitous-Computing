@@ -86,24 +86,18 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
     }
 
     private void updateCatalogFile(final Activity activity,
-                                   final String catalogId,
+                                   final String catalogID,
                                    final String owner,
                                    final String photoId) {
 
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
-            // Load contents
-            String fileName = String.format("catalog_%s.json", catalogId);
-            InputStream inputStream = activity.openFileInput(fileName);
-            JSONObject catalogFileContents = new JSONObject(inputStreamToString(inputStream));
+            JSONObject catalogFileContents = CatalogOperations.readCatalog(activity, catalogID);
             // Append photoId to the user photoId arrays under memberPhotos dictionary
             catalogFileContents.getJSONObject("membersPhotos").getJSONArray(owner).put(photoId);
-            // Save to disk
-            FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
-            outputStream.write(catalogFileContents.toString().getBytes("UTF-8"));
-            outputStream.close();
-
-        } catch (IOException | JSONException exc) {
+            CatalogOperations.writeCatalog(activity, catalogID, catalogFileContents);
+        }
+        catch (IOException | JSONException exc) {
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
             LogManager.toast(activity, "Failed to add photo to catalog");
         }
@@ -131,11 +125,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             catalogFile.put("catalogId", catalogID);
             catalogFile.put("catalogTitle", catalogTitle);
             catalogFile.put("membersPhotos", memberPhotosMapObject);
-            // Write them to application storage space
-            String fileName = String.format("catalog_%s.json", catalogID);
-            FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
-            outputStream.write(catalogFile.toString().getBytes("UTF-8"));
-            outputStream.close();
+            CatalogOperations.writeCatalog(activity, catalogID, catalogFile);
         }
         catch (JSONException | IOException exc) {
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
