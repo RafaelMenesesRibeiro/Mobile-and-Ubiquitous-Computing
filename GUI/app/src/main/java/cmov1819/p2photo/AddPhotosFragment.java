@@ -104,10 +104,10 @@ public class AddPhotosFragment extends Fragment {
 
             try {
                 if (bitmap == null) {throw new IOException(); }
-                save(bitmap);
+                saveImageOnDeviceFileSystem(bitmap);
             }
             catch (IOException ioex) {
-                String msg = "Could not save selected image file " + targetUri;
+                String msg = "Could not saveImageOnDeviceFileSystem selected image file " + targetUri;
                 LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
                 return;
             }
@@ -117,7 +117,7 @@ public class AddPhotosFragment extends Fragment {
         }
     }
 
-    private void save(Bitmap bitmap) throws IOException {
+    private void saveImageOnDeviceFileSystem(Bitmap bitmap) throws IOException {
         ContextWrapper cw = new ContextWrapper(getContext());
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
         File imageFile = new File(directory,"image.png");

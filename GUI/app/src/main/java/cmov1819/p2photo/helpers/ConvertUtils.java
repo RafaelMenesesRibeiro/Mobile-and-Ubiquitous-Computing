@@ -33,6 +33,18 @@ public class ConvertUtils {
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
+    public byte[] bitmapToByteArray(Bitmap bitmap, int quality) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, quality, byteArrayOutputStream);
+        return byteArrayOutputStream.toByteArray();
+    }
+
+    public static byte[] bitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG,100, byteArrayOutputStream);
+        return byteArrayOutputStream.toByteArray();
+    }
+
     public static Bitmap byteArrayOutputStreamToBitmap(ByteArrayOutputStream outputStream) throws IOException {
         byte[] bitmapBytes = outputStream.toByteArray();
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
@@ -45,6 +57,7 @@ public class ConvertUtils {
             return null;
         }
     }
+
     public static String byteArrayToBase64String(byte[] data) {
         return Base64.encodeToString(data, Base64.DEFAULT);
     }
@@ -59,12 +72,6 @@ public class ConvertUtils {
         } catch (UnsupportedEncodingException uee) {
             return null;
         }
-    }
-
-    public static byte[] bitmapToByteArray(Bitmap bitmap) {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG,100, byteArrayOutputStream);
-        return byteArrayOutputStream.toByteArray();
     }
 
     public static byte[] JSONObjectToByteAarray(JSONObject contents) {

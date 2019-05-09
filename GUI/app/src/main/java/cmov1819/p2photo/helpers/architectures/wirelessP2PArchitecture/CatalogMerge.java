@@ -24,17 +24,22 @@ import cmov1819.p2photo.helpers.managers.LogManager;
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 
 public class CatalogMerge {
+    private static final String CATALOG_MERGER_TAG = "CATALOG MERGER";
     private CatalogMerge() {
         // Does not allow this class to be instantiated. //
     }
 
-    public static void mergeCatalogSlicesWifiDirectArch(final Activity activity,
-                                                        final String catalogId,
-                                                        final JSONObject anotherCatalogFileContents) {
+    public static void mergeCatalogFiles(final Activity activity,
+                                         final String catalogId,
+                                         final JSONObject anotherCatalogFileContents) throws JSONException {
 
+        LogManager.logInfo(
+                CATALOG_MERGER_TAG, String.format("Trying to merge:\n%s\n", anotherCatalogFileContents.toString(4))
+        );
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
             // Load contents
+            LogManager.logInfo(CATALOG_MERGER_TAG, String.format("Loading this device catalog file with %s", catalogId));
             String fileName = String.format("catalog_%s.json", catalogId);
             InputStream inputStream = activity.openFileInput(fileName);
             String thisCatalogFileContentsString = inputStreamToString(inputStream);
