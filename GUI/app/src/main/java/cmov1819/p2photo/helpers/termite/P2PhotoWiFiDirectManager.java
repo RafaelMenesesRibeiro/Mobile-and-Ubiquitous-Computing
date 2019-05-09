@@ -12,6 +12,7 @@ import java.io.UnsupportedEncodingException;
 import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
@@ -42,46 +43,46 @@ public class P2PhotoWiFiDirectManager {
      **********************************************************/
 
     public void requestCatalog(final SimWifiP2pDevice calleeDevice, final String catalogId) {
+        Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request catalog: %s to %s", catalogId, calleeDevice.deviceName));
+        JSONObject jsonObject = new JSONObject();
         try {
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request catalog: %s to %s", catalogId, calleeDevice.deviceName));
-
-            JSONObject jsonObject = new JSONObject();
             jsonObject.put("operation", "requestCatalog");
             jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogId", catalogId);
-
             socketManager.doSend(calleeDevice, jsonObject.toString().getBytes("UTF-8"));
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, "catalogFileContents.toString() failed resulting in exception");
         } catch (UnsupportedEncodingException uee) {
-            // swallow
+            LogManager.logWarning(WIFI_DIRECT_MGR_TAG, uee.getMessage());
+            socketManager.doSend(calleeDevice, jsonObject.toString().getBytes());
         }
     }
 
     public void sendCatalog(final String callerUsername,
                             final SimWifiP2pDevice callerDevice,
                             final JSONObject catalogFileContents) {
-        try {
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending catalog to %s", callerDevice.deviceName));
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Contents:\n%s", catalogFileContents.toString(4)));
 
-            JSONObject jsonObject = new JSONObject();
+        SecretKey key = generateAes256Key();
+        registerKeyOnWebServer(key, callerUsername);
+
+        JSONObject jsonObject = new JSONObject();
+
+        try {
+            LogManager.logInfo(WIFI_DIRECT_MGR_TAG,
+                    String.format(
+                            "Sending catalog to %s\nContents:\n%s\n",
+                            callerDevice.deviceName,
+                            catalogFileContents.toString(4))
+            );
             jsonObject.put("operation", "sendCatalog");
             jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogFile", catalogFileContents);
-
-            SecretKey key = generateAes256Key();
-            sendKeyToP2PWebServer(key, callerUsername);
-
-            socketManager.doSend(
-                    callerDevice,
-                    cipherWithAes256(jsonObject.toString().getBytes("UTF-8"), key)
-            );
-
+            socketManager.doSend(callerDevice, cipherWithAes256(jsonObject.toString().getBytes("UTF-8"), key));
         } catch (JSONException jsone) {
-            Log.e(WIFI_DIRECT_MGR_TAG, "catalogFileContents.toString() failed resulting in exception");
+            LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
         } catch (UnsupportedEncodingException uee) {
-            // swallow
+            LogManager.logWarning(WIFI_DIRECT_MGR_TAG, uee.getMessage());
+            socketManager.doSend(callerDevice,cipherWithAes256(jsonObject.toString().getBytes(), key));
         }
     }
 
@@ -131,7 +132,7 @@ public class P2PhotoWiFiDirectManager {
         }
     }
 
-    private void sendKeyToP2PWebServer(SecretKey aesKey, String recipientUsername) {
+    private void registerKeyOnWebServer(SecretKey aesKey, String recipientUsername) {
         // TODO ask server to keep this aesKey for recipient username on a Map for 10 minutes then discards it.
     }
 
