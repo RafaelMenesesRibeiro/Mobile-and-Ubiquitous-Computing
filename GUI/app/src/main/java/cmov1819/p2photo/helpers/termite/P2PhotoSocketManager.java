@@ -14,9 +14,7 @@ class P2PhotoSocketManager {
     }
 
     public void doSend(final SimWifiP2pDevice targetDevice, final byte[] data) {
-        LogManager.logInfo(
-                SOCKET_MGR_TAG, String.format("Trying to send data to %s", targetDevice.deviceName)
-        );
+        LogManager.logInfo(SOCKET_MGR_TAG, String.format("Trying to send data to %s", targetDevice.deviceName));
         new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, mWiFiDirectManager, targetDevice, data);
     }
 }

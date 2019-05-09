@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.SignatureException;
 
+import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.ConvertUtils;
 import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -19,7 +20,7 @@ import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 
 public class CatalogOperations {
 
-    public static JSONObject readCatalog(Activity activity, String catalogID) throws IOException, JSONException {
+        public static JSONObject readCatalog(Activity activity, String catalogID) throws IOException, JSONException {
         String fileName = String.format("catalog_%s.json", catalogID);
         InputStream inputStream = activity.openFileInput(fileName);
         byte[] encrypted = inputStreamToString(inputStream).getBytes();
@@ -54,4 +55,6 @@ public class CatalogOperations {
         outputStream.write(decrypted);
         outputStream.close();
     }
+
+
 }
