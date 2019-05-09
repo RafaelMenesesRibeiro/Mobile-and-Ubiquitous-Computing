@@ -28,9 +28,9 @@ public class CatalogMerge {
         // Does not allow this class to be instantiated. //
     }
 
-    public static void mergeCatalogSlicesWifiDirectArch(final Activity activity,
-                                                        final String catalogId,
-                                                        final JSONObject anotherCatalogFileContents) {
+    public static void mergeCatalogFiles(final Activity activity,
+                                         final String catalogId,
+                                         final JSONObject anotherCatalogFileContents) {
 
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
