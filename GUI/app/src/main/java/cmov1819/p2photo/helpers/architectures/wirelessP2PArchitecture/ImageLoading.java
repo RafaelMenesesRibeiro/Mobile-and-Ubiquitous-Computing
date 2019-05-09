@@ -1,22 +1,28 @@
 package cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.LogManager;
 
+import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToBitmap;
+import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 
 public class ImageLoading {
     private ImageLoading() {
@@ -68,6 +74,11 @@ public class ImageLoading {
         return loadedPhotos;
     }
 
+    public static void savePhoto(Activity activity, String fileName, Bitmap bitmap) throws IOException {
+        FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
+        outputStream.write(bitmapToByteArray(bitmap));
+        outputStream.close();
+    }
 
     public static Bitmap loadPhoto(final Activity activity, final String fileName) throws FileNotFoundException {
         InputStream inputStream = activity.openFileInput(fileName);
@@ -82,4 +93,6 @@ public class ImageLoading {
         // TODO for each fileName in list, request photo, convert it to bit map, append to list and store it;
         return new ArrayList<>();
     }
+
+
 }
