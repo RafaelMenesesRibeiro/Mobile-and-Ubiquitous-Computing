@@ -17,6 +17,7 @@ import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.R;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
@@ -30,13 +31,12 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
 
     @Override
     protected void onPreExecute() {
-        // TODO if pre processing is required
+        LogManager.logInfo(INCOMING_TASK_TAG, "Started WiFi Direct server task (" + this.hashCode() + ").");
     }
 
     @Override
     protected Void doInBackground(final Object... params) {
 
-        Log.d(INCOMING_TASK_TAG, "Started incoming communication task (" + this.hashCode() + ").");
 
         try {
             P2PhotoWiFiDirectManager wiFiDirectManager = (P2PhotoWiFiDirectManager) params[0];
@@ -94,7 +94,7 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
 
     @Override
     protected void onPostExecute(Void result) {
-        // TODO investigate if we want to do something after doInBackground ends
+        LogManager.logInfo(INCOMING_TASK_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
     }
 
     private byte[] processCatalogRequest(P2PhotoWiFiDirectManager wiFiDirectManager,
