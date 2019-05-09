@@ -274,7 +274,7 @@ public class LoginActivity extends AppCompatActivity {
      ***********************************************************/
 
     @TargetApi(Build.VERSION_CODES.M)
-    public static void initializeSymmetricKey(Activity activity) throws SignatureException {
+    public static void initializeSymmetricKey(Activity activity) {
         try {
             CryptoUtils.initializeSymmetricKey();
         }
