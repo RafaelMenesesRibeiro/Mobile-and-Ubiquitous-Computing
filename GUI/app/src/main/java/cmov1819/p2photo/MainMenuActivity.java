@@ -20,14 +20,21 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Pair;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -35,6 +42,7 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
+import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -77,6 +85,9 @@ public class MainMenuActivity
     private SimWifiP2pManager mManager;
     private SimWifiP2pManager.Channel mChannel;
 
+    private SimWifiP2pDeviceList mPeers;
+    private List<SimWifiP2pDevice> mGroupPeers;
+
     private P2PhotoWiFiDirectManager wiFiDirectManager;
 
     @Override
@@ -111,6 +122,8 @@ public class MainMenuActivity
         this.mBroadcastReceiver = null;
         this.mManager = null;
         this.mChannel = null;
+        this.mPeers = null;
+        this.mGroupPeers = new ArrayList<>();
     }
 
     private void basicTermiteSetup() {
@@ -192,9 +205,46 @@ public class MainMenuActivity
 
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
-        for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
-            // TODO Act accordingly to membership changes, if GO died, try to become GO
+        LogManager.logInfo(MAIN_MENU_TAG, "New group information available...");
+        mGroupPeers.clear();
+        if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
+            LogManager.logInfo(MAIN_MENU_TAG, "There may be new devices in the group!");
+            // Refresh my device name
+            wiFiDirectManager.setDeviceName(simWifiP2pInfo.getDeviceName());
+            // Load catalog files
+            Pair<List<JSONObject>, List<String>> result = loadMyCatalogFiles();
+            List<JSONObject> myCatalogFiles = result.first;
+            List<String> myMissingCatalogFiles = result.second;
+            // Update peers list belonging to my group
+            for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
+                mGroupPeers.add(simWifiP2pDeviceList.getByName(deviceName));
+            }
+            // Broadcast my catalog files
+            for (SimWifiP2pDevice device : mGroupPeers) {
+                wiFiDirectManager.pushCatalogFiles(device, myCatalogFiles);
+            }
+            // Try pulling catalog files I don't have
+            wiFiDirectManager.pullMissingCatalogFiles(mGroupPeers, myMissingCatalogFiles);
+        } else {
+            LogManager.logInfo(MAIN_MENU_TAG, "Group has no devices left!");
         }
+    }
+
+    private Pair<List<JSONObject>, List<String>> loadMyCatalogFiles() {
+        Map<String, String> myMembershipsMap = ViewUserCatalogsFragment.getMemberships(this);
+        List<JSONObject> myCatalogFiles = new ArrayList<>();
+        List<String> myMissingCatalogFiles = new ArrayList<>();
+        for (String catalogId : myMembershipsMap.keySet()) {
+            try {
+                myCatalogFiles.add(CatalogOperations.readCatalog(this, catalogId));
+            } catch (FileNotFoundException fnfe) {
+                LogManager.logWarning(MAIN_MENU_TAG, "Catalog: " + catalogId +  "doesn't exist locally");
+                myMissingCatalogFiles.add(catalogId);
+            } catch (IOException | JSONException exc) {
+                LogManager.logError(MAIN_MENU_TAG, exc.getMessage());
+            }
+        }
+        return new Pair<>(myCatalogFiles, myMissingCatalogFiles);
     }
 
     /**********************************************************
