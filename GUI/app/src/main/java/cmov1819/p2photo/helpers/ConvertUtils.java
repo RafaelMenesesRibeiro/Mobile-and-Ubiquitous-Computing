@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 
 public class ConvertUtils {
     public static String inputStreamToString(InputStream inputStream) throws IOException {
@@ -59,4 +58,9 @@ public class ConvertUtils {
         }
     }
 
+    public static byte[] bitmapToByteArray(Bitmap bitmap) {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG,100, byteArrayOutputStream);
+        return byteArrayOutputStream.toByteArray();
+    }
 }
