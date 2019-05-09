@@ -17,7 +17,6 @@ import java.util.List;
 import cmov1819.p2photo.helpers.managers.LogManager;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToBitmap;
-import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 
 public class ImageLoading {
     private ImageLoading() {
@@ -25,7 +24,7 @@ public class ImageLoading {
     }
 
     public static List<Bitmap> getBitmapsFromFileStorage(final Activity activity,
-                                                   final String catalogId) {
+                                                         final String catalogId) {
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
             JSONObject catalogFileContents = CatalogOperations.readCatalog(activity, catalogId);
@@ -41,14 +40,14 @@ public class ImageLoading {
     }
 
     private static List<Bitmap> loadMapPhotos(final Activity activity,
-                                       final JSONObject membersPhotosMap) {
+                                              final JSONObject membersPhotosMap) {
 
         List<Bitmap> loadedPhotos = new ArrayList<>();
         List<String>  photoNotFoundList = new ArrayList<>();
 
         Iterator<String> receivedMembers = membersPhotosMap.keys();
         while (receivedMembers.hasNext()) {
-            String fileName = "";
+            String fileName;
             String currentMember = receivedMembers.next();
             try {
                 JSONArray currentMemberPhotos = membersPhotosMap.getJSONArray(currentMember);
@@ -70,7 +69,7 @@ public class ImageLoading {
     }
 
 
-    private static Bitmap loadPhoto(final Activity activity, final String fileName) throws FileNotFoundException {
+    public static Bitmap loadPhoto(final Activity activity, final String fileName) throws FileNotFoundException {
         InputStream inputStream = activity.openFileInput(fileName);
         try {
             return inputStreamToBitmap(inputStream);
