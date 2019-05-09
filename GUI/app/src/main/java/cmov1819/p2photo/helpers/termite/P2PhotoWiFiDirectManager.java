@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -58,31 +59,33 @@ public class P2PhotoWiFiDirectManager {
         }
     }
 
-    public void sendCatalog(final String callerUsername,
-                            final SimWifiP2pDevice callerDevice,
+    public void sendCatalog(final SimWifiP2pDevice targetDevice,
                             final JSONObject catalogFileContents) {
 
+        // This token can be used by the receiving device to obtain the AES Key from the server
+        String token = UUID.randomUUID().toString();
         SecretKey key = generateAes256Key();
-        registerKeyOnWebServer(key, callerUsername);
+        // Ask the server temporarily store the AES Key associated with this token
+        registerKeyOnWebServer(key, targetDevice.deviceName, token);
 
         JSONObject jsonObject = new JSONObject();
-
         try {
             LogManager.logInfo(WIFI_DIRECT_MGR_TAG,
                     String.format(
                             "Sending catalog to %s\nContents:\n%s\n",
-                            callerDevice.deviceName,
+                            targetDevice.deviceName,
                             catalogFileContents.toString(4))
             );
             jsonObject.put("operation", "sendCatalog");
             jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogFile", catalogFileContents);
-            socketManager.doSend(callerDevice, cipherWithAes256(jsonObject.toString().getBytes("UTF-8"), key));
+            jsonObject.put("aesToken", token);
+            socketManager.doSend(targetDevice, cipherWithAes256(jsonObject.toString().getBytes("UTF-8"), key));
         } catch (JSONException jsone) {
             LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
         } catch (UnsupportedEncodingException uee) {
             LogManager.logWarning(WIFI_DIRECT_MGR_TAG, uee.getMessage());
-            socketManager.doSend(callerDevice,cipherWithAes256(jsonObject.toString().getBytes(), key));
+            socketManager.doSend(targetDevice,cipherWithAes256(jsonObject.toString().getBytes(), key));
         }
     }
 
@@ -132,7 +135,9 @@ public class P2PhotoWiFiDirectManager {
         }
     }
 
-    private void registerKeyOnWebServer(SecretKey aesKey, String recipientUsername) {
+    private void registerKeyOnWebServer(final SecretKey aesKey,
+                                        final String deviceName,
+                                        final String recipientUsername) {
         // TODO ask server to keep this aesKey for recipient username on a Map for 10 minutes then discards it.
     }
 
