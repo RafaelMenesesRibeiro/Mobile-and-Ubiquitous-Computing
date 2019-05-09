@@ -13,7 +13,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
 public class SendDataTask extends AsyncTask<Object, String, Void> {
 
-    private static final String SENDD_DATA_TASK_TAG = "SEND DATA";
+    private static final String SEND_DATA_TASK_TAG = "SEND DATA";
 
     @Override
     protected void onPreExecute() {
@@ -23,21 +23,21 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
     @Override
     protected Void doInBackground(final Object... params) {
         P2PhotoWiFiDirectManager wiFiDirectManager = (P2PhotoWiFiDirectManager) params[0];
+
         SimWifiP2pDevice targetDevice = (SimWifiP2pDevice) params[1];
         byte[] data = (byte[]) params[2];
-
+        
         try {
             // Construct a new clientSocket
             SimWifiP2pSocket clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), R.string.termite_port);
             // Send data to target device
-            clientSocket.getOutputStream().write(wiFiDirectManager.getmUsername().getBytes());
             clientSocket.getOutputStream().write(data);
             // Read any reply from target device
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             bufferedReader.readLine();
             clientSocket.close();
         } catch (IOException ioe) {
-            Log.e(SENDD_DATA_TASK_TAG, "Error: " + ioe.getMessage());
+            Log.e(SEND_DATA_TASK_TAG, "Error: " + ioe.getMessage());
         }
         return null;
     }
