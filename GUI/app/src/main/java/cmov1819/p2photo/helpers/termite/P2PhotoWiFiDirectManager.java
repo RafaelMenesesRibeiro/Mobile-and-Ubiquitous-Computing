@@ -76,16 +76,21 @@ public class P2PhotoWiFiDirectManager {
                             targetDevice.deviceName,
                             catalogFileContents.toString(4))
             );
-            jsonObject.put("operation", "sendCatalog");
+
+            String cipheredCatalogFile = byteArrayToBase64String(
+                    cipherWithAes256(key, catalogFileContents.toString().getBytes("UTF-8"))
+            );
+
+            jsonObject.put("operation", "sendingCatalog");
             jsonObject.put("from", SessionManager.getUsername(mMainMenuActivity));
-            jsonObject.put("catalogFile", catalogFileContents);
+            jsonObject.put("catalogFile", cipheredCatalogFile);
             jsonObject.put("token", token);
-            socketManager.doSend(targetDevice, cipherWithAes256(key, jsonObject.toString().getBytes("UTF-8")));
+            socketManager.doSend(targetDevice, jsonObject.toString().getBytes("UTF-8"));
+
         } catch (JSONException jsone) {
             LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
         } catch (UnsupportedEncodingException uee) {
-            LogManager.logWarning(WIFI_DIRECT_MGR_TAG, uee.getMessage());
-            socketManager.doSend(targetDevice, cipherWithAes256(key, jsonObject.toString().getBytes()));
+            LogManager.logError(WIFI_DIRECT_MGR_TAG, uee.getMessage());
         }
     }
 
@@ -104,8 +109,8 @@ public class P2PhotoWiFiDirectManager {
         Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request catalog: %s to %s", catalogId, calleeDevice.deviceName));
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("operation", "requestCatalog");
-            jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
+            jsonObject.put("operation", "requestingCatalog");
+            jsonObject.put("from", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogId", catalogId);
             socketManager.doSend(calleeDevice, jsonObject.toString().getBytes("UTF-8"));
         } catch (JSONException jsone) {
@@ -127,8 +132,8 @@ public class P2PhotoWiFiDirectManager {
             Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request photo: %s to %s", photoUuid, calleeDevice.deviceName));
 
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("operation", "requestPhoto");
-            jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
+            jsonObject.put("operation", "requestingPhoto");
+            jsonObject.put("from", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogId", catalogId);
             jsonObject.put("photoUuid", photoUuid);
 
@@ -149,8 +154,8 @@ public class P2PhotoWiFiDirectManager {
             byte[] rawPhoto = bitmapToByteArray(photo);
 
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("operation", "sendPhoto");
-            jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
+            jsonObject.put("operation", "sendingPhoto");
+            jsonObject.put("from", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("photoUuid", photoUuid);
             jsonObject.put("photo", byteArrayToBase64String(rawPhoto));
 
