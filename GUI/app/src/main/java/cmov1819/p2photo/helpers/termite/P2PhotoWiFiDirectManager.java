@@ -149,14 +149,6 @@ public class P2PhotoWiFiDirectManager {
      * GETTERS AND SETTERS
      **********************************************************/
 
-    public P2PhotoSocketManager getSocketManager() {
-        return socketManager;
-    }
-
-    public void setSocketManager(P2PhotoSocketManager socketManager) {
-        this.socketManager = socketManager;
-    }
-
     public SimWifiP2pSocketServer getServerSocket() {
         return mServerSocket;
     }
@@ -167,5 +159,9 @@ public class P2PhotoWiFiDirectManager {
 
     public void setServerSocket(SimWifiP2pSocketServer newSocket) {
         this.mServerSocket = newSocket;
+    }
+
+    public MainMenuActivity getMainMenuActivity() {
+        return mMainMenuActivity;
     }
 }
