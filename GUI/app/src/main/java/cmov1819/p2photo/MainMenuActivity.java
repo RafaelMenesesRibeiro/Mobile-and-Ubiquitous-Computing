@@ -1,9 +1,15 @@
 package cmov1819.p2photo;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Messenger;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -14,50 +20,83 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Pair;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
+import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
+import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
+import cmov1819.p2photo.helpers.termite.P2PhotoWiFiDirectManager;
+import cmov1819.p2photo.helpers.termite.SimWifiP2pBroadcastReceiver;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
+import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
+import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
+import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
+import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
+import pt.inesc.termite.wifidirect.SimWifiP2pManager;
+import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 
-import static android.widget.Toast.LENGTH_SHORT;
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.NO_CATALOG_SELECTED;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
-public class MainMenuActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+
+public class MainMenuActivity
+        extends AppCompatActivity
+        implements NavigationView.OnNavigationItemSelectedListener, SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
+
     public static final String MAIN_MENU_TAG = "MAIN MENU ACTIVITY";
     public static final String START_SCREEN = "initialScreen";
     public static final String HOME_SCREEN = SearchUserFragment.class.getName();
 
+    private static Resources resources;
+
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
-    private static Resources resources;
+    private SimWifiP2pBroadcastReceiver mBroadcastReceiver;
+    private SimWifiP2pManager mManager;
+    private SimWifiP2pManager.Channel mChannel;
+
+    private SimWifiP2pDeviceList mPeers;
+    private List<SimWifiP2pDevice> mGroupPeers;
+
+    private P2PhotoWiFiDirectManager wiFiDirectManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+
+        initTermiteAttributes();
+
         MainMenuActivity.resources = getResources();
 
         ArchitectureManager.systemArchitecture.handlePendingMemberships(this);
@@ -71,11 +110,146 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
+        basicTermiteSetup();
+
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
-            goHome();
+            goHome(); // Go to application main page;
         }
     }
+
+    private void initTermiteAttributes() {
+        this.mBroadcastReceiver = null;
+        this.mManager = null;
+        this.mChannel = null;
+        this.mPeers = null;
+        this.mGroupPeers = new ArrayList<>();
+    }
+
+    private void basicTermiteSetup() {
+        // initialize the WiFi Direct Simulator API
+        SimWifiP2pSocketManager.Init(this);
+
+        // register broadcast receiver
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
+        mBroadcastReceiver = new SimWifiP2pBroadcastReceiver(this);
+        registerReceiver(mBroadcastReceiver, filter);
+
+        // WiFi is always on - Battery drainage is cool, because people buy new phones
+        Intent intent = new Intent(this, SimWifiP2pService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
+        this.wiFiDirectManager = new P2PhotoWiFiDirectManager(this);
+        wiFiDirectManager.setServerSocket();
+    }
+
+    /**********************************************************
+     * TERMITE MANAGEMENT ATTRIBUTES AND METHODS
+     **********************************************************/
+
+    private ServiceConnection connection = new ServiceConnection() {
+        // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            LogManager.logError("MAIN", "on servercice connected");
+            mManager = new SimWifiP2pManager(new Messenger(service));
+            mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            LogManager.logError("MAIN", "on servercice disconenetec");
+            // Our WiFi service is always on
+            mManager = null;
+            mChannel = null;
+        }
+    };
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // unregisterReceiver(mBroadcastReceiver);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // basicTermiteSetup()
+    }
+
+    /** Searches vicinity for nearby phones; */
+    private OnClickListener listenerInRangeButton = new OnClickListener() {
+        public void onClick(View view){
+            mManager.requestPeers(mChannel,MainMenuActivity.this);
+        }
+    };
+
+    /**********************************************************
+     * TERMITE PEER LISTENER (PeerListListener Impl)
+     **********************************************************/
+
+    @Override
+    public void onPeersAvailable(SimWifiP2pDeviceList peers) {
+        // compile list of devices in range
+        for (SimWifiP2pDevice device : peers.getDeviceList()) {
+            // TODO Search for a GO within these devices if none is found, try to become GO
+        }
+    }
+
+    /**********************************************************
+     * TERMITE GROUP LISTENER (GroupInfoListener Impl)
+     **********************************************************/
+
+    @Override
+    public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
+        LogManager.logInfo(MAIN_MENU_TAG, "New group information available...");
+        mGroupPeers.clear();
+        if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
+            LogManager.logInfo(MAIN_MENU_TAG, "There may be new devices in the group!");
+            // Refresh my device name
+            wiFiDirectManager.setDeviceName(simWifiP2pInfo.getDeviceName());
+            // Load catalog files
+            Pair<List<JSONObject>, List<String>> result = loadMyCatalogFiles();
+            List<JSONObject> myCatalogFiles = result.first;
+            List<String> myMissingCatalogFiles = result.second;
+            // Update peers list belonging to my group
+            for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
+                mGroupPeers.add(simWifiP2pDeviceList.getByName(deviceName));
+            }
+            // Broadcast my catalog files
+            for (SimWifiP2pDevice device : mGroupPeers) {
+                wiFiDirectManager.pushCatalogFiles(device, myCatalogFiles);
+            }
+            // Try pulling catalog files I don't have
+            wiFiDirectManager.pullMissingCatalogFiles(mGroupPeers, myMissingCatalogFiles);
+        } else {
+            LogManager.logInfo(MAIN_MENU_TAG, "Group has no devices left!");
+        }
+    }
+
+    private Pair<List<JSONObject>, List<String>> loadMyCatalogFiles() {
+        Map<String, String> myMembershipsMap = ViewUserCatalogsFragment.getMemberships(this);
+        List<JSONObject> myCatalogFiles = new ArrayList<>();
+        List<String> myMissingCatalogFiles = new ArrayList<>();
+        for (String catalogId : myMembershipsMap.keySet()) {
+            try {
+                myCatalogFiles.add(CatalogOperations.readCatalog(this, catalogId));
+            } catch (FileNotFoundException fnfe) {
+                LogManager.logWarning(MAIN_MENU_TAG, "Catalog: " + catalogId +  "doesn't exist locally");
+                myMissingCatalogFiles.add(catalogId);
+            } catch (IOException | JSONException exc) {
+                LogManager.logError(MAIN_MENU_TAG, exc.getMessage());
+            }
+        }
+        return new Pair<>(myCatalogFiles, myMissingCatalogFiles);
+    }
+
+    /**********************************************************
+     * NAVIGATION METHODS
+     **********************************************************/
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
@@ -132,8 +306,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
     }
 
     /**********************************************************
-    * MEMBERSHIP VERIFICATION METHODS
-    ***********************************************************/
+     * MEMBERSHIP VERIFICATION METHODS
+     ***********************************************************/
 
     public static void handlePendingMembershipsCloudArch(Activity activity) {
         Map<String, String> membershipMapping = ViewUserCatalogsFragment.getMembershipGoogleDriveIDs(activity);
@@ -289,4 +463,8 @@ public class MainMenuActivity extends AppCompatActivity implements NavigationVie
             public void afterTextChanged(Editable s) { /* Do nothing */ }
         });
     }
+
+    /**********************************************************
+     * GETTERS AND SETTERS
+     ***********************************************************/
 }

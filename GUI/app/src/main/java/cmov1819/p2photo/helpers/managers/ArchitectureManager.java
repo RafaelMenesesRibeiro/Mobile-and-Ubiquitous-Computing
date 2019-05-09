@@ -1,8 +1,8 @@
 package cmov1819.p2photo.helpers.managers;
 
 import cmov1819.p2photo.helpers.architectures.BaseArchitecture;
-import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
-import cmov1819.p2photo.helpers.architectures.WirelessP2PArchitecture;
+import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
+import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.WirelessP2PArchitecture;
 
 public class ArchitectureManager {
 

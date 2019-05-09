@@ -18,34 +18,17 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
-import cmov1819.p2photo.dataobjects.RequestData;
-import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
-import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
-import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
-import cmov1819.p2photo.msgtypes.ErrorResponse;
-import cmov1819.p2photo.msgtypes.SuccessResponse;
-
-import static android.widget.Toast.LENGTH_LONG;
-import static android.widget.Toast.LENGTH_SHORT;
-import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_GOOGLE_IDENTIFIERS;
-import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class AddPhotosFragment extends Fragment {
     public static final String CATALOG_ID_EXTRA = "catalogID";
@@ -161,70 +144,6 @@ public class AddPhotosFragment extends Fragment {
         catch (FailedOperationException ex) {
             String msg = "Add Photo Operation unsuccessful";
             LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
-        }
-    }
-
-    public static void addPhotoCloudArch(Activity activity, String catalogId, File androidFilePath)
-            throws FailedOperationException{
-        HashMap<String, String> googleDriveIdentifiers = getGoogleDriveIdentifiers(activity, catalogId);
-
-        if (googleDriveIdentifiers == null) {
-            String msg = "Failed to obtain googleDriveIdentifiers. Found ErrorResponse";
-            LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
-            LogManager.toast(activity, "Failed to add photo");
-            throw new FailedOperationException();
-        }
-
-        Map.Entry<String, String> onlyEntry = googleDriveIdentifiers.entrySet().iterator().next();
-        GoogleDriveMediator googleDriveMediator = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getGoogleDriveMediator(activity);
-        AuthStateManager authStateManager = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
-        googleDriveMediator.newPhoto(
-                activity,
-                onlyEntry.getKey(),
-                onlyEntry.getValue(),
-                androidFilePath.getName(),
-                GoogleDriveMediator.TYPE_PNG,
-                androidFilePath,
-                authStateManager.getAuthState()
-        );
-    }
-
-    private static HashMap<String, String> getGoogleDriveIdentifiers(Activity activity, String catalogId) throws FailedOperationException {
-        try {
-            String baseUrl = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_google_identifiers);
-
-            String url = String.format(
-                    "%s?calleeUsername=%s&catalogId=%s", baseUrl, getUsername(activity) , catalogId
-            );
-
-            RequestData requestData = new RequestData(activity, GET_GOOGLE_IDENTIFIERS, url);
-            ResponseData result = new QueryManager().execute(requestData).get();
-
-            int code = result.getServerCode();
-            if (code != HttpURLConnection.HTTP_OK) {
-                String reason = ((ErrorResponse) result.getPayload()).getReason();
-                if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                    LogManager.logError(LogManager.ADD_PHOTO_TAG, reason);
-                    LogManager.toast(activity, "Session timed out, please login again");
-                    activity.startActivity(new Intent(activity, LoginActivity.class));
-                    return null;
-                }
-                else {
-                    LogManager.logError(LogManager.ADD_PHOTO_TAG, reason);
-                    LogManager.toast(activity, "Something went wrong");
-                    return null;
-                }
-            }
-            else {
-                Object resultObject = ((SuccessResponse)result.getPayload()).getResult();
-                return (HashMap<String, String>) resultObject;
-            }
-        }
-        catch (ExecutionException | InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            String msg = "Operation unsuccessful. " + ex.getMessage();
-            LogManager.logError(LogManager.ADD_PHOTO_TAG, msg);
-            throw new FailedOperationException(ex.getMessage());
         }
     }
 

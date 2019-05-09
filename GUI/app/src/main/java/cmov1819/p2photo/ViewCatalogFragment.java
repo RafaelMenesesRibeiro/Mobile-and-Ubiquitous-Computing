@@ -13,14 +13,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -31,7 +29,7 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.adapters.ImageGridAdapter;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
-import cmov1819.p2photo.helpers.architectures.CloudBackedArchitecture;
+import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -151,21 +149,6 @@ public class ViewCatalogFragment extends Fragment {
         return true;
     }
 
-    public static void populateGridCloudArch(Activity activity, View view, String catalogID, String catalogTitle) {
-        List<String>  googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(activity, catalogID);
-        TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
-        catalogTitleTextView.setText(catalogTitle);
-
-        GoogleDriveMediator googleDriveMediator = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getGoogleDriveMediator(activity);
-        AuthStateManager authStateManager = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
-
-        for (String googleCatalogFileId : googleSliceFileIdentifiersList) {
-            googleDriveMediator.viewCatalogSlicePhotos(activity, view, googleCatalogFileId, authStateManager.getAuthState()
-            );
-        }
-        LogManager.logViewCatalog(catalogID, catalogTitle);
-    }
-
     public static void drawImages(View view, final Context context, List<Bitmap> contents) {
         GridView grid = view.findViewById(R.id.catalogGrid);
         Adapter adapter = grid.getAdapter();
@@ -199,24 +182,5 @@ public class ViewCatalogFragment extends Fragment {
         catch (NullPointerException | ClassCastException ex) {
             LogManager.toast(getActivity(), "Could not present add new photo screen");
         }
-    }
-
-    public static List<String> getGoogleSliceFileIdentifiersList(Activity activity, String catalogID) {
-        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.view_catalog) +
-                "?calleeUsername=" + getUsername(activity) + "&catalogId=" + catalogID;
-
-        try {
-            RequestData requestData = new RequestData(activity, GET_CATALOG, url);
-            ResponseData responseData = new QueryManager().execute(requestData).get();
-            if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
-                SuccessResponse payload = (SuccessResponse) responseData.getPayload();
-                return (List<String> ) payload.getResult();
-            }
-        }
-        catch (ExecutionException | InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            LogManager.logError(LogManager.VIEW_CATALOG_TAG, ex.getMessage());
-        }
-        return new ArrayList<>();
     }
 }
