@@ -1,8 +1,10 @@
 package cmov1819.p2photo;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -19,8 +21,12 @@ import net.openid.appauth.AuthorizationService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.security.cert.CertificateException;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -267,8 +273,16 @@ public class LoginActivity extends AppCompatActivity {
      * WIRELESS P2P ARCHITECTURE SETUP HELPERS
      ***********************************************************/
 
+    @TargetApi(Build.VERSION_CODES.M)
     public static void initializeSymmetricKey(Activity activity) throws SignatureException {
-        CryptoUtils.initializeSymmetricKey();
+        try {
+            CryptoUtils.initializeSymmetricKey();
+        }
+        catch (Exception ex) {
+            // TODO //
+            ex.printStackTrace();
+            System.exit(-5);
+        }
         goHome(activity);
     }
 
