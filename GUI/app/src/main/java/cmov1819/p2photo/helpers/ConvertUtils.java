@@ -6,12 +6,16 @@ import android.graphics.BitmapFactory;
 
 import com.google.android.gms.common.util.IOUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
+import java.io.UnsupportedEncodingException;
 
 public class ConvertUtils {
     public static String inputStreamToString(InputStream inputStream) throws IOException {
@@ -34,13 +38,23 @@ public class ConvertUtils {
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
-    public static byte[] objectToByteArray(Object object) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(bos);
-        oos.writeObject(object);
-        byte[] result = bos.toByteArray();
-        oos.close();
-        bos.close();
-        return result;
+    public static byte[] JSONObjectToByteAarray(JSONObject contents) {
+        try {
+            return contents.toString().getBytes("UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            // Ignored
+            return null;
+        }
+    }
+
+    public static byte[] JSONObjectToByteAarray(JSONObject contents, int indentSpaces) {
+        try {
+            return contents.toString(indentSpaces).getBytes("UTF-8");
+        }
+        catch (UnsupportedEncodingException | JSONException e) {
+            // Ignored
+            return null;
+        }
     }
 }

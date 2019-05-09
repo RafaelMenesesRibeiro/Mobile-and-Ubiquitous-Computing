@@ -12,6 +12,7 @@ import java.security.InvalidKeyException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.UnrecoverableEntryException;
@@ -26,9 +27,16 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
 public class CryptoUtils {
-    private static final String SYMMETRIC_CYPHER_PROPS = "AES/GSM/PKCS5Padding";
+    private static final String SYMMETRIC_CYPHER_PROPS = "AES/CBC/PKCS5Padding";
     private static final String KEY_STORE_PROVIDER = "AndroidKeyStore";
     private static final String KEY_STORE_ALIAS = "MOC_1819_P2PHOTO_ALIAS";
+
+    private static final IvParameterSpec IV_PARAMETER_SPEC = new IvParameterSpec(new byte[]
+            { 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00 });
 
     private static  SecretKey secretKey;
 
@@ -92,11 +100,10 @@ public class CryptoUtils {
         Cipher cipher;
         try {
             cipher = Cipher.getInstance(SYMMETRIC_CYPHER_PROPS);
-            cipher.init(mode, key);
+            cipher.init(mode, key, IV_PARAMETER_SPEC);
             return cipher.doFinal(initialBytes);
         }
-        catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException |
-                IllegalBlockSizeException | BadPaddingException ex) {
+        catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException ex) {
             // TODO - Change throw type//
             throw new SignatureException(ex.getMessage());
         }

@@ -115,7 +115,6 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         java.io.File catalogFolder = activity.getDir(catalogID, Context.MODE_PRIVATE);
         // Create catalog.json file
         try {
-
             // Create file content representation
             Map<String, List<String>> membersPhotosMap = new HashMap<>();
             membersPhotosMap.put(username, new ArrayList<String>());
@@ -128,6 +127,8 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             CatalogOperations.writeCatalog(activity, catalogID, catalogFile);
         }
         catch (JSONException | IOException exc) {
+            // TODO - Remove. //
+            exc.printStackTrace();
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
             LogManager.toast(activity, "Failed to create catalog slice");
         }
