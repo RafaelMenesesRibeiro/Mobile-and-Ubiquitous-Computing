@@ -34,8 +34,6 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.termite.P2PhotoWiFiDirectManager;
-import cmov1819.p2photo.helpers.termite.SimWifiP2pBroadcastReceiver;
 import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
@@ -43,6 +41,8 @@ import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
+import cmov1819.p2photo.helpers.termite.P2PhotoWiFiDirectManager;
+import cmov1819.p2photo.helpers.termite.SimWifiP2pBroadcastReceiver;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
@@ -51,9 +51,7 @@ import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
@@ -159,12 +157,14 @@ public class MainMenuActivity
 
     @Override
     public void onPause() {
-
-        LogManager.logError("MAIN", "ON PAUSE \n\n\n\n on pause");
-
         super.onPause();
-        // TODO - What is this? //
         // unregisterReceiver(mBroadcastReceiver);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        // basicTermiteSetup()
     }
 
     /** Searches vicinity for nearby phones; */
@@ -180,12 +180,9 @@ public class MainMenuActivity
 
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
-        StringBuilder peersString = new StringBuilder();
         // compile list of devices in range
         for (SimWifiP2pDevice device : peers.getDeviceList()) {
-            // TODO we can use getVirtIp() to obtain IPs to open TCP connections with WiFi Direct
-            String deviceString = "" + device.deviceName + " (" + device.getVirtIp() + ")\n";
-            peersString.append(deviceString);
+            // TODO Search for a GO within these devices if none is found, try to become GO
         }
     }
 
@@ -195,12 +192,8 @@ public class MainMenuActivity
 
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
-        // compile list of network members
-        StringBuilder peersStr = new StringBuilder();
         for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
-            SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
-            String devstr = "" + deviceName + " (" + ((device == null)?"??":device.getVirtIp()) + ")\n";
-            peersStr.append(devstr);
+            // TODO Act accordingly to membership changes, if GO died, try to become GO
         }
     }
 
