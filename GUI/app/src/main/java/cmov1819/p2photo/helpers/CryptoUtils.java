@@ -1,6 +1,7 @@
 package cmov1819.p2photo.helpers;
 
 import android.annotation.TargetApi;
+import android.media.MediaCodec;
 import android.os.Build;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
@@ -80,23 +81,23 @@ public class CryptoUtils {
         }
     }
 
-    public static byte[] cipherWithAes256(SecretKey key, byte[] plainBytes) throws SignatureException {
+    public static byte[] cipherWithAes256(SecretKey key, byte[] plainBytes) {
         return symmetricCipher(Cipher.ENCRYPT_MODE, key, plainBytes);
     }
 
-    public static byte[] cipherWithAes256(byte[] plainBytes) throws SignatureException {
+    public static byte[] cipherWithAes256(byte[] plainBytes) {
         return symmetricCipher(Cipher.ENCRYPT_MODE, CryptoUtils.secretKey, plainBytes);
     }
 
-    public static byte[] decipherWithAes256(SecretKey key, byte[] cipheredBytes) throws SignatureException {
+    public static byte[] decipherWithAes256(SecretKey key, byte[] cipheredBytes) {
         return symmetricCipher(Cipher.DECRYPT_MODE, key, cipheredBytes);
     }
 
-    public static byte[] decipherWithAes256(byte[] cipheredBytes) throws SignatureException {
+    public static byte[] decipherWithAes256(byte[] cipheredBytes) {
         return symmetricCipher(Cipher.DECRYPT_MODE, CryptoUtils.secretKey, cipheredBytes);
     }
 
-    private static byte[] symmetricCipher(int mode, SecretKey key, byte[] initialBytes) throws SignatureException {
+    private static byte[] symmetricCipher(int mode, SecretKey key, byte[] initialBytes) {
         Cipher cipher;
         try {
             cipher = Cipher.getInstance(SYMMETRIC_CYPHER_PROPS);
@@ -104,8 +105,7 @@ public class CryptoUtils {
             return cipher.doFinal(initialBytes);
         }
         catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException ex) {
-            // TODO - Change throw type//
-            throw new SignatureException(ex.getMessage());
+            throw new RuntimeException(ex.getMessage());
         }
     }
 }
