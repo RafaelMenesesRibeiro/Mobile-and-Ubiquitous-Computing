@@ -42,7 +42,27 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
                     // Process values
                     JSONObject jsonObject = new JSONObject(incomingJsonData);
 
-                    if (jsonObject.has("")) // TODO
+                    if (jsonObject.has("operation")) {
+                        String operation = jsonObject.getString("operation");
+                        switch (operation) {
+                            case "requestCatalog":
+                                break;
+                            case "sendCatalog":
+                                break;
+                            case "requestPhoto":
+                                break;
+                            case "sendPhoto":
+                                break;
+                            case "areYouServer":
+                                break;
+                            case "areYouServerReply":
+                                break;
+                            default:
+                                socket.getOutputStream().write(("warning: 'operation' field invalid\n").getBytes());
+                        }
+                    } else {
+                        socket.getOutputStream().write(("error: 'operation' field not found\n").getBytes());
+                    }
                     // Close interaction
                     socket.getOutputStream().write(("\n").getBytes());
                 } catch (IOException ioe) {
