@@ -96,7 +96,7 @@ public class P2PhotoWiFiDirectManager {
             Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request photo: %s to %s", photoUuid, calleeDevice.deviceName));
 
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("operation", "requestCatalog");
+            jsonObject.put("operation", "requestPhoto");
             jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogId", catalogId);
             jsonObject.put("photoUuid", photoUuid);
@@ -118,7 +118,7 @@ public class P2PhotoWiFiDirectManager {
             byte[] rawPhoto = bitmapToByteArray(photo);
 
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("operation", "sendCatalog");
+            jsonObject.put("operation", "sendPhoto");
             jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("photoUuid", photoUuid);
             jsonObject.put("photo", byteArrayToBase64String(rawPhoto));
