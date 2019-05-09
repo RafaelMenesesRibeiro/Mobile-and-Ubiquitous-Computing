@@ -14,9 +14,9 @@ import cmov1819.p2photo.R;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
-public class IncommingSocketTask extends AsyncTask<Object, String, Void> {
+public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
 
-    private static final String INCOMMING_TASK_TAG = "INCOMMING SOCKET";
+    private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
 
     @Override
     protected void onPreExecute() {
@@ -26,36 +26,36 @@ public class IncommingSocketTask extends AsyncTask<Object, String, Void> {
     @Override
     protected Void doInBackground(final Object... params) {
 
-        Log.d(INCOMMING_TASK_TAG, "Started incomming communication task (" + this.hashCode() + ").");
+        Log.d(INCOMING_TASK_TAG, "Started incoming communication task (" + this.hashCode() + ").");
 
         try {
             P2PhotoWiFiDirectManager wiFiDirectManager = (P2PhotoWiFiDirectManager) params[0];
             // setup a server socket on MainMenuActivity
             wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(R.string.termite_port));
-            // set server socket to listen to incomming requests indefinetly
+            // set server socket to listen to incoming requests
             while (!Thread.currentThread().isInterrupted()) {
                 SimWifiP2pSocket socket = wiFiDirectManager.getServerSocket().accept();
                 try {
                     // Read from input stream
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    String incommingJsonData = bufferedReader.readLine();
+                    String incomingJsonData = bufferedReader.readLine();
                     // Process values
-                    JSONObject jsonObject = new JSONObject(incommingJsonData);
+                    JSONObject jsonObject = new JSONObject(incomingJsonData);
 
                     if (jsonObject.has("")) // TODO
                     // Close interaction
                     socket.getOutputStream().write(("\n").getBytes());
                 } catch (IOException ioe) {
-                    Log.e(INCOMMING_TASK_TAG, "Error reading socket: " + ioe.getMessage());
+                    Log.e(INCOMING_TASK_TAG, "Error reading socket: " + ioe.getMessage());
                 } catch (JSONException jsone) {
-                    Log.e(INCOMMING_TASK_TAG, "Error reading socket: malformed json request");
+                    Log.e(INCOMING_TASK_TAG, "Error reading socket: malformed json request");
 
                 } finally {
                     socket.close();
                 }
             }
         } catch (IOException ioe) {
-            Log.e(INCOMMING_TASK_TAG, "Socket error: " + ioe.getMessage());
+            Log.e(INCOMING_TASK_TAG, "Socket error: " + ioe.getMessage());
         }
 
         return null;
