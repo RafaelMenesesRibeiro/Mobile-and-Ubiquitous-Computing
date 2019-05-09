@@ -26,7 +26,7 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
         SimWifiP2pDevice targetDevice = (SimWifiP2pDevice) params[1];
         byte[] data = (byte[]) params[2];
-        
+
         try {
             // Construct a new clientSocket
             SimWifiP2pSocket clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), R.string.termite_port);
