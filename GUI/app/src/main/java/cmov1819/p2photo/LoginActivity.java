@@ -20,6 +20,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.security.SignatureException;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -27,6 +28,7 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
@@ -196,7 +198,14 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         enableUserTextInputs(usernameEditText, passwordEditText);
-        ArchitectureManager.systemArchitecture.setup(view, this);
+        try {
+            ArchitectureManager.systemArchitecture.setup(view, this);
+        }
+        catch (FailedOperationException ex) {
+            // TODO - Is this the best way? //
+            LogManager.logError(LogManager.LOGIN_TAG, ex.getMessage());
+            System.exit(-1);
+        }
     }
 
     public void tryLogin(String username, String password) throws FailedLoginException {
@@ -252,6 +261,15 @@ public class LoginActivity extends AppCompatActivity {
         Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
         mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
         activity.startActivity(mainMenuActivityIntent);
+    }
+
+    /**********************************************************
+     * WIRELESS P2P ARCHITECTURE SETUP HELPERS
+     ***********************************************************/
+
+    public static void initializeSymmetricKey(Activity activity) throws SignatureException {
+        CryptoUtils.initializeSymmetricKey();
+        goHome(activity);
     }
 
     /**********************************************************

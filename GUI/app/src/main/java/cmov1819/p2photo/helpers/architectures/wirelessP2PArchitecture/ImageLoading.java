@@ -28,14 +28,12 @@ public class ImageLoading {
                                                    final String catalogId) {
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
-            // Load contents
-            String fileName = String.format("catalog_%s.json", catalogId);
-            InputStream inputStream = activity.openFileInput(fileName);
-            JSONObject catalogFileContents = new JSONObject(inputStreamToString(inputStream));
+            JSONObject catalogFileContents = CatalogOperations.readCatalog(activity, catalogId);
             // Append photoId to the user photoId arrays under memberPhotos dictionary
             JSONObject membersPhotosMap = catalogFileContents.getJSONObject("membersPhotos");
             return loadMapPhotos(activity, membersPhotosMap);
-        } catch (IOException | JSONException exc) {
+        }
+        catch (IOException | JSONException exc) {
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
             LogManager.toast(activity, "Failed to add photo to catalog");
             return new ArrayList<>();

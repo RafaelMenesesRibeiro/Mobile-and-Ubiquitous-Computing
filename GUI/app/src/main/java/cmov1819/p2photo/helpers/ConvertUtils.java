@@ -7,11 +7,15 @@ import android.util.Base64;
 
 import com.google.android.gms.common.util.IOUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 
 public class ConvertUtils {
@@ -63,4 +67,25 @@ public class ConvertUtils {
         bitmap.compress(Bitmap.CompressFormat.PNG,100, byteArrayOutputStream);
         return byteArrayOutputStream.toByteArray();
     }
+
+    public static byte[] JSONObjectToByteAarray(JSONObject contents) {
+        try {
+            return contents.toString().getBytes("UTF-8");
+        }
+        catch (UnsupportedEncodingException e) {
+            // Ignored
+            return null;
+        }
+    }
+
+    public static byte[] JSONObjectToByteAarray(JSONObject contents, int indentSpaces) {
+        try {
+            return contents.toString(indentSpaces).getBytes("UTF-8");
+        }
+        catch (UnsupportedEncodingException | JSONException e) {
+            // Ignored
+            return null;
+        }
+    }
+
 }
