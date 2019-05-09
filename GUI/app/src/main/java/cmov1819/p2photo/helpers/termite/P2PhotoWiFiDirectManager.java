@@ -6,26 +6,23 @@ import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.mortbay.thread.Timeout;
 
-import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Collections;
 
 import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
-import cmov1819.p2photo.helpers.ConvertUtils;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
+
+import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
+import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 
 public class P2PhotoWiFiDirectManager {
     private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
 
     private final MainMenuActivity mMainMenuActivity;
-    private final String mUsername;
-    private final String mMacAddress;
 
     private P2PhotoSocketManager socketManager;
     private SimWifiP2pSocketServer mServerSocket;
@@ -34,40 +31,26 @@ public class P2PhotoWiFiDirectManager {
      * CONSTRUCTORS
      **********************************************************/
 
-    public P2PhotoWiFiDirectManager(MainMenuActivity activity, String username, String macAddress) {
+    public P2PhotoWiFiDirectManager(MainMenuActivity activity) {
         this.mMainMenuActivity = activity;
-        this.mUsername = username;
-        this.mMacAddress = macAddress;
         this.mServerSocket = null;
         this.socketManager = new P2PhotoSocketManager(this);
     }
 
     /**********************************************************
-     * REGULAR METHODS
+     * CATALOG REQUEST / RESPONSE METHODS
      **********************************************************/
 
-    public void requestCatalog(final SimWifiP2pDevice targetDevice, final String catalogId) {
+    public void requestCatalog(final SimWifiP2pDevice calleeDevice, final String catalogId) {
         try {
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request catalog: %s to %s", catalogId, targetDevice.deviceName));
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request catalog: %s to %s", catalogId, calleeDevice.deviceName));
+
             JSONObject jsonObject = new JSONObject();
+            jsonObject.put("operation", "requestCatalog");
+            jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogId", catalogId);
-            socketManager.doSend(targetDevice, jsonObject.toString(4).getBytes("UTF-8"));
-        } catch (JSONException jsone) {
-            Log.e(WIFI_DIRECT_MGR_TAG, "catalogFileContents.toString() failed resulting in exception");
-        } catch (UnsupportedEncodingException uee) {
-            // swallow
-        }
 
-    }
-
-    public void sendCatalog(final SimWifiP2pDevice targetDevice, final JSONObject catalogFileContents) {
-        try {
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending catalog to %s", targetDevice.deviceName));
-            String jsonString = catalogFileContents.toString(4);
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Contents:\n%s\n ciphering and sending...", jsonString));
-            SecretKey aesKey = generateAes256Key();
-            sendKeyToP2PWebServer(aesKey, targetDevice.deviceName); // TODO Exchange deviceName with actual dest username
-            socketManager.doSend(targetDevice, cipherWithAes256(jsonString.getBytes("UTF-8"), aesKey));
+            socketManager.doSend(calleeDevice, jsonObject.toString().getBytes("UTF-8"));
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, "catalogFileContents.toString() failed resulting in exception");
         } catch (UnsupportedEncodingException uee) {
@@ -75,14 +58,72 @@ public class P2PhotoWiFiDirectManager {
         }
     }
 
-    public void sendPhoto(final SimWifiP2pDevice targetDevice, final Bitmap photo) {
+    public void sendCatalog(final String callerUsername,
+                            final SimWifiP2pDevice callerDevice,
+                            final JSONObject catalogFileContents) {
         try {
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending photo to %s", targetDevice.deviceName));
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            photo.compress(Bitmap.CompressFormat.PNG,100, byteArrayOutputStream);
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending catalog to %s", callerDevice.deviceName));
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Contents:\n%s", catalogFileContents.toString(4)));
+
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("photo", ConvertUtils.byteArrayToBase64String(byteArrayOutputStream.toByteArray()));
-            socketManager.doSend(targetDevice, jsonObject.toString(4).getBytes("UTF-8"));
+            jsonObject.put("operation", "sendCatalog");
+            jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
+            jsonObject.put("catalogFile", catalogFileContents);
+
+            SecretKey key = generateAes256Key();
+            sendKeyToP2PWebServer(key, callerUsername);
+
+            socketManager.doSend(
+                    callerDevice,
+                    cipherWithAes256(jsonObject.toString().getBytes("UTF-8"), key)
+            );
+
+        } catch (JSONException jsone) {
+            Log.e(WIFI_DIRECT_MGR_TAG, "catalogFileContents.toString() failed resulting in exception");
+        } catch (UnsupportedEncodingException uee) {
+            // swallow
+        }
+    }
+
+    /**********************************************************
+     * PHOTO REQUEST / RESPONSE METHODS
+     **********************************************************/
+
+    public void requestPhoto(final SimWifiP2pDevice calleeDevice,
+                             final String catalogId,
+                             final String photoUuid) {
+        try {
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request photo: %s to %s", photoUuid, calleeDevice.deviceName));
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("operation", "requestCatalog");
+            jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
+            jsonObject.put("catalogId", catalogId);
+            jsonObject.put("photoUuid", photoUuid);
+
+            socketManager.doSend(calleeDevice, jsonObject.toString().getBytes("UTF-8"));
+        } catch (JSONException jsone) {
+            Log.e(WIFI_DIRECT_MGR_TAG, "catalogFileContents.toString() failed resulting in exception");
+        } catch (UnsupportedEncodingException uee) {
+            // swallow
+        }
+    }
+
+    public void sendPhoto(final SimWifiP2pDevice callerDevice,
+                          final String photoUuid,
+                          final Bitmap photo) {
+        try {
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending photo to %s", callerDevice.deviceName));
+
+            byte[] rawPhoto = bitmapToByteArray(photo);
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("operation", "sendCatalog");
+            jsonObject.put("callerUsername", SessionManager.getUsername(mMainMenuActivity));
+            jsonObject.put("photoUuid", photoUuid);
+            jsonObject.put("photo", byteArrayToBase64String(rawPhoto));
+
+            socketManager.doSend(callerDevice, jsonObject.toString().getBytes("UTF-8"));
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, "Unable to form JSONObject with bitmap data");
         } catch (UnsupportedEncodingException uee) {
@@ -107,14 +148,6 @@ public class P2PhotoWiFiDirectManager {
     /**********************************************************
      * GETTERS AND SETTERS
      **********************************************************/
-
-    public String getmUsername() {
-        return mUsername;
-    }
-
-    public String getmMacAddress() {
-        return mMacAddress;
-    }
 
     public P2PhotoSocketManager getSocketManager() {
         return socketManager;
