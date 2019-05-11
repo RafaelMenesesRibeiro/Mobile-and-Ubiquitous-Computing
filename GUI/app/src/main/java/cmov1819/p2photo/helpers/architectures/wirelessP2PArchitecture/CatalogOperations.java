@@ -27,12 +27,12 @@ public class CatalogOperations {
     public static JSONObject readCatalog(Activity activity, String catalogID) throws IOException, JSONException {
         String fileName = String.format("catalog_%s.json", catalogID);
         InputStream inputStream = activity.openFileInput(fileName);
-
         byte[] encrypted = inputStreamToString(inputStream).getBytes("UTF-8");
+        /*
         byte[] decoded = Base64.getDecoder().decode(encrypted);
-        byte[] decrypted = CryptoUtils.decipherWithAes256(decoded);
-
         return new JSONObject(new String(decoded));
+        */
+        return new JSONObject(new String(encrypted));
     }
 
     // TODO - Change this //
@@ -41,11 +41,10 @@ public class CatalogOperations {
         String fileName = String.format("catalog_%s.json", catalogID);
 
         byte[] decrypted = ConvertUtils.JSONObjectToByteAarray(contents, 4);
-        byte[] encrypted = CryptoUtils.cipherWithAes256(decrypted);
-
-        String encoded = Base64.getEncoder().encodeToString(encrypted);
+        // byte[] encrypted = CryptoUtils.cipherWithAes256(decrypted);
         FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
-        outputStream.write(encoded.getBytes("UTF-8"));
+        // outputStream.write(encrypted);
+        outputStream.write(decrypted);
         outputStream.close();
     }
 }

@@ -38,13 +38,8 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
     }
 
     @Override
-    public void setup(final View view, final LoginActivity loginActivity) throws FailedOperationException {
-        try {
-            LoginActivity.initializeSymmetricKey(loginActivity);
-        }
-        catch (SignatureException ex) {
-            throw new FailedOperationException(ex.getMessage());
-        }
+    public void setup(final View view, final LoginActivity loginActivity) {
+        LoginActivity.initializeSymmetricKey(loginActivity);
     }
 
     /**********************************************************
