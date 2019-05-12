@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.SignatureException;
 import java.util.Base64;
 
@@ -27,12 +28,10 @@ public class CatalogOperations {
     public static JSONObject readCatalog(Activity activity, String catalogID) throws IOException, JSONException {
         String fileName = String.format("catalog_%s.json", catalogID);
         InputStream inputStream = activity.openFileInput(fileName);
-        byte[] encrypted = inputStreamToString(inputStream).getBytes("UTF-8");
-        /*
-        byte[] decoded = Base64.getDecoder().decode(encrypted);
-        return new JSONObject(new String(decoded));
-        */
-        return new JSONObject(new String(encrypted));
+        String encodedNEncrypted = inputStreamToString(inputStream);
+        byte[] encrypted = Base64.getDecoder().decode(encodedNEncrypted);
+        byte[] decrypted = CryptoUtils.decipherWithAes256(encrypted);
+        return new JSONObject(new String(decrypted));
     }
 
     // TODO - Change this //
@@ -41,10 +40,10 @@ public class CatalogOperations {
         String fileName = String.format("catalog_%s.json", catalogID);
 
         byte[] decrypted = ConvertUtils.JSONObjectToByteAarray(contents, 4);
-        // byte[] encrypted = CryptoUtils.cipherWithAes256(decrypted);
+        byte[] encrypted = CryptoUtils.cipherWithAes256(decrypted);
+        String encodedNEncrypted = Base64.getEncoder().encodeToString(encrypted);
         FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
-        // outputStream.write(encrypted);
-        outputStream.write(decrypted);
+        outputStream.write(encodedNEncrypted.getBytes());
         outputStream.close();
     }
 }

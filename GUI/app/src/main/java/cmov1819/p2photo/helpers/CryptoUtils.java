@@ -24,7 +24,7 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 
 public class CryptoUtils {
-    private static final String SYMMETRIC_CYPHER_PROPS = "AES/CBC/PKCS5Padding";
+    private static final String SYMMETRIC_CYPHER_PROPS = "AES/CBC/PKCS7Padding";
     private static final String KEY_STORE_PROVIDER = "AndroidKeyStore";
     private static final String KEY_STORE_ALIAS = "MOC_1819_P2PHOTO_ALIAS";
     private static final byte[] IV_PARAMETER_SPEC = initializeIV();
@@ -60,7 +60,7 @@ public class CryptoUtils {
                         new KeyGenParameterSpec.Builder(KEY_STORE_ALIAS,
                                 KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
                                 .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_PKCS7)
                                 .setRandomizedEncryptionRequired(false)
                                 .build());
                 return keyGenerator.generateKey();
