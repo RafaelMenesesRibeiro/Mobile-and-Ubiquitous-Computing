@@ -37,23 +37,23 @@ import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToUtf8;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes256;
 
-public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
+public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
 
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
     private static final int TERMITE_PORT = 10001;
+    private P2PhotoWiFiDirectManager wiFiDirectManager = null;
+
     @Override
     protected void onPreExecute() {
         LogManager.logInfo(INCOMING_TASK_TAG, "Started WiFi Direct server task (" + this.hashCode() + ").");
     }
 
     @Override
-    protected Void doInBackground(final Object... params) {
-
-
+    protected Void doInBackground(final Void... params) {
         try {
-            P2PhotoWiFiDirectManager wiFiDirectManager = (P2PhotoWiFiDirectManager) params[0];
+            this.wiFiDirectManager = P2PhotoWiFiDirectManager.getInstance();
             // setup a server socket on MainMenuActivity
-            wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
+            this.wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
             // set server socket to listen to incoming requests
             while (!Thread.currentThread().isInterrupted()) {
                 SimWifiP2pSocket socket = wiFiDirectManager.getServerSocket().accept();

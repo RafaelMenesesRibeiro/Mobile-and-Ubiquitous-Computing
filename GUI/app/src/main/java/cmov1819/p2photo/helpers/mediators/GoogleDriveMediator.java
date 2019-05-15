@@ -56,11 +56,7 @@ public class GoogleDriveMediator {
 
     public static final String GOOGLE_DRIVE_TAG = "DRIVE MEDIATOR";
 
-    public static final String GOOGLE_API = "https://www.googleapis.com/";
-    public static final String TYPE_GOOGLE_DRIVE_FILE = "application/vnd.google-apps.file";
     public static final String TYPE_GOOGLE_DRIVE_FOLDER = "application/vnd.google-apps.folder";
-    public static final String TYPE_GOOGLE_PHOTO = "application/vnd.google-apps.photo";
-    public static final String TYPE_GOOGLE_UNKNOWN = "application/vnd.google-apps.unknown";
 
     public static final String TYPE_JSON = "application/json; charset=utf-8";
     public static final String TYPE_TXT = "text/plain";
@@ -69,15 +65,6 @@ public class GoogleDriveMediator {
     public static final String TYPE_BMP = "image/bmp";
     public static final String TYPE_GIF = "image/gif";
     public static final String TYPE_WEBP = "image/webp";
-
-    public static final MediaType JSON_TYPE = MediaType.parse(TYPE_JSON);
-
-    public static final String FILE_UPLOAD_ENDPOINT = GOOGLE_API + "drive/v2/files";
-    public static final String MEDIA_FILE_UPLOAD_ENDPOINT = GOOGLE_API + "/upload/drive/v3/files?uploadType=media";
-
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String CONTENT_TYPE_HEADER = "Content-Type";
-    public static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
     private static GoogleDriveMediator instance;
     private static Credential credential;

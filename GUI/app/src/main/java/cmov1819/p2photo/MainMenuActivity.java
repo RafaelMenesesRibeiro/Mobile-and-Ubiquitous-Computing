@@ -114,8 +114,8 @@ public class MainMenuActivity
         Intent intent = new Intent(this, SimWifiP2pService.class);
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
-        this.mWFManager = new P2PhotoWiFiDirectManager(this);
-        mWFManager.setServerSocket();
+        // Start Server in AsyncTask
+        this.mWFManager = P2PhotoWiFiDirectManager.init(this);
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
