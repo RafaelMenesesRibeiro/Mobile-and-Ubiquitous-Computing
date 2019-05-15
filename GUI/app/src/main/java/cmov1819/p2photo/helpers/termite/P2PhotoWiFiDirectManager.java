@@ -198,7 +198,7 @@ public class P2PhotoWiFiDirectManager {
     }
 
     public void setServerSocket() {
-        new IncomingSocketTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this);
+        new IncomingSocketTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void setServerSocket(SimWifiP2pSocketServer newSocket) {
