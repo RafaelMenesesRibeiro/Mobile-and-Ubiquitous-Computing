@@ -35,6 +35,9 @@ import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes256;
 
 public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
+    private static final String CONFIRM_RCV = "\n";
+    private static final String SEND = "\n";
+
     private static final int TERMITE_PORT = 10001;
 
     private WiFiDirectManager wiFiDirectManager = null;
@@ -47,9 +50,10 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
     @Override
     protected Void doInBackground(final Void... params) {
         try {
-            this.wiFiDirectManager = WiFiDirectManager.getInstance();
+            // get singleton instance of our WiFiDirectManager
+            wiFiDirectManager = WiFiDirectManager.getInstance();
             // setup a server socket on MainMenuActivity
-            this.wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
+            wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
             // set server socket to listen to incoming requests
             while (!Thread.currentThread().isInterrupted()) {
                 SimWifiP2pSocket socket = wiFiDirectManager.getServerSocket().accept();
@@ -89,7 +93,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
                                 .write(("error: 'operation' field not found\n").getBytes());
                     }
                     // Close interaction
-                    socket.getOutputStream().write(("\n").getBytes());
+                    socket.getOutputStream().write((CONFIRM_RCV).getBytes());
                 } catch (IOException ioe) {
                     Log.e(INCOMING_TASK_TAG, "Error reading socket: " + ioe.getMessage());
                 } catch (JSONException jsone) {

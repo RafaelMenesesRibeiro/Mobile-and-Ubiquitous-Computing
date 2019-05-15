@@ -14,6 +14,9 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
 public class SendDataTask extends AsyncTask<Object, String, Void> {
     private static final String SEND_DATA_TASK_TAG = "SEND DATA";
+    private static final String CONFIRM_RCV = "\n";
+    private static final String SEND = "\n";
+
     private static final int TERMITE_PORT = 10001;
 
     @Override
