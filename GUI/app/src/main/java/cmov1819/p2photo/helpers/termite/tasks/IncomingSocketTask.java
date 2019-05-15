@@ -1,11 +1,9 @@
-package cmov1819.p2photo.helpers.termite;
+package cmov1819.p2photo.helpers.termite.tasks;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
-
-import com.fasterxml.jackson.core.io.JsonEOFException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,14 +18,12 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import cmov1819.p2photo.MainMenuActivity;
-import cmov1819.p2photo.R;
-import cmov1819.p2photo.helpers.ConvertUtils;
-import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.termite.WiFiDirectManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
@@ -40,8 +36,8 @@ import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes256;
 public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
     private static final int TERMITE_PORT = 10001;
-    
-    private P2PhotoWiFiDirectManager wiFiDirectManager = null;
+
+    private WiFiDirectManager wiFiDirectManager = null;
 
     @Override
     protected void onPreExecute() {
@@ -51,7 +47,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
     @Override
     protected Void doInBackground(final Void... params) {
         try {
-            this.wiFiDirectManager = P2PhotoWiFiDirectManager.getInstance();
+            this.wiFiDirectManager = WiFiDirectManager.getInstance();
             // setup a server socket on MainMenuActivity
             this.wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
             // set server socket to listen to incoming requests
@@ -110,7 +106,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         return null;
     }
 
-    private void processIncomingCatalog(P2PhotoWiFiDirectManager wiFiDirectManager, JSONObject jsonObject)
+    private void processIncomingCatalog(WiFiDirectManager wiFiDirectManager, JSONObject jsonObject)
             throws JSONException {
 
         LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incomming catalog \n%s\n", jsonObject.toString(4)));
@@ -132,7 +128,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         CatalogMerge.mergeCatalogFiles(wiFiDirectManager.getMainMenuActivity(), catalogId, decipheredCatalogFile);
     }
 
-    private void processIncomingPhoto(P2PhotoWiFiDirectManager wiFiDirectManager, JSONObject jsonObject)
+    private void processIncomingPhoto(WiFiDirectManager wiFiDirectManager, JSONObject jsonObject)
             throws JSONException {
 
         LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incomming photo\n%s\n", jsonObject.toString(4)));
@@ -161,7 +157,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         LogManager.logInfo(INCOMING_TASK_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
     }
 
-    private byte[] replyWithRequestCatalog(final P2PhotoWiFiDirectManager wiFiDirectManager,
+    private byte[] replyWithRequestCatalog(final WiFiDirectManager wiFiDirectManager,
                                            JSONObject jsonObject) throws JSONException, IOException {
 
         MainMenuActivity activity = wiFiDirectManager.getMainMenuActivity();
@@ -191,7 +187,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         }
     }
 
-    private byte[] replyWithRequestedPhoto(final P2PhotoWiFiDirectManager wiFiDirectManager,
+    private byte[] replyWithRequestedPhoto(final WiFiDirectManager wiFiDirectManager,
                                            JSONObject jsonObject) throws JSONException, FileNotFoundException {
 
         MainMenuActivity activity = wiFiDirectManager.getMainMenuActivity();

@@ -17,6 +17,8 @@ import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.termite.tasks.IncomingSocketTask;
+import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
@@ -24,10 +26,10 @@ import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes256;
 
-public class P2PhotoWiFiDirectManager {
+public class WiFiDirectManager {
     private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
 
-    private static P2PhotoWiFiDirectManager instance;
+    private static WiFiDirectManager instance;
 
     private final MainMenuActivity mMainMenuActivity;
 
@@ -37,19 +39,19 @@ public class P2PhotoWiFiDirectManager {
      * CONSTRUCTORS
      **********************************************************/
 
-    private P2PhotoWiFiDirectManager(MainMenuActivity activity) {
+    private WiFiDirectManager(MainMenuActivity activity) {
         this.mMainMenuActivity = activity;
     }
 
-    public static P2PhotoWiFiDirectManager init(MainMenuActivity activity) {
+    public static WiFiDirectManager init(MainMenuActivity activity) {
         if (instance == null) {
-            instance = new P2PhotoWiFiDirectManager(activity);
+            instance = new WiFiDirectManager(activity);
             new IncomingSocketTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
         return instance;
     }
 
-    public static P2PhotoWiFiDirectManager getInstance() {
+    public static WiFiDirectManager getInstance() {
         return instance;
     }
 
