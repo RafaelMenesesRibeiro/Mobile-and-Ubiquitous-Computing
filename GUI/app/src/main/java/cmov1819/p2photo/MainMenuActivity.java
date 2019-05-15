@@ -49,7 +49,7 @@ import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
-import cmov1819.p2photo.helpers.termite.WiFiDirectManager;
+import cmov1819.p2photo.helpers.managers.WiFiDirectManager;
 import cmov1819.p2photo.helpers.termite.SimWifiP2pBroadcastReceiver;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;

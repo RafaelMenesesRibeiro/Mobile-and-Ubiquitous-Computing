@@ -23,7 +23,7 @@ import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOpe
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
-import cmov1819.p2photo.helpers.termite.WiFiDirectManager;
+import cmov1819.p2photo.helpers.managers.WiFiDirectManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 

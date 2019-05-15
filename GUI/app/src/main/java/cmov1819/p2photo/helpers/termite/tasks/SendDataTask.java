@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.termite.WiFiDirectManager;
+import cmov1819.p2photo.helpers.managers.WiFiDirectManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 

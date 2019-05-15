@@ -1,4 +1,4 @@
-package cmov1819.p2photo.helpers.termite;
+package cmov1819.p2photo.helpers.managers;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -15,8 +15,6 @@ import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.CryptoUtils;
-import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.termite.tasks.IncomingSocketTask;
 import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
