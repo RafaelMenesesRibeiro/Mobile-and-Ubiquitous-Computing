@@ -31,7 +31,7 @@ public class P2PhotoWiFiDirectManager {
     private final MainMenuActivity mMainMenuActivity;
 
     private P2PhotoSocketManager socketManager;
-    private SimWifiP2pSocketServer mServerSocket;
+    private SimWifiP2pSocketServer mServerSocket = null;
 
     /**********************************************************
      * CONSTRUCTORS
@@ -39,10 +39,18 @@ public class P2PhotoWiFiDirectManager {
 
     public P2PhotoWiFiDirectManager(MainMenuActivity activity) {
         this.mMainMenuActivity = activity;
-        this.mServerSocket = null;
         this.socketManager = new P2PhotoSocketManager(this);
     }
 
+    /**********************************************************
+     * GENERIC METHODS
+     *********************************************************/
+
+    public void doSend(final SimWifiP2pDevice targetDevice, final byte[] data) {
+        LogManager.logInfo(WIFI_DIRECT_MGR_TAG, String.format("Trying to send data to %s", targetDevice.deviceName));
+        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, targetDevice, data);
+    }
+    
     /**********************************************************
      * CATALOG DISTRIBUTION METHODS
      **********************************************************/
