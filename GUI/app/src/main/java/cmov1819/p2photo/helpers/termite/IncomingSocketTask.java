@@ -40,7 +40,7 @@ import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes256;
 public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
 
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
-
+    private static final int TERMITE_PORT = 10001;
     @Override
     protected void onPreExecute() {
         LogManager.logInfo(INCOMING_TASK_TAG, "Started WiFi Direct server task (" + this.hashCode() + ").");
@@ -53,7 +53,7 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
         try {
             P2PhotoWiFiDirectManager wiFiDirectManager = (P2PhotoWiFiDirectManager) params[0];
             // setup a server socket on MainMenuActivity
-            wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(R.string.termite_port));
+            wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
             // set server socket to listen to incoming requests
             while (!Thread.currentThread().isInterrupted()) {
                 SimWifiP2pSocket socket = wiFiDirectManager.getServerSocket().accept();
