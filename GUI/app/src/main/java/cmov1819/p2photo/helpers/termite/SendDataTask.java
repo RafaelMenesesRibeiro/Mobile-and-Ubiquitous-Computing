@@ -13,7 +13,7 @@ import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
 public class SendDataTask extends AsyncTask<Object, String, Void> {
-
+    private static final int TERMITE_PORT = 10001;
     private static final String SEND_DATA_TASK_TAG = "SEND DATA";
 
     @Override
@@ -29,7 +29,7 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
         try {
             // Construct a new clientSocket
-            SimWifiP2pSocket clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), R.string.termite_port);
+            SimWifiP2pSocket clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
             LogManager.logInfo(SEND_DATA_TASK_TAG, "Successfully created a client socket");
             // Send data to target device
             clientSocket.getOutputStream().write(data);
