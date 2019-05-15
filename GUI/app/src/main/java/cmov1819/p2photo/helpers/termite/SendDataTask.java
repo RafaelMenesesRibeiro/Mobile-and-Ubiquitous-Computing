@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import cmov1819.p2photo.R;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
@@ -23,7 +22,7 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
     @Override
     protected Void doInBackground(final Object... params) {
-        // P2PhotoWiFiDirectManager wiFiDirectManager = (P2PhotoWiFiDirectManager) params[0];
+        P2PhotoWiFiDirectManager wiFiDirectManager = (P2PhotoWiFiDirectManager) params[0];
         SimWifiP2pDevice targetDevice = (SimWifiP2pDevice) params[1];
         byte[] data = (byte[]) params[2];
 
