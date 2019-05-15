@@ -26,12 +26,8 @@ import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes256;
 
 public class WiFiDirectManager {
     private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
-
     private static WiFiDirectManager instance;
-
     private final MainMenuActivity mMainMenuActivity;
-
-    private SimWifiP2pSocketServer mServerSocket = null;
 
     /**********************************************************
      * CONSTRUCTORS
@@ -194,7 +190,7 @@ public class WiFiDirectManager {
     }
 
     public SimWifiP2pSocketServer getServerSocket() {
-        return mServerSocket;
+        return mMainMenuActivity.getmSrvSocket();
     }
 
     public void setServerSocket() {
@@ -202,6 +198,6 @@ public class WiFiDirectManager {
     }
 
     public void setServerSocket(SimWifiP2pSocketServer newSocket) {
-        this.mServerSocket = newSocket;
+        mMainMenuActivity.setmSrvSocket(newSocket);
     }
 }
