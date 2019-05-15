@@ -96,7 +96,6 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
                     Log.e(INCOMING_TASK_TAG, "Error reading socket: " + ioe.getMessage());
                 } catch (JSONException jsone) {
                     Log.e(INCOMING_TASK_TAG, "Error reading socket: malformed json request");
-
                 } finally {
                     socket.close();
                 }
