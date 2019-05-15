@@ -81,24 +81,22 @@ public class MainMenuActivity
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
-    private SimWifiP2pBroadcastReceiver mBroadcastReceiver;
-    private SimWifiP2pManager mManager;
-    private SimWifiP2pManager.Channel mChannel;
+    private String mDeviceName;
+    private Messenger mService = null;
+    private SimWifiP2pManager mManager = null;
+    private SimWifiP2pManager.Channel mChannel = null;
+    private SimWifiP2pBroadcastReceiver mReceiver = null;
+    private SimWifiP2pDeviceList mPeers = null;
+    private List<SimWifiP2pDevice> mGroupPeers = new ArrayList<>();
 
-    private SimWifiP2pDeviceList mPeers;
-    private List<SimWifiP2pDevice> mGroupPeers;
-
-    private P2PhotoWiFiDirectManager wiFiDirectManager;
+    private P2PhotoWiFiDirectManager mWFManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
 
-        initTermiteAttributes();
-
         MainMenuActivity.resources = getResources();
-
         ArchitectureManager.systemArchitecture.handlePendingMemberships(this);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -112,39 +110,30 @@ public class MainMenuActivity
 
         basicTermiteSetup();
 
+        // WiFi is always on - Battery drainage is cool, because people buy new phones
+        Intent intent = new Intent(this, SimWifiP2pService.class);
+        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
+        this.mWFManager = new P2PhotoWiFiDirectManager(this);
+        mWFManager.setServerSocket();
+
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
             goHome(); // Go to application main page;
         }
     }
 
-    private void initTermiteAttributes() {
-        this.mBroadcastReceiver = null;
-        this.mManager = null;
-        this.mChannel = null;
-        this.mPeers = null;
-        this.mGroupPeers = new ArrayList<>();
-    }
-
     private void basicTermiteSetup() {
-        // initialize the WiFi Direct Simulator API
-        SimWifiP2pSocketManager.Init(this);
-
+        // initialize the WDSimulator API
+        SimWifiP2pSocketManager.Init(getApplicationContext());
         // register broadcast receiver
         IntentFilter filter = new IntentFilter();
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        mBroadcastReceiver = new SimWifiP2pBroadcastReceiver(this);
-        registerReceiver(mBroadcastReceiver, filter);
-
-        // WiFi is always on - Battery drainage is cool, because people buy new phones
-        Intent intent = new Intent(this, SimWifiP2pService.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
-
-        this.wiFiDirectManager = new P2PhotoWiFiDirectManager(this);
-        wiFiDirectManager.setServerSocket();
+        mReceiver = new SimWifiP2pBroadcastReceiver(this);
+        registerReceiver(mReceiver, filter);
     }
 
     /**********************************************************
@@ -171,7 +160,7 @@ public class MainMenuActivity
     @Override
     public void onPause() {
         super.onPause();
-        // unregisterReceiver(mBroadcastReceiver);
+        // unregisterReceiver(mReceiver);
     }
 
     @Override
@@ -210,7 +199,7 @@ public class MainMenuActivity
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
             LogManager.logInfo(MAIN_MENU_TAG, "There may be new devices in the group!");
             // Refresh my device name
-            wiFiDirectManager.setDeviceName(simWifiP2pInfo.getDeviceName());
+            mDeviceName = simWifiP2pInfo.getDeviceName();
             // Load catalog files
             Pair<List<JSONObject>, List<String>> result = loadMyCatalogFiles();
             List<JSONObject> myCatalogFiles = result.first;
@@ -221,10 +210,10 @@ public class MainMenuActivity
             }
             // Broadcast my catalog files
             for (SimWifiP2pDevice device : mGroupPeers) {
-                wiFiDirectManager.pushCatalogFiles(device, myCatalogFiles);
+                mWFManager.pushCatalogFiles(device, myCatalogFiles);
             }
             // Try pulling catalog files I don't have
-            wiFiDirectManager.pullMissingCatalogFiles(mGroupPeers, myMissingCatalogFiles);
+            mWFManager.pullMissingCatalogFiles(mGroupPeers, myMissingCatalogFiles);
         } else {
             LogManager.logInfo(MAIN_MENU_TAG, "Group has no devices left!");
         }
@@ -467,4 +456,12 @@ public class MainMenuActivity
     /**********************************************************
      * GETTERS AND SETTERS
      ***********************************************************/
+
+    public String getDeviceName() {
+        return mDeviceName;
+    }
+
+    public void setDeviceName(String mDeviceName) {
+        this.mDeviceName = mDeviceName;
+    }
 }
