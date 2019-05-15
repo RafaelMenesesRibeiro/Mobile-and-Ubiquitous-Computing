@@ -32,7 +32,6 @@ public class P2PhotoWiFiDirectManager {
 
     private P2PhotoSocketManager socketManager;
     private SimWifiP2pSocketServer mServerSocket;
-    private String mDeviceName;
 
     /**********************************************************
      * CONSTRUCTORS
@@ -185,13 +184,5 @@ public class P2PhotoWiFiDirectManager {
 
     public void setServerSocket(SimWifiP2pSocketServer newSocket) {
         this.mServerSocket = newSocket;
-    }
-
-    public String getDeviceName() {
-        return mDeviceName;
-    }
-
-    public void setDeviceName(String mDeviceName) {
-        this.mDeviceName = mDeviceName;
     }
 }
