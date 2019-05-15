@@ -38,9 +38,9 @@ import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToUtf8;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes256;
 
 public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
-
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
     private static final int TERMITE_PORT = 10001;
+    
     private P2PhotoWiFiDirectManager wiFiDirectManager = null;
 
     @Override
