@@ -59,7 +59,9 @@ import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
@@ -87,6 +89,8 @@ public class MainMenuActivity
     private SimWifiP2pManager.Channel mChannel = null;
     private SimWifiP2pBroadcastReceiver mReceiver = null;
     private SimWifiP2pDeviceList mPeers = null;
+    private SimWifiP2pSocketServer mSrvSocket = null;
+    private SimWifiP2pSocket mCliSocket = null;
     private List<SimWifiP2pDevice> mGroupPeers = new ArrayList<>();
 
     private WiFiDirectManager mWFManager = null;
@@ -463,5 +467,21 @@ public class MainMenuActivity
 
     public void setDeviceName(String mDeviceName) {
         this.mDeviceName = mDeviceName;
+    }
+
+    public SimWifiP2pSocketServer getmSrvSocket() {
+        return mSrvSocket;
+    }
+
+    public void setmSrvSocket(SimWifiP2pSocketServer mSrvSocket) {
+        this.mSrvSocket = mSrvSocket;
+    }
+
+    public SimWifiP2pSocket getmCliSocket() {
+        return mCliSocket;
+    }
+
+    public void setmCliSocket(SimWifiP2pSocket mCliSocket) {
+        this.mCliSocket = mCliSocket;
     }
 }
