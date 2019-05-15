@@ -67,30 +67,28 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
                         String operation = jsonObject.getString("operation");
                         switch (operation) {
                             case "requestingCatalog":
-                                socket.getOutputStream()
-                                        .write(replyWithRequestCatalog(wiFiDirectManager, jsonObject));
+                                String jsonCatalog = replyWithRequestCatalog(wiFiDirectManager, jsonObject);
+                                socket.getOutputStream().write((jsonCatalog + CONFIRM_RCV).getBytes());
                                 break;
                             case "sendingCatalog":
                                 // Store incoming catalog in this device
                                 processIncomingCatalog(wiFiDirectManager, jsonObject);
-                                socket.getOutputStream().write("\n".getBytes());
+                                socket.getOutputStream().write(CONFIRM_RCV.getBytes());
                                 break;
                             case "requestingPhoto":
-                                socket.getOutputStream()
-                                        .write(replyWithRequestedPhoto(wiFiDirectManager, jsonObject));
+                                String jsonPhoto = replyWithRequestedPhoto(wiFiDirectManager, jsonObject);
+                                socket.getOutputStream().write((jsonPhoto + CONFIRM_RCV).getBytes());
                                 break;
                             case "sendingPhto":
                                 // Store incoming photo in this device
                                 processIncomingPhoto(wiFiDirectManager, jsonObject);
-                                socket.getOutputStream().write("\n".getBytes());
+                                socket.getOutputStream().write(CONFIRM_RCV.getBytes());
                             default:
-                                socket.getOutputStream()
-                                        .write(("warning: 'operation' field invalid\n").getBytes());
+                                socket.getOutputStream().write(("warning: 'operation' field invalid" + CONFIRM_RCV).getBytes());
                                 break;
                         }
                     } else {
-                        socket.getOutputStream()
-                                .write(("error: 'operation' field not found\n").getBytes());
+                        socket.getOutputStream().write(("error: 'operation' field not found" + CONFIRM_RCV).getBytes());
                     }
                     // Close interaction
                     socket.getOutputStream().write((CONFIRM_RCV).getBytes());
@@ -161,7 +159,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         LogManager.logInfo(INCOMING_TASK_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
     }
 
-    private byte[] replyWithRequestCatalog(final WiFiDirectManager wiFiDirectManager,
+    private String replyWithRequestCatalog(final WiFiDirectManager wiFiDirectManager,
                                            JSONObject jsonObject) throws JSONException, IOException {
 
         MainMenuActivity activity = wiFiDirectManager.getMainMenuActivity();
@@ -177,21 +175,15 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         }
         */
         JSONObject catalogFileContents = CatalogOperations.readCatalog(activity, catalogId);
-
         jsonObject = new JSONObject();
         jsonObject.put("operation", "sendCatalog");
         jsonObject.put("from", SessionManager.getUsername(wiFiDirectManager.getMainMenuActivity()));
         jsonObject.put("catalogId", catalogId);
         jsonObject.put("catalogFile", catalogFileContents.toString());
-
-        try {
-            return jsonObject.toString().getBytes("UTF-8");
-        } catch (UnsupportedEncodingException uee) {
-            return jsonObject.toString().getBytes();
-        }
+        return jsonObject.toString();
     }
 
-    private byte[] replyWithRequestedPhoto(final WiFiDirectManager wiFiDirectManager,
+    private String replyWithRequestedPhoto(final WiFiDirectManager wiFiDirectManager,
                                            JSONObject jsonObject) throws JSONException, FileNotFoundException {
 
         MainMenuActivity activity = wiFiDirectManager.getMainMenuActivity();
@@ -209,17 +201,11 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         }
         */
         Bitmap photo = ImageLoading.loadPhoto(activity, photoUuid);
-
         jsonObject = new JSONObject();
         jsonObject.put("operation", "sendPhoto");
         jsonObject.put("callerUsername", SessionManager.getUsername(wiFiDirectManager.getMainMenuActivity()));
         jsonObject.put("photoUuid", photoUuid);
         jsonObject.put("photo", byteArrayToBase64String(bitmapToByteArray(photo)));
-
-        try {
-            return jsonObject.toString().getBytes("UTF-8");
-        } catch (UnsupportedEncodingException uee) {
-            return jsonObject.toString().getBytes();
-        }
+        return jsonObject.toString();
     }
 }
