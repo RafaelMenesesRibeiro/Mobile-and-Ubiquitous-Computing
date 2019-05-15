@@ -42,6 +42,7 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
         } catch (IOException ioe) {
             Log.e(SEND_DATA_TASK_TAG, "Error: " + ioe.getMessage());
         }
+        
         return null;
     }
 
