@@ -19,7 +19,6 @@ import net.openid.appauth.AuthorizationService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.concurrent.ExecutionException;
 
@@ -33,10 +32,9 @@ import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBacke
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
-import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.createPhotoStackFile;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
@@ -138,7 +136,7 @@ public class LoginActivity extends AppCompatActivity {
             String url = getString(R.string.p2photo_host) + getString(R.string.signup);
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.SIGNUP, url, requestBody);
 
-            ResponseData result = new QueryManager().execute(requestData).get();
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
                 msg = "Sign Up successful";
@@ -227,7 +225,7 @@ public class LoginActivity extends AppCompatActivity {
 
             String url = getString(R.string.p2photo_host) + getString(R.string.login);
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.LOGIN, url, requestBody);
-            ResponseData result = new QueryManager().execute(requestData).get();
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
 
             int code = result.getServerCode();
 

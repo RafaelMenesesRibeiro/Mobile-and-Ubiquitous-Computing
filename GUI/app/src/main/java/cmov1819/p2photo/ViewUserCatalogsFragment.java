@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -22,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
@@ -76,7 +75,7 @@ public class ViewUserCatalogsFragment extends Fragment {
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         try {
             RequestData requestData = new RequestData(activity, GET_MEMBERSHIPS, url);
-            ResponseData responseData = new QueryManager().execute(requestData).get();
+            ResponseData responseData = new P2PWebServerMediator().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
                 Object object = payload.getResult();
@@ -96,7 +95,7 @@ public class ViewUserCatalogsFragment extends Fragment {
         LinkedHashMap<String, String> map = new LinkedHashMap<>();
         try {
             RequestData requestData = new RequestData(activity, GET_MEMBERSHIP_CATALOG_IDS, url);
-            ResponseData responseData = new QueryManager().execute(requestData).get();
+            ResponseData responseData = new P2PWebServerMediator().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
                 Object object = payload.getResult();
