@@ -42,14 +42,13 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
-import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
-import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
+import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.helpers.termite.SimWifiP2pBroadcastReceiver;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -67,6 +66,7 @@ import static cmov1819.p2photo.ListUsersFragment.USERS_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_ID_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.NO_CATALOG_SELECTED;
+import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.readCatalog;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class MainMenuActivity
@@ -82,7 +82,7 @@ public class MainMenuActivity
     private DrawerLayout drawerLayout;
     private NavigationView navigationView;
 
-    private String mDeviceName;
+    private String mDeviceName = "default";
     private Messenger mService = null;
     private SimWifiP2pManager mManager = null;
     private SimWifiP2pManager.Channel mChannel = null;
@@ -90,7 +90,7 @@ public class MainMenuActivity
     private SimWifiP2pSocket mCliSocket = null;
     private List<SimWifiP2pDevice> mPeers = new ArrayList<>();
     private List<SimWifiP2pDevice> mGroupPeers = new ArrayList<>();
-    private WifiDirectManager mWFManager = null;
+    private WifiDirectManager mWifiManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +116,7 @@ public class MainMenuActivity
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
         // Start Server in AsyncTask
-        this.mWFManager = WifiDirectManager.init(this);
+        this.mWifiManager = WifiDirectManager.init(this);
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
@@ -204,16 +204,13 @@ public class MainMenuActivity
             Pair<List<JSONObject>, List<String>> result = loadMyCatalogFiles();
             List<JSONObject> myCatalogFiles = result.first;
             List<String> myMissingCatalogFiles = result.second;
+            // Broadcast my catalog files
             // Update peers list belonging to my group
             for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
-                mGroupPeers.add(simWifiP2pDeviceList.getByName(deviceName));
+                SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
+                mGroupPeers.add(device);
+                mWifiManager.pushCatalogFiles(device, myCatalogFiles);
             }
-            // Broadcast my catalog files
-            for (SimWifiP2pDevice device : mGroupPeers) {
-                mWFManager.pushCatalogFiles(device, myCatalogFiles);
-            }
-            // Try pulling catalog files I don't have
-            mWFManager.pullMissingCatalogFiles(mGroupPeers, myMissingCatalogFiles);
         } else {
             LogManager.logInfo(MAIN_MENU_TAG, "Group has no devices left!");
         }
@@ -225,7 +222,7 @@ public class MainMenuActivity
         List<String> myMissingCatalogFiles = new ArrayList<>();
         for (String catalogId : myMembershipsMap.keySet()) {
             try {
-                myCatalogFiles.add(CatalogOperations.readCatalog(this, catalogId));
+                myCatalogFiles.add(readCatalog(this, catalogId));
             } catch (FileNotFoundException fnfe) {
                 LogManager.logWarning(MAIN_MENU_TAG, "Catalog: " + catalogId +  "doesn't exist locally");
                 myMissingCatalogFiles.add(catalogId);
