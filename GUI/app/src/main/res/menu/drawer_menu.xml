@@ -41,6 +41,11 @@
             tools:ignore="HardcodedText" />
 
         <item
+            android:id="@+id/nav_limit_storage"
+            android:icon="@drawable/ic_log_black_24dp"
+            android:title="App Log" />
+
+        <item
             android:id="@+id/nav_show_app_log"
             android:icon="@drawable/ic_log_black_24dp"
             android:title="App Log" />
