@@ -35,6 +35,19 @@ public class DateUtils {
         } catch (Exception e) {
             return false;
         }
+    }
 
+    public static boolean isOlderTimestamp(String timestamp, String anotherTimestamp) {
+        if (timestamp == null) {
+            return true;
+        }
+        try {
+            Date date = DATE_FORMAT.parse(timestamp);
+            Date anotherDate = DATE_FORMAT.parse(anotherTimestamp);
+            return date.before(anotherDate);
+        }
+        catch (Exception ex) {
+            return false;
+        }
     }
 }
