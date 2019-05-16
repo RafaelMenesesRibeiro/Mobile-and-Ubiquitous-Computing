@@ -20,7 +20,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Pair;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -30,7 +29,6 @@ import android.widget.EditText;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -201,11 +199,8 @@ public class MainMenuActivity
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
             // Load catalog files
             mDeviceName = simWifiP2pInfo.getDeviceName();
-            Pair<List<JSONObject>, List<String>> result = loadMyCatalogFiles();
-            List<JSONObject> myCatalogFiles = result.first;
-            List<String> myMissingCatalogFiles = result.second;
-            // Broadcast my catalog files
-            // Update peers list belonging to my group
+            List<JSONObject> myCatalogFiles = loadMyCatalogFiles();
+            // Update peers list belonging to my group and broadcast my catalog files
             for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
                 SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
                 mGroupPeers.add(device);
@@ -216,21 +211,17 @@ public class MainMenuActivity
         }
     }
 
-    private Pair<List<JSONObject>, List<String>> loadMyCatalogFiles() {
+    private List<JSONObject> loadMyCatalogFiles() {
         Map<String, String> myMembershipsMap = ViewUserCatalogsFragment.getMemberships(this);
         List<JSONObject> myCatalogFiles = new ArrayList<>();
-        List<String> myMissingCatalogFiles = new ArrayList<>();
         for (String catalogId : myMembershipsMap.keySet()) {
             try {
                 myCatalogFiles.add(readCatalog(this, catalogId));
-            } catch (FileNotFoundException fnfe) {
-                LogManager.logWarning(MAIN_MENU_TAG, "Catalog: " + catalogId +  "doesn't exist locally");
-                myMissingCatalogFiles.add(catalogId);
             } catch (IOException | JSONException exc) {
                 LogManager.logError(MAIN_MENU_TAG, exc.getMessage());
             }
         }
-        return new Pair<>(myCatalogFiles, myMissingCatalogFiles);
+        return myCatalogFiles;
     }
 
     /**********************************************************
