@@ -43,7 +43,7 @@ import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBacke
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
@@ -308,7 +308,7 @@ public class MainMenuActivity
         String baseUrl = activity.getString(R.string.p2photo_host) + activity.getString(R.string.view_catalog_details);
         String url = String.format("%s?catalogId=%s&calleeUsername=%s", baseUrl, catalogId, getUsername(activity));
         RequestData requestData = new RequestData(activity, RequestData.RequestType.GET_CATALOG_TITLE, url);
-        ResponseData result = new QueryManager().execute(requestData).get();
+        ResponseData result = new P2PWebServerMediator().execute(requestData).get();
         int code = result.getServerCode();
         if (code == HttpURLConnection.HTTP_OK) {
             String catalogTitle = (String)((SuccessResponse)result.getPayload()).getResult();
@@ -343,7 +343,7 @@ public class MainMenuActivity
         String url = getString(R.string.p2photo_host) + getString(R.string.logout) + username;
         RequestData rData = new RequestData(this, RequestData.RequestType.LOGOUT, url);
         try {
-            ResponseData result = new QueryManager().execute(rData).get();
+            ResponseData result = new P2PWebServerMediator().execute(rData).get();
             int code = result.getServerCode();
             if (code == 200) {
                 LogManager.logLogout(username);
