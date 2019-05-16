@@ -30,7 +30,7 @@ import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToUtf8;
-import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes256;
+import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
 
 public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
@@ -122,7 +122,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         LogManager.logInfo(INCOMING_TASK_TAG, "Deciphering catalog file...\n");
         String cipheredCatalogFile = jsonObject.getString("catalogFile");
         byte[] encodedCatalogFile = base64StringToByteArray(cipheredCatalogFile);
-        byte[] decodedCatalogFile = decipherWithAes256(key, encodedCatalogFile);
+        byte[] decodedCatalogFile = decipherWithAes(key, encodedCatalogFile);
         JSONObject decipheredCatalogFile = new JSONObject(byteArrayToUtf8(decodedCatalogFile));
 
         CatalogMerge.mergeCatalogFiles(wiFiDirectManager.getMainMenuActivity(), catalogId, decipheredCatalogFile);

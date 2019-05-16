@@ -9,50 +9,31 @@ import org.json.JSONObject;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.SignatureException;
+import android.util.Base64;
 
-import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.ConvertUtils;
 import cmov1819.p2photo.helpers.CryptoUtils;
-import cmov1819.p2photo.helpers.managers.LogManager;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 
 public class CatalogOperations {
 
-        public static JSONObject readCatalog(Activity activity, String catalogID) throws IOException, JSONException {
+    public static JSONObject readCatalog(Activity activity, String catalogID) throws IOException, JSONException {
         String fileName = String.format("catalog_%s.json", catalogID);
         InputStream inputStream = activity.openFileInput(fileName);
-        byte[] encrypted = inputStreamToString(inputStream).getBytes();
-        /*
-        byte[] decrypted = new byte[0];
-        try {
-            decrypted = CryptoUtils.decipherWithAes256(encrypted);
-        }
-        catch (SignatureException e) {
-            e.printStackTrace();
-        }
+        String encodedNEncrypted = inputStreamToString(inputStream);
+        byte[] encrypted = Base64.decode(encodedNEncrypted, Base64.DEFAULT);
+        byte[] decrypted = CryptoUtils.decipherWithAes(encrypted);
         return new JSONObject(new String(decrypted));
-        */
-        return new JSONObject(new String(encrypted));
     }
 
     public static void writeCatalog(Activity activity, String catalogID, JSONObject contents) throws IOException {
         String fileName = String.format("catalog_%s.json", catalogID);
-        FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
         byte[] decrypted = ConvertUtils.JSONObjectToByteAarray(contents, 4);
-        /*
-        byte[] encrypted = new byte[0];
-        try {
-            encrypted = CryptoUtils.cipherWithAes256(decrypted);
-        }
-        catch (SignatureException e) {
-            e.printStackTrace();
-            // TODO //
-            LogManager.logError("CATALOG", "pajdpasjdpoajdposadpaosdas \n\n\n\n sdnianisajoaisjosada");
-        }
-        */
-        outputStream.write(decrypted);
+        byte[] encrypted = CryptoUtils.cipherWithAes(decrypted);
+        String encodedNEncrypted = Base64.encodeToString(encrypted, Base64.DEFAULT);
+        FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
+        outputStream.write(encodedNEncrypted.getBytes());
         outputStream.close();
     }
 
