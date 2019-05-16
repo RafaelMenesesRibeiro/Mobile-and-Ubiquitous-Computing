@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -34,24 +35,23 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
         wiFiDirectManager = WifiDirectManager.getInstance();
         SimWifiP2pDevice targetDevice = (SimWifiP2pDevice) params[1];
         JSONObject jsonData = (JSONObject) params[2];
-
         try {
             // Construct a new clientSocket
             SimWifiP2pSocket clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
-            LogManager.logInfo(SEND_DATA_TASK_TAG, "Successfully created a client socket");
+            LogManager.logInfo(SEND_DATA_TASK_TAG, "Created a client socket...");
             // Send data to target device
             clientSocket.getOutputStream().write((jsonData.toString() + SEND).getBytes());
-            LogManager.logInfo(SEND_DATA_TASK_TAG, "Successfully written data to client socket");
+            LogManager.logInfo(SEND_DATA_TASK_TAG,"Data sent to server...\nWaiting for acknowledge...");
             // Read any reply from target device
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            InputStream inputStream = clientSocket.getInputStream();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             bufferedReader.readLine();
             // End transmission
             clientSocket.close();
-            LogManager.logInfo(SEND_DATA_TASK_TAG, "Closed client socket... Operation completed");
+            LogManager.logInfo(SEND_DATA_TASK_TAG, "Closed client socket. Operation completed...");
         } catch (IOException ioe) {
             Log.e(SEND_DATA_TASK_TAG, "Error: " + ioe.getMessage());
         }
-
         return null;
     }
 

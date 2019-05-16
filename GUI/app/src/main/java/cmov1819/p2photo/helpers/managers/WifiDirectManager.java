@@ -12,14 +12,12 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
-import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.DateUtils;
 import cmov1819.p2photo.helpers.termite.tasks.IncomingSocketTask;
 import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
@@ -28,7 +26,6 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
-import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes;
 import static cmov1819.p2photo.helpers.CryptoUtils.signData;
 
 public class WifiDirectManager {
@@ -82,6 +79,7 @@ public class WifiDirectManager {
      **********************************************************/
 
     public void pushCatalogFiles(SimWifiP2pDevice device, List<JSONObject> myCatalogFiles) {
+        LogManager.logInfo(WIFI_DIRECT_MGR_TAG,"Broadcasting catalog to " + device.deviceName);
         for (JSONObject catalogFile : myCatalogFiles) {
             try {
                 sendCatalog(device, catalogFile);
@@ -92,35 +90,15 @@ public class WifiDirectManager {
         }
     }
 
-    public void sendCatalog(final SimWifiP2pDevice targetDevice, final JSONObject catalogFileContents) throws RuntimeException {
-        // This token can be used by the targetDevice to obtain the AES Key from the server
-        // TODO Exchange this code with TLS logic
-        LogManager.logInfo(WIFI_DIRECT_MGR_TAG, "Generating AES256 Key and corresponding retrieval Token...");
-        String token = UUID.randomUUID().toString();
-        SecretKey key = CryptoUtils.generateAesKey();
-        // Ask the server temporarily store the AES Key associated with this token
-        registerKeyOnWebServer(targetDevice.deviceName, token, key);
-
+    public void sendCatalog(final SimWifiP2pDevice device, final JSONObject catalogFile) throws RuntimeException {
+        LogManager.logInfo(WIFI_DIRECT_MGR_TAG,"Sending a catalog to...");
         try {
-            LogManager.logInfo(WIFI_DIRECT_MGR_TAG,"Sending catalog to " + targetDevice.deviceName);
-
-            byte[] encodedCatalog = cipherWithAes(key, catalogFileContents.toString().getBytes());
-            String cipheredCatalogFile = byteArrayToBase64String(encodedCatalog);
-
             JSONObject jsonObject = newBaselineJson(SEND_CATALOG);
-            jsonObject.put("catalogFile", cipheredCatalogFile);
-            jsonObject.put("token", token);
-            doSend(targetDevice, jsonObject);
+            jsonObject.put("catalogFile", catalogFile);
+            doSend(device, jsonObject);
         } catch (JSONException jsone) {
             LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
         }
-    }
-
-    private void registerKeyOnWebServer(final String deviceName,
-                                        final String token,
-                                        final SecretKey aesKey) {
-        LogManager.logInfo(WIFI_DIRECT_MGR_TAG, "Request server to save token: " + token);
-        // TODO ask server to keep this aesKey for recipient username on a Map for 10 minutes then discards it.
     }
 
     public void requestCatalog(final SimWifiP2pDevice calleeDevice, final String catalogId) {
@@ -189,7 +167,7 @@ public class WifiDirectManager {
      public JSONObject newBaselineJson(String operation) throws JSONException {
          JSONObject jsonObject = new JSONObject();
          jsonObject.put("operation", operation);
-         jsonObject.put("nameOfSender", SessionManager.getUsername(mMainMenuActivity));
+         jsonObject.put("username", SessionManager.getUsername(mMainMenuActivity));
          return jsonObject;
      }
 
