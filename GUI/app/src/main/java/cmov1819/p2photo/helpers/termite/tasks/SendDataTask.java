@@ -19,6 +19,8 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
     private static final int TERMITE_PORT = 10001;
 
+    private WiFiDirectManager wiFiDirectManager = null;
+
     @Override
     protected void onPreExecute() {
         LogManager.logInfo(SEND_DATA_TASK_TAG, "Started new SendData task...");
@@ -26,7 +28,8 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
     @Override
     protected Void doInBackground(final Object... params) {
-        WiFiDirectManager wiFiDirectManager = (WiFiDirectManager) params[0];
+        // get singleton instance of our WiFiDirectManager
+        wiFiDirectManager = WiFiDirectManager.getInstance();
         SimWifiP2pDevice targetDevice = (SimWifiP2pDevice) params[1];
         byte[] data = (byte[]) params[2];
 
