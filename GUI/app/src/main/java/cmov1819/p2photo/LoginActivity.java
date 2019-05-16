@@ -20,7 +20,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.security.KeyPair;
 import java.util.concurrent.ExecutionException;
+
+import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
@@ -31,10 +34,17 @@ import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
+import static cmov1819.p2photo.helpers.CryptoUtils.generateAesKey;
+import static cmov1819.p2photo.helpers.CryptoUtils.generateRSAKeys;
+import static cmov1819.p2photo.helpers.CryptoUtils.loadAESKeys;
+import static cmov1819.p2photo.helpers.CryptoUtils.loadRSAKeys;
+import static cmov1819.p2photo.helpers.CryptoUtils.storeAESKey;
+import static cmov1819.p2photo.helpers.CryptoUtils.storeRSAKeys;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
@@ -113,6 +123,10 @@ public class LoginActivity extends AppCompatActivity {
 
         if (trySignUp(usernameValue, passwordValue)) {
             try {
+                SecretKey secretKey = generateAesKey();
+                storeAESKey(this, secretKey);
+                KeyPair keyPair = generateRSAKeys();
+                storeRSAKeys(this, keyPair);
                 ArchitectureManager.systemArchitecture.onSignUp(this);
             }
             catch (Exception ex) {
@@ -205,6 +219,10 @@ public class LoginActivity extends AppCompatActivity {
 
         enableUserTextInputs(usernameEditText, passwordEditText);
         try {
+            KeyPair keyPair = loadRSAKeys(this);
+            SecretKey secretKey = loadAESKeys(this);
+            KeyManager.init(secretKey, keyPair.getPrivate(), keyPair.getPublic());
+
             ArchitectureManager.systemArchitecture.setup(view, this);
         }
         catch (FailedOperationException ex) {
@@ -274,7 +292,6 @@ public class LoginActivity extends AppCompatActivity {
      ***********************************************************/
 
     public static void initializeWifiDirectSetup(Activity activity) {
-        CryptoUtils.generateAesKey();
         goHome(activity);
     }
 
