@@ -12,6 +12,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -20,9 +21,12 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import cmov1819.p2photo.exceptions.RSAException;
+
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPrivateKey;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPublicKey;
+import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.managers.LogManager.CRYPTO_UTILS_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 
@@ -36,6 +40,13 @@ public class CryptoUtils {
     public static final int RSA_KEY_SIZE = 2048;
 
     private static SecretKey secretKey;
+
+    /** UUID  Methods */
+
+    public static String newUUIDString() {
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString();
+    }
 
     /** Symmetric Key Cipher Methods */
 
@@ -136,7 +147,15 @@ public class CryptoUtils {
         }
     }
 
-    public static byte[] sign(PrivateKey key, byte[] data) throws SignatureException {
+    public static String signData(PrivateKey key, JSONObject data) throws SignatureException {
+        return byteArrayToBase64String(signWithSHA1withRSA(key, data));
+    }
+
+    public static byte[] signWithSHA1withRSA(PrivateKey key, JSONObject data) throws SignatureException {
+        return signWithSHA1withRSA(key, data.toString().getBytes());
+    }
+
+    public static byte[] signWithSHA1withRSA(PrivateKey key, byte[] data) throws SignatureException {
         try {
             Signature sign = Signature.getInstance(SIGNATURE_ALGORITHM);
             sign.initSign(key);
@@ -147,20 +166,20 @@ public class CryptoUtils {
         }
     }
 
-    public static boolean verifySignature(PublicKey key, JSONObject message) {
+    public static boolean verifySignatureWithSHA1withRSA(PublicKey key, JSONObject message) {
         try {
             byte[] signatureBytes = base64StringToByteArray(message.getString("signature"));
             message.remove("signature");
-            return verifySignature(key, signatureBytes, message.toString().getBytes());
+            return verifySignatureWithSHA1withRSA(key, signatureBytes, message.toString().getBytes());
         } catch (JSONException jsone) {
-            logError(CRYPTO_UTILS_TAG, "verifySignature couldn't getString('signature')");
+            logError(CRYPTO_UTILS_TAG, "verifySignatureWithSHA1withRSA couldn't getString('signature')");
         } catch (SignatureException exc) {
-            logError(CRYPTO_UTILS_TAG, "verifySignature couldn't verify signature due to exceptions");
+            logError(CRYPTO_UTILS_TAG, "verifySignatureWithSHA1withRSA couldn't verify signature due to exceptions");
         }
         return false;
     }
 
-    private static boolean verifySignature(PublicKey key, byte[] signatureBytes, byte[] message) throws SignatureException {
+    private static boolean verifySignatureWithSHA1withRSA(PublicKey key, byte[] signatureBytes, byte[] message) throws SignatureException {
         try {
             Signature sign = Signature.getInstance(SIGNATURE_ALGORITHM);
             sign.initVerify(key);
