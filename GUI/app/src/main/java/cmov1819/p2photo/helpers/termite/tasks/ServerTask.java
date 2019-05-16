@@ -105,12 +105,10 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     }
 
     private String processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject jsonObject) throws JSONException {
-
-        LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incomming catalog \n%s\n", jsonObject.toString(4)));
+        LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incoming catalog \n%s\n", jsonObject.toString(4)));
 
         String catalogId = jsonObject.getString("catalogId");
         String sender = jsonObject.getString("from");
-        String aesKeyRetrievalToken = jsonObject.getString("token");
 
         LogManager.logInfo(INCOMING_TASK_TAG, "Trying to exchange token for aes key...");
         byte[] encodedKey = base64StringToByteArray(exchangeTokenForAESKey(sender, aesKeyRetrievalToken));
