@@ -73,20 +73,12 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                     result = performSimplePOST(connection, requestData);
                     break;
                 case LOGIN:
-                    connection.setRequestMethod("POST");
-                    result = login(activity, connection, requestData);
+                    result = performLoginPOST(activity, connection, requestData);
                     break;
-
                 case NEW_CATALOG:
-                    connection.setRequestMethod("POST");
-                    result = newCatalog(activity, connection, requestData);
-                    break;
-
                 case NEW_CATALOG_MEMBER:
-                    connection.setRequestMethod("POST");
-                    result = newCatalogMember(activity, connection, requestData);
+                    result = performPOST(activity, connection, requestData);
                     break;
-
                 default:
                     String msg = "Should never be here.";
                     LogManager.logError(LogManager.WEB_SERVER_MEDIATOR_TAG, msg);
@@ -148,23 +140,13 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         return objectMapper.readValue(jsonResponse, SuccessResponse.class);
     }
 
-    private static BasicResponse getBasicResponse(HttpURLConnection connection) throws IOException {
-        boolean is400Response = is400Response(connection);
-        String jsonResponse = getJSONStringFromHttpResponse(connection, is400Response);
-        ObjectMapper objectMapper = new ObjectMapper();
-        if (is400Response) {
-            return objectMapper.readValue(jsonResponse, ErrorResponse.class);
-        }
-        return objectMapper.readValue(jsonResponse, BasicResponse.class);
-    }
-
     private void getCookies(Activity activity, HttpURLConnection connection) {
         Map<String, List<String>> headerFields = connection.getHeaderFields();
         List<String> cookiesHeader = headerFields.get(COOKIES_HEADER);
         if (cookiesHeader != null && cookiesHeader.size() > 0) {
             String cookie = cookiesHeader.get(0);
             updateSessionID(activity, cookie);
-            String msg = "Received login cookie - " + cookie + ".";
+            String msg = "Received performLoginPOST cookie - " + cookie + ".";
             LogManager.logInfo(LogManager.WEB_SERVER_MEDIATOR_TAG, msg);
         }
         else {
@@ -172,40 +154,6 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
             String msg = "No cookies were received.";
             LogManager.logError(LogManager.WEB_SERVER_MEDIATOR_TAG, msg);
         }
-    }
-
-    private ResponseData login(Activity activity, HttpURLConnection connection,
-                               RequestData requestData) throws IOException {
-
-        PostRequestData postData = (PostRequestData) requestData;
-        writeJsonToOutputStream(connection, postData.getParams());
-        getCookies(activity, connection);
-        BasicResponse payload = getSuccessResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
-    }
-
-    private ResponseData newCatalog(Activity activity,
-                                    HttpURLConnection connection,
-                                    RequestData requestData) throws IOException {
-
-        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        PostRequestData postData = (PostRequestData) requestData;
-        writeJsonToOutputStream(connection, postData.getParams());
-        connection.connect();
-
-        BasicResponse payload = P2PWebServerMediator.getSuccessResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
-    }
-
-    private ResponseData newCatalogMember(Activity activity, HttpURLConnection connection,
-                                          RequestData requestData) throws IOException {
-
-        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        PostRequestData postData = (PostRequestData) requestData;
-        writeJsonToOutputStream(connection, postData.getParams());
-        connection.connect();
-        BasicResponse payload = P2PWebServerMediator.getBasicResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
     }
 
     private ResponseData performGET(Activity activity, HttpURLConnection connection) throws IOException {
@@ -221,13 +169,25 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
+    private ResponseData performPOST(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
+        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
+        return performSimplePOST(connection, requestData);
+    }
+
     private ResponseData performSimplePOST(HttpURLConnection connection, RequestData requestData) throws IOException {
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
         PostRequestData postData = (PostRequestData) requestData;
         writeJsonToOutputStream(connection, postData.getParams());
+        connection.connect();
         BasicResponse payload = getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
+    }
+
+    private ResponseData performLoginPOST(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
+        ResponseData responseData = performSimplePOST(connection, requestData);
+        getCookies(activity, connection);
+        return responseData;
     }
 
     private ResponseData performPUT(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
@@ -245,5 +205,15 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         connection.connect();
         BasicResponse payload = P2PWebServerMediator.getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
+    }
+
+    private static BasicResponse getBasicResponse(HttpURLConnection connection) throws IOException {
+        boolean is400Response = is400Response(connection);
+        String jsonResponse = getJSONStringFromHttpResponse(connection, is400Response);
+        ObjectMapper objectMapper = new ObjectMapper();
+        if (is400Response) {
+            return objectMapper.readValue(jsonResponse, ErrorResponse.class);
+        }
+        return objectMapper.readValue(jsonResponse, BasicResponse.class);
     }
 }
