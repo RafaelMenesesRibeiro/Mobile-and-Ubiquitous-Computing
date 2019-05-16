@@ -1,10 +1,16 @@
 package cmov1819.p2photo.helpers;
 
+import android.app.Activity;
+import android.content.Context;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.security.InvalidKeyException;
 import java.security.Key;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -12,6 +18,8 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.UUID;
 
 import javax.crypto.BadPaddingException;
@@ -21,16 +29,20 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.RSAException;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPrivateKey;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPublicKey;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
+import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToByteArray;
 import static cmov1819.p2photo.helpers.managers.LogManager.CRYPTO_UTILS_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 
 public class CryptoUtils {
+    private static final String PRIVATE_KEY_FILENAME = "P2Photo_PrivateKey.key";
+    private static final String PUBLIC_KEY_FILENAME = "P2Photo_PublicKey.pub";
     public static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
     public static final String SYMMETRIC_ALGORITHM = "AES";
     public static final String ASYMMETRIC_ALGORITHM = "RSA";
@@ -51,7 +63,7 @@ public class CryptoUtils {
     private CryptoUtils() {
         // Does not allow this class to be instantiated. //
     }
-    
+
     private static Key getSymmetricKey() {
         return CryptoUtils.secretKey;
     }
@@ -100,6 +112,42 @@ public class CryptoUtils {
     }
 
     /** Asymmetric Key Cipher Methods */
+
+    public void storeRSAKeys(final Activity activity, KeyPair keys) throws FailedOperationException {
+        try {
+            FileOutputStream outputStream = activity.openFileOutput(PRIVATE_KEY_FILENAME, Context.MODE_PRIVATE);
+            PrivateKey privateKey = keys.getPrivate();
+            outputStream.write(privateKey.getEncoded());
+
+            outputStream = activity.openFileOutput(PUBLIC_KEY_FILENAME, Context.MODE_PRIVATE);
+            PublicKey publicKey = keys.getPublic();
+            outputStream.write(publicKey.getEncoded());
+        }
+        catch (Exception ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+    }
+
+    public KeyPair loadRSAKeys(final Activity activity) throws FailedOperationException {
+        try {
+            InputStream inputStream = activity.openFileInput(PRIVATE_KEY_FILENAME);
+            byte[] bytes = inputStreamToByteArray(inputStream);
+            PKCS8EncodedKeySpec privateKS = new PKCS8EncodedKeySpec(bytes);
+            KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_ALGORITHM);
+            PrivateKey privateKey = keyFactory.generatePrivate(privateKS);
+
+            inputStream = activity.openFileInput(PUBLIC_KEY_FILENAME);
+            bytes = inputStreamToByteArray(inputStream);
+            X509EncodedKeySpec publicKS = new X509EncodedKeySpec(bytes);
+            keyFactory = KeyFactory.getInstance(ASYMMETRIC_ALGORITHM);
+            PublicKey publicKey = keyFactory.generatePublic(publicKS);
+
+            return new KeyPair(publicKey, privateKey);
+        }
+        catch (Exception ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+    }
 
     public KeyPair generateRSAKeys() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ASYMMETRIC_ALGORITHM);
