@@ -7,7 +7,6 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,28 +23,28 @@ import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes256;
 
-public class WiFiDirectManager {
+public class WifiDirectManager {
     private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
-    private static WiFiDirectManager instance;
+    private static WifiDirectManager instance;
     private final MainMenuActivity mMainMenuActivity;
 
     /**********************************************************
      * CONSTRUCTORS
      **********************************************************/
 
-    private WiFiDirectManager(MainMenuActivity activity) {
+    private WifiDirectManager(MainMenuActivity activity) {
         this.mMainMenuActivity = activity;
     }
 
-    public static WiFiDirectManager init(MainMenuActivity activity) {
+    public static WifiDirectManager init(MainMenuActivity activity) {
         if (instance == null) {
-            instance = new WiFiDirectManager(activity);
+            instance = new WifiDirectManager(activity);
             new IncomingSocketTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
         return instance;
     }
 
-    public static WiFiDirectManager getInstance() {
+    public static WifiDirectManager getInstance() {
         return instance;
     }
 

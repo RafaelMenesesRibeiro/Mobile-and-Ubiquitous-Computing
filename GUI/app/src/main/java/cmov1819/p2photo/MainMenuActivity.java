@@ -49,7 +49,7 @@ import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
-import cmov1819.p2photo.helpers.managers.WiFiDirectManager;
+import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import cmov1819.p2photo.helpers.termite.SimWifiP2pBroadcastReceiver;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -93,7 +93,7 @@ public class MainMenuActivity
     private SimWifiP2pSocket mCliSocket = null;
     private List<SimWifiP2pDevice> mGroupPeers = new ArrayList<>();
 
-    private WiFiDirectManager mWFManager = null;
+    private WifiDirectManager mWFManager = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +119,7 @@ public class MainMenuActivity
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
 
         // Start Server in AsyncTask
-        this.mWFManager = WiFiDirectManager.init(this);
+        this.mWFManager = WifiDirectManager.init(this);
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {

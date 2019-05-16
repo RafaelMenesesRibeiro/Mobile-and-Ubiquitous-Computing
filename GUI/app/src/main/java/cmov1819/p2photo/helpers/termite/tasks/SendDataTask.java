@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.WiFiDirectManager;
+import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
@@ -21,7 +21,7 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
     private static final int TERMITE_PORT = 10001;
 
-    private WiFiDirectManager wiFiDirectManager = null;
+    private WifiDirectManager wiFiDirectManager = null;
 
     @Override
     protected void onPreExecute() {
@@ -30,8 +30,8 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
     @Override
     protected Void doInBackground(final Object... params) {
-        // get singleton instance of our WiFiDirectManager
-        wiFiDirectManager = WiFiDirectManager.getInstance();
+        // get singleton instance of our WifiDirectManager
+        wiFiDirectManager = WifiDirectManager.getInstance();
         SimWifiP2pDevice targetDevice = (SimWifiP2pDevice) params[1];
         JSONObject jsonData = (JSONObject) params[2];
 
