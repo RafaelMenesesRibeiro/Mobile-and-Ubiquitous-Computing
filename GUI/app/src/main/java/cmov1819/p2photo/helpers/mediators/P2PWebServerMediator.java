@@ -54,59 +54,46 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                 case SIGNUP:
                     connection.setRequestMethod("POST");
                     result = signup(connection, requestData);
-                    LogManager.logReceivedSignup(result);
                     break;
                 case LOGIN:
                     connection.setRequestMethod("POST");
                     result = login(activity, connection, requestData);
-                    LogManager.logReceivedLogin(result);
                     break;
                 case LOGOUT:
                     result = performDelete(activity, connection);
-                    LogManager.logReceivedLogout(result);
                     break;
                 case SEARCH_USERS:
                     result = performGET(activity, connection);
-                    LogManager.logReceivedSearhUser(result);
                     break;
                 case GET_CATALOG_TITLE:
                     result = performGET(activity, connection);
-                    LogManager.logReceivedGetCatalogTitle(result);
                     break;
                 case GET_CATALOG:
                     result = performGET(activity, connection);
-                    LogManager.logReceivedGetCatalog(result);
                     break;
                 case NEW_CATALOG:
                     connection.setRequestMethod("POST");
                     result = newCatalog(activity, connection, requestData);
-                    LogManager.logReceivedNewCatalog(result);
                     break;
                 case NEW_CATALOG_SLICE:
                     connection.setRequestMethod("PUT");
                     result = newCatalogSliceFileId(activity, connection, requestData);
-                    LogManager.logReceivedNewCatalogSlice(result);
                     break;
                 case NEW_CATALOG_MEMBER:
                     connection.setRequestMethod("POST");
                     result = newCatalogMember(activity, connection, requestData);
-                    LogManager.logReceivedNewCatalogMember(result);
                     break;
                 case GET_MEMBERSHIPS:
                     result = performGET(activity, connection);
-                    LogManager.logReceivedGetMemberships(result);
                     break;
                 case GET_GOOGLE_IDENTIFIERS:
                     result = performGET(activity, connection);
-                    LogManager.logReceivedGetGoogleIdentifiers(result);
                     break;
                 case GET_MEMBERSHIP_CATALOG_IDS:
                     result = performGET(activity, connection);
-                    LogManager.logReceivedGetMembershipCatalogIDs(result);
                     break;
                 case GET_SERVER_LOGS:
                     result = performSimpleGET(connection);
-                    LogManager.logReceivedServerLog(result);
                     break;
                 default:
                     String msg = "Should never be here.";
