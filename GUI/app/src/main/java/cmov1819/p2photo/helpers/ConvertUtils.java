@@ -22,6 +22,8 @@ import java.security.PublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
+import cmov1819.p2photo.exceptions.RSAException;
+
 import static cmov1819.p2photo.helpers.CryptoUtils.ASYMMETRIC_ALGORITHM;
 
 public class ConvertUtils {

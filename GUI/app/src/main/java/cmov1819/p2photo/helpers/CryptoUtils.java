@@ -21,6 +21,8 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
+import cmov1819.p2photo.exceptions.RSAException;
+
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPrivateKey;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPublicKey;
