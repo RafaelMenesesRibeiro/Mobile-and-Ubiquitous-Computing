@@ -51,6 +51,7 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                 case GET_MEMBERSHIPS:
                 case GET_GOOGLE_IDENTIFIERS:
                 case GET_MEMBERSHIP_CATALOG_IDS:
+                case GET_MEMBER_PUBLICKEY:
                     result = performGET(activity, connection);
                     logReceived(LogManager.WEB_SERVER_MEDIATOR_TAG, result);
                     break;
