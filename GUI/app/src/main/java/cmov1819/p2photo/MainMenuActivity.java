@@ -208,7 +208,7 @@ public class MainMenuActivity
                 mWifiManager.pushCatalogFiles(device, myCatalogFiles);
             }
         } else {
-            LogManager.logInfo(MAIN_MENU_TAG,"Group has no devices left!");
+            LogManager.logInfo(MAIN_MENU_TAG,"Group has no devices...");
         }
     }
 
