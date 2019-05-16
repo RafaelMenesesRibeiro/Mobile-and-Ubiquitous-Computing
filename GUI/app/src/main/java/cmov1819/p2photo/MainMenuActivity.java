@@ -148,13 +148,13 @@ public class MainMenuActivity
         // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            LogManager.logInfo(MAIN_MENU_TAG, "on servercice connected");
+            LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceConnected");
             mManager = new SimWifiP2pManager(new Messenger(service));
             mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
         }
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            LogManager.logInfo(MAIN_MENU_TAG, "on servercice disconenetec");
+            LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceDisconnected");
             // Our WiFi service is always on
             mManager = null;
             mChannel = null;
