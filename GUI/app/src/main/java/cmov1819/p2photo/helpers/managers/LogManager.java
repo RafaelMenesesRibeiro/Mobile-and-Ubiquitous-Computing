@@ -211,6 +211,8 @@ public class LogManager {
      ***********************************************************/
 
     public static void toast(Activity activity, String msg) {
-        Toast.makeText(activity, msg, Toast.LENGTH_LONG).show();
+        if(!activity.isFinishing()) {
+            Toast.makeText(activity, msg, Toast.LENGTH_LONG).show();
+        }
     }
 }
