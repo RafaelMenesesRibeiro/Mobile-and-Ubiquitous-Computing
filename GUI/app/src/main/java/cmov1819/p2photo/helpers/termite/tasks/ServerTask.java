@@ -27,17 +27,29 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
-import static cmov1819.p2photo.helpers.termite.Consts.*;
+import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
+import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
+import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
+import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
+import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
+import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
+import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
+import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
+import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
+import static cmov1819.p2photo.helpers.termite.Consts.USERNAME;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
-    private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
+    private static final String SERVER_TAG = "SERVER SOCKET";
 
     private WifiDirectManager mWifiDirectManager = null;
     private KeyManager mKeyManager = null;
 
     @Override
     protected void onPreExecute() {
-        LogManager.logInfo(INCOMING_TASK_TAG, "Started WiFi Direct server task (" + this.hashCode() + ").");
+        logInfo(SERVER_TAG, "Started WiFi Direct server task (" + this.hashCode() + ").");
     }
 
     @Override
@@ -77,33 +89,33 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                         doRespond(socket,"warning: requests need 'operation' field...");
                     }
                 } catch (IOException ioe) {
-                    Log.e(INCOMING_TASK_TAG, "Error reading socket: " + ioe.getMessage());
+                    Log.e(SERVER_TAG, "Error reading socket: " + ioe.getMessage());
                 } catch (JSONException jsone) {
-                    Log.e(INCOMING_TASK_TAG, "Error reading socket: malformed json request");
+                    Log.e(SERVER_TAG, "Error reading socket: malformed json request");
                 } finally {
                     socket.close();
                 }
             }
         } catch (IOException ioe) {
-            Log.e(INCOMING_TASK_TAG, "Socket error: " + ioe.getMessage());
+            Log.e(SERVER_TAG, "Socket error: " + ioe.getMessage());
         }
 
         return null;
     }
 
     private String processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject jsonObject) throws JSONException {
-        LogManager.logInfo(INCOMING_TASK_TAG, "Processing incoming catalog...");
+        logInfo(SERVER_TAG, "Processing incoming catalog...");
 
         String username = jsonObject.getString(USERNAME);
         PublicKey sendersPublicKey = mKeyManager.getPublicKeys().get(username);
         if (sendersPublicKey == null) {
-            sendersPublicKey = null;
+            sendersPublicKey = getMemberPublicKey(mWifiDirectManager.getMainMenuActivity(), username);
         }
         JSONObject catalogFile = jsonObject.getJSONObject(CATALOG_FILE);
         String catalogId = catalogFile.getString(CATALOG_ID);
 
 
-        LogManager.logInfo(INCOMING_TASK_TAG, "Deciphering catalog file...");
+        logInfo(SERVER_TAG, "Deciphering catalog file...");
         String cipheredCatalogFile = jsonObject.getString(CATALOG_FILE);
         byte[] encodedCatalogFile = base64StringToByteArray(cipheredCatalogFile);
         // byte[] decodedCatalogFile = decipherWithAes(key, encodedCatalogFile);
@@ -115,7 +127,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     }
 
     private String processIncomingPhoto(WifiDirectManager wiFiDirectManager, JSONObject jsonObject) throws JSONException {
-        LogManager.logInfo(INCOMING_TASK_TAG, "Processing incoming photo");
+        logInfo(SERVER_TAG, "Processing incoming photo");
         try {
             String photoUuid = jsonObject.getString(PHOTO_UUID);
             String base64photo = jsonObject.getString(PHOTO_FILE);
@@ -123,14 +135,14 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             Bitmap decodedPhoto = BitmapFactory.decodeByteArray(encodedPhoto, 0, encodedPhoto.length);
             ImageLoading.savePhoto(wiFiDirectManager.getMainMenuActivity(), photoUuid, decodedPhoto);
         } catch (IOException ioe) {
-            LogManager.logError(INCOMING_TASK_TAG, ioe.getMessage());
+            LogManager.logError(SERVER_TAG, ioe.getMessage());
         }
         return "";
     }
 
     @Override
     protected void onPostExecute(Void result) {
-        LogManager.logInfo(INCOMING_TASK_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
+        logInfo(SERVER_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
     }
 
     private String replyWithRequestedPhoto(final WifiDirectManager wiFiDirectManager,

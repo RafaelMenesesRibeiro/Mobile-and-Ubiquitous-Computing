@@ -31,7 +31,7 @@ public class LogManager {
     public static final String VIEW_APP_LOG = "View App Log";
     public static final String CRYPTO_UTILS_TAG = "Crypto Utils";
 
-    public static final String QUERY_MANAGER_TAG = "Quert Manager";
+    public static final String WEB_SERVER_MEDIATOR_TAG = "Quert Manager";
 
     private static String logText = "";
 
@@ -104,63 +104,15 @@ public class LogManager {
      * LOGS FOR RECEIVED RESPONSES
      ***********************************************************/
 
-    private static void logReceived(String tag, String msg, ResponseData responseData) {
+    private static void logReceived(String tag, String message, ResponseData responseData) {
         String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-        String toLog = "\nDate: " + currentDateTimeString + "\n" + msg + "\n" + responseData.toString();
+        String toLog = "\nDate: " + currentDateTimeString + "\n" + message + "\n" + responseData.toString();
         Log.i(tag, toLog);
         logText += "\n" + toLog;
     }
 
-    public static void logReceivedSignup(ResponseData responseData) {
-        logReceived(SIGN_UP_TAG, "Received Sign Up response", responseData);
-    }
-
-    public static void logReceivedLogin(ResponseData responseData) {
-        logReceived(LOGIN_TAG, "Received Login response", responseData);
-    }
-
-    public static void logReceivedLogout(ResponseData responseData) {
-        logReceived(LOGOUT_TAG, "Received Logout response", responseData);
-    }
-
-    public static void logReceivedSearhUser(ResponseData responseData) {
-        logReceived(SEARCH_USER_TAG, "Received Searh User response", responseData);
-    }
-
-    public static void logReceivedGetCatalogTitle(ResponseData responseData) {
-        logReceived(GET_CATALOG_TILE_TAG, "Received Get Catalog Title response", responseData);
-    }
-
-    public static void logReceivedGetCatalog(ResponseData responseData) {
-        logReceived(GET_CATALOG_TAG, "Received Get Catalog response", responseData);
-    }
-
-    public static void logReceivedNewCatalog(ResponseData responseData) {
-        logReceived(NEW_CATALOG_TAG, "Received New Catalog response", responseData);
-    }
-
-    public static void logReceivedNewCatalogSlice(ResponseData responseData) {
-        logReceived(NEW_CATALOG_SLICE_TAG, "Received New Catalog Slice response", responseData);
-    }
-
-    public static void logReceivedNewCatalogMember(ResponseData responseData) {
-        logReceived(NEW_CATALOG_MEMBER_TAG, "Received New Catalog Member response", responseData);
-    }
-
-    public static void logReceivedGetMemberships(ResponseData responseData) {
-        logReceived(GET_MEMBERSHIPS_TAG, "Received Get Memberships response", responseData);
-    }
-
-    public static void logReceivedGetGoogleIdentifiers(ResponseData responseData) {
-        logReceived(GET_GOOGLE_IDENTIFIERS_TAG, "Received Get Google Identifiers response", responseData);
-    }
-
-    public static void logReceivedGetMembershipCatalogIDs(ResponseData responseData) {
-        logReceived(GET_MEMBERSHIP_CATALOG_IDS_TAG, "Received Get Membership Catalog IDs response", responseData);
-    }
-
-    public static void logReceivedServerLog(ResponseData responseData) {
-        logReceived(GET_SERVER_LOG, "Received Get Server Log response", responseData);
+    public static void logReceived(String tag, ResponseData responseData) {
+        logReceived(tag, "Received response from P2PWebServer", responseData);
     }
 
     /**********************************************************
