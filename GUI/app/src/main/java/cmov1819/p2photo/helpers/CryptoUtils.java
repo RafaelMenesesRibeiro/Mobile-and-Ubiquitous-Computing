@@ -28,9 +28,11 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.RSAException;
+import cmov1819.p2photo.helpers.managers.KeyManager;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPrivateKey;
@@ -43,6 +45,7 @@ import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 public class CryptoUtils {
     private static final String PRIVATE_KEY_FILENAME = "P2Photo_PrivateKey.key";
     private static final String PUBLIC_KEY_FILENAME = "P2Photo_PublicKey.pub";
+    private static final String SECRECT_KEY_FILENAME = "P2PHOTO_SecrectKey";
     public static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
     public static final String SYMMETRIC_ALGORITHM = "AES";
     public static final String ASYMMETRIC_ALGORITHM = "RSA";
@@ -66,6 +69,28 @@ public class CryptoUtils {
 
     private static Key getSymmetricKey() {
         return CryptoUtils.secretKey;
+    }
+
+    public static void storeAESKey(final Activity activity, SecretKey key) throws FailedOperationException {
+        try {
+            FileOutputStream outputStream = activity.openFileOutput(SECRECT_KEY_FILENAME, Context.MODE_PRIVATE);
+            outputStream.write(key.getEncoded());
+            outputStream.close();
+        }
+        catch (Exception ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+    }
+
+    public static SecretKey loadAESKeys(final Activity activity) throws FailedOperationException {
+        try {
+            InputStream inputStream = activity.openFileInput(SECRECT_KEY_FILENAME);
+            byte[] bytes = inputStreamToByteArray(inputStream);
+            return new SecretKeySpec(bytes, SYMMETRIC_ALGORITHM);
+        }
+        catch (Exception ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
     }
 
     public static SecretKey generateAesKey() {
@@ -113,7 +138,7 @@ public class CryptoUtils {
 
     /** Asymmetric Key Cipher Methods */
 
-    public void storeRSAKeys(final Activity activity, KeyPair keys) throws FailedOperationException {
+    public static void storeRSAKeys(final Activity activity, KeyPair keys) throws FailedOperationException {
         try {
             FileOutputStream outputStream = activity.openFileOutput(PRIVATE_KEY_FILENAME, Context.MODE_PRIVATE);
             PrivateKey privateKey = keys.getPrivate();
@@ -122,13 +147,14 @@ public class CryptoUtils {
             outputStream = activity.openFileOutput(PUBLIC_KEY_FILENAME, Context.MODE_PRIVATE);
             PublicKey publicKey = keys.getPublic();
             outputStream.write(publicKey.getEncoded());
+            outputStream.close();
         }
         catch (Exception ex) {
             throw new FailedOperationException(ex.getMessage());
         }
     }
 
-    public KeyPair loadRSAKeys(final Activity activity) throws FailedOperationException {
+    public static KeyPair loadRSAKeys(final Activity activity) throws FailedOperationException {
         try {
             InputStream inputStream = activity.openFileInput(PRIVATE_KEY_FILENAME);
             byte[] bytes = inputStreamToByteArray(inputStream);
@@ -149,10 +175,10 @@ public class CryptoUtils {
         }
     }
 
-    public KeyPair generateRSAKeys() throws NoSuchAlgorithmException {
+    public static KeyPair generateRSAKeys() throws NoSuchAlgorithmException {
         KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ASYMMETRIC_ALGORITHM);
         keyGen.initialize(RSA_KEY_SIZE);
-        return keyGen.generateKeyPair(); // use getPrivate() and getPublic() to obtain keys;
+        return keyGen.generateKeyPair();
     }
 
     public static byte[] cipherWithRSA(String data, String base64PublicKey) throws RSAException {
