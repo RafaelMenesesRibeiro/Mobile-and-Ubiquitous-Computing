@@ -86,12 +86,10 @@ public class MainMenuActivity
     private Messenger mService = null;
     private SimWifiP2pManager mManager = null;
     private SimWifiP2pManager.Channel mChannel = null;
-    private SimWifiP2pBroadcastReceiver mReceiver = null;
-    private SimWifiP2pDeviceList mPeers = null;
     private SimWifiP2pSocketServer mSrvSocket = null;
     private SimWifiP2pSocket mCliSocket = null;
+    private List<SimWifiP2pDevice> mPeers = new ArrayList<>();
     private List<SimWifiP2pDevice> mGroupPeers = new ArrayList<>();
-
     private WifiDirectManager mWFManager = null;
 
     @Override
@@ -135,7 +133,7 @@ public class MainMenuActivity
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        mReceiver = new SimWifiP2pBroadcastReceiver(this);
+        SimWifiP2pBroadcastReceiver mReceiver = new SimWifiP2pBroadcastReceiver(this);
         registerReceiver(mReceiver, filter);
     }
 
@@ -148,7 +146,8 @@ public class MainMenuActivity
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
             LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceConnected");
-            mManager = new SimWifiP2pManager(new Messenger(service));
+            mService = new Messenger(service);
+            mManager = new SimWifiP2pManager(mService);
             mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
         }
         @Override
@@ -185,10 +184,10 @@ public class MainMenuActivity
 
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
+        LogManager.logInfo(MAIN_MENU_TAG, "New peer information available...");
         // compile list of devices in range
-        for (SimWifiP2pDevice device : peers.getDeviceList()) {
-            // TODO Search for a GO within these devices if none is found, try to become GO
-        }
+        mDeviceName = "";
+        mPeers.addAll(peers.getDeviceList());
     }
 
     /**********************************************************
@@ -197,13 +196,11 @@ public class MainMenuActivity
 
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
-        LogManager.logInfo(MAIN_MENU_TAG, "New group information available...");
+        LogManager.logInfo(MAIN_MENU_TAG, "New membership information available...");
         mGroupPeers.clear();
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
-            LogManager.logInfo(MAIN_MENU_TAG, "There may be new devices in the group!");
-            // Refresh my device name
-            mDeviceName = simWifiP2pInfo.getDeviceName();
             // Load catalog files
+            mDeviceName = simWifiP2pInfo.getDeviceName();
             Pair<List<JSONObject>, List<String>> result = loadMyCatalogFiles();
             List<JSONObject> myCatalogFiles = result.first;
             List<String> myMissingCatalogFiles = result.second;
