@@ -115,10 +115,10 @@ public class LoginActivity extends AppCompatActivity {
 
         if (trySignUp(usernameValue, passwordValue)) {
             try {
-                createPhotoStackFile(this);
+                ArchitectureManager.systemArchitecture.onSignUp(this);
             }
-            catch (IOException ex) {
-                LogManager.logError(LogManager.LOGIN_TAG, "Could not create photo's stack file. Exiting");
+            catch (Exception ex) {
+                LogManager.logError(LogManager.LOGIN_TAG, ex.getMessage());
                 System.exit(-3);
             }
             disableUserTextInputs(usernameEditText, passwordEditText);

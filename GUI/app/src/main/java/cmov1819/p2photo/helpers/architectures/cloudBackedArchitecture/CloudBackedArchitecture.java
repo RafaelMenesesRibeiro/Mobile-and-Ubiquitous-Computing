@@ -46,6 +46,11 @@ public class CloudBackedArchitecture extends BaseArchitecture {
     }
 
     @Override
+    public void onSignUp(final LoginActivity loginActivity) {
+        /* Nothing to do.  */
+    }
+
+    @Override
     public void setup(final View view, final LoginActivity loginActivity) {
         LoginActivity.tryEnablingPostAuthorizationFlows(view, loginActivity);
     }
