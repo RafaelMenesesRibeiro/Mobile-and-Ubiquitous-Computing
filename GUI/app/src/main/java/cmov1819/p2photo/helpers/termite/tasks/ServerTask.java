@@ -13,6 +13,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.security.KeyException;
 import java.security.PublicKey;
 
 import cmov1819.p2photo.MainMenuActivity;
@@ -27,6 +28,8 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
+import static cmov1819.p2photo.helpers.CryptoUtils.verifySignatureWithSHA1withRSA;
+import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge.mergeCatalogFiles;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
@@ -103,25 +106,17 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         return null;
     }
 
-    private String processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject jsonObject) throws JSONException {
+    private String processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject message) throws JSONException {
         logInfo(SERVER_TAG, "Processing incoming catalog...");
+        String username = message.getString(USERNAME);
+        PublicKey key = tryGetKeyFromLocalMaps(username);
 
-        String username = jsonObject.getString(USERNAME);
-        PublicKey sendersPublicKey = mKeyManager.getPublicKeys().get(username);
-        if (sendersPublicKey == null) {
-            sendersPublicKey = getMemberPublicKey(mWifiDirectManager.getMainMenuActivity(), username);
+        if (key != null && verifySignatureWithSHA1withRSA(key, message)) {
+            logInfo(SERVER_TAG, "Verifying sender's signature...");
+            JSONObject catalogFile = message.getJSONObject(CATALOG_FILE);
+            String catalogId = catalogFile.getString(CATALOG_ID);
+            mergeCatalogFiles(mWifiDirectManager.getMainMenuActivity(), catalogId, catalogFile);
         }
-        JSONObject catalogFile = jsonObject.getJSONObject(CATALOG_FILE);
-        String catalogId = catalogFile.getString(CATALOG_ID);
-
-
-        logInfo(SERVER_TAG, "Deciphering catalog file...");
-        String cipheredCatalogFile = jsonObject.getString(CATALOG_FILE);
-        byte[] encodedCatalogFile = base64StringToByteArray(cipheredCatalogFile);
-        // byte[] decodedCatalogFile = decipherWithAes(key, encodedCatalogFile);
-        // JSONObject decipheredCatalogFile = new JSONObject(byteArrayToUtf8(decodedCatalogFile));
-
-        // CatalogMerge.mergeCatalogFiles(mWifiDirectManager.getMainMenuActivity(), catalogId, decipheredCatalogFile);
 
         return "";
     }
@@ -172,6 +167,20 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     }
 
     /** Helpers */
+
+    private PublicKey tryGetKeyFromLocalMaps(String username) {
+        PublicKey key = mKeyManager.getPublicKeys().get(username);
+        if (key == null) {
+            try {
+                key = getMemberPublicKey(mWifiDirectManager.getMainMenuActivity(), username);
+            } catch (KeyException ke) {
+                LogManager.logWarning(SERVER_TAG, ke.getMessage());
+            }
+            mKeyManager.getPublicKeys().put(username, key);
+        }
+        return key;
+    }
+
     private void doRespond(SimWifiP2pSocket socket, JSONObject jsonObject) throws IOException {
         doRespond(socket, jsonObject.toString());
     }
@@ -179,4 +188,5 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     private void doRespond(SimWifiP2pSocket socket, String string) throws IOException {
         socket.getOutputStream().write((string + CONFIRM_RCV).getBytes());
     }
+
 }
