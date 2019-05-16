@@ -14,12 +14,11 @@ public class RequestData {
         GET_GOOGLE_IDENTIFIERS,
         GET_MEMBERSHIP_CATALOG_IDS,
         GET_SERVER_LOGS,
-        GET_MEMBER_PUBLICKEY,
-        NEW_MEMBER_PUBLICKEY,
+        GET_MEMBER_PUBLIC_KEY,
+        NEW_MEMBER_PUBLIC_KEY,
         NEW_CATALOG,
         NEW_CATALOG_SLICE,
         NEW_CATALOG_MEMBER,
-
     }
 
     private Activity activity;
