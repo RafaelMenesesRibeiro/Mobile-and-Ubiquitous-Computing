@@ -1,6 +1,5 @@
 package cmov1819.p2photo.helpers;
 
-
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Base64;
