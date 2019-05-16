@@ -1,9 +1,16 @@
 package cmov1819.p2photo.helpers;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -12,12 +19,14 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
-import cmov1819.p2photo.helpers.managers.LogManager;
+import static cmov1819.p2photo.helpers.ConvertUtils.*;
+import static cmov1819.p2photo.helpers.managers.LogManager.*;
 
 public class CryptoUtils {
-    private static final String SECRET_KEY_ALGORITHM = "AES";
     private static final String KEY_STORE_PROVIDER = "AndroidKeyStore";
     private static final String KEY_STORE_ALIAS = "MOC_1819_P2PHOTO_ALIAS";
+    private static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
+    private static final String SECRET_KEY_ALGORITHM = "AES";
 
     private static SecretKey secretKey;
 
@@ -38,7 +47,6 @@ public class CryptoUtils {
     private static Key getSymmetricKey() {
         return CryptoUtils.secretKey;
     }
-
 
     public static SecretKey generateAesKey() {
         try {
@@ -78,8 +86,42 @@ public class CryptoUtils {
             return cipher.doFinal(initialBytes);
         }
         catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException ex) {
-            LogManager.logError(LogManager.CRYPTO_UTILS, "Could not cipher / decipher");
+            logError(CRYPTO_UTILS_TAG, "Could not cipher / decipher");
             return null;
         }
+    }
+
+    /** Public and Private Key Ciphers */
+
+    public static byte[] sign(PrivateKey key, byte[] data) throws SignatureException {
+        try {
+            Signature sign = Signature.getInstance(SIGNATURE_ALGORITHM);
+            sign.initSign(key);
+            sign.update(data);
+            return sign.sign();
+        } catch (NoSuchAlgorithmException | InvalidKeyException exc) {
+            throw new SignatureException(exc.getMessage());
+        }
+    }
+
+    public static boolean verifySignature(PublicKey key, JSONObject message) {
+        try {
+            byte[] signatureBytes = base64StringToByteArray(message.getString("signature"));
+            message.remove("signature");
+            return verifySignature(key, signatureBytes, message.toString().getBytes());
+        } catch (JSONException jsone) {
+            logError(CRYPTO_UTILS_TAG, "verifySignature couldn't getString('signature')");
+        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException exc) {
+            logError(CRYPTO_UTILS_TAG, "verifySignature couldn't verify signature due to exceptions");
+        }
+        return false;
+    }
+
+    private static boolean verifySignature(PublicKey key, byte[] signatureBytes, byte[] message)
+            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+            Signature sign = Signature.getInstance(SIGNATURE_ALGORITHM);
+            sign.initVerify(key);
+            sign.update(message);
+            return sign.verify(signatureBytes);
     }
 }
