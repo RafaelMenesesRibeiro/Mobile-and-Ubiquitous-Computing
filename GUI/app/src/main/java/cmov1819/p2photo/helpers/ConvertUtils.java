@@ -16,6 +16,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.security.KeyFactory;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+
+import static cmov1819.p2photo.helpers.CryptoUtils.ASYMMETRIC_ALGORITHM;
 
 public class ConvertUtils {
     public static String inputStreamToString(InputStream inputStream) throws IOException {
@@ -74,7 +81,7 @@ public class ConvertUtils {
         }
     }
 
-    public static byte[] JSONObjectToByteAarray(JSONObject contents) {
+    public static byte[] JSONObjectToByteArray(JSONObject contents) {
         try {
             return contents.toString().getBytes("UTF-8");
         }
@@ -84,7 +91,7 @@ public class ConvertUtils {
         }
     }
 
-    public static byte[] JSONObjectToByteAarray(JSONObject contents, int indentSpaces) {
+    public static byte[] JSONObjectToByteArray(JSONObject contents, int indentSpaces) {
         try {
             return contents.toString(indentSpaces).getBytes("UTF-8");
         }
@@ -94,4 +101,19 @@ public class ConvertUtils {
         }
     }
 
+    public static PrivateKey base64StringToPrivateKey(String base64PrivateKey) throws RSAException {
+        try {
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(base64StringToByteArray(base64PrivateKey));
+            KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_ALGORITHM);
+            return keyFactory.generatePrivate(keySpec);
+        } catch (Exception exc) {
+            throw new RSAException(exc.getMessage());
+        }
+    }
+
+    public static PublicKey base64StringToPublicKey(String base64PublicKey) throws Exception {
+        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(base64StringToByteArray(base64PublicKey));
+        KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_ALGORITHM);
+        return keyFactory.generatePublic(keySpec);
+    }
 }

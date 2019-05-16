@@ -6,6 +6,7 @@ import org.json.JSONObject;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -19,14 +20,20 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 
-import static cmov1819.p2photo.helpers.ConvertUtils.*;
-import static cmov1819.p2photo.helpers.managers.LogManager.*;
+import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
+import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPrivateKey;
+import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPublicKey;
+import static cmov1819.p2photo.helpers.managers.LogManager.CRYPTO_UTILS_TAG;
+import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 
 public class CryptoUtils {
     private static final String KEY_STORE_PROVIDER = "AndroidKeyStore";
     private static final String KEY_STORE_ALIAS = "MOC_1819_P2PHOTO_ALIAS";
-    private static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
-    private static final String SECRET_KEY_ALGORITHM = "AES";
+    public static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
+    public static final String SYMMETRIC_ALGORITHM = "AES";
+    public static final String ASYMMETRIC_ALGORITHM = "RSA";
+    public static final String RSA_ALGORITHM = "RSA/ECB/PKCS1Padding";
+    public static final int RSA_KEY_SIZE = 2048;
 
     private static SecretKey secretKey;
 
@@ -52,7 +59,7 @@ public class CryptoUtils {
 
     public static SecretKey generateAesKey() {
         try {
-            KeyGenerator keyGenerator = KeyGenerator.getInstance(SECRET_KEY_ALGORITHM);
+            KeyGenerator keyGenerator = KeyGenerator.getInstance(SYMMETRIC_ALGORITHM);
             keyGenerator.init(256);
             SecretKey key = keyGenerator.generateKey();
             CryptoUtils.secretKey = key;
@@ -83,7 +90,7 @@ public class CryptoUtils {
     private static byte[] useSymmetricCipher(int mode, Key key, byte[] initialBytes) {
         Cipher cipher;
         try {
-            cipher = Cipher.getInstance(SECRET_KEY_ALGORITHM);
+            cipher = Cipher.getInstance(SYMMETRIC_ALGORITHM);
             cipher.init(mode, key);
             return cipher.doFinal(initialBytes);
         }
@@ -93,7 +100,41 @@ public class CryptoUtils {
         }
     }
 
-    /** Public and Private Key Cipher Methods */
+    /** Asymmetric Key Cipher Methods */
+
+    public KeyPair generateRSAKeys() throws NoSuchAlgorithmException {
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance(ASYMMETRIC_ALGORITHM);
+        keyGen.initialize(RSA_KEY_SIZE);
+        return keyGen.generateKeyPair(); // use getPrivate() and getPublic() to obtain keys;
+    }
+
+    public static byte[] cipherWithRSA(String data, String base64PublicKey) throws RSAException {
+        return cipherWithRSA(data.getBytes(), base64PublicKey);
+    }
+
+    public static byte[] cipherWithRSA(byte[] data, String base64PublicKey) throws RSAException {
+        try {
+            Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, base64StringToPublicKey(base64PublicKey));
+            return cipher.doFinal(data);
+        } catch (Exception exc) {
+            throw new RSAException(exc.getMessage());
+        }
+    }
+
+    public static String decipherWithRSA(String data, String base64PrivateKey) throws RSAException {
+        return decipherWithRSA(data.getBytes(), base64PrivateKey);
+    }
+
+    public static String decipherWithRSA(byte[] data, String base64PrivateKey) throws RSAException {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            cipher.init(Cipher.DECRYPT_MODE, base64StringToPrivateKey(base64PrivateKey));
+            return new String(cipher.doFinal(data));
+        } catch (Exception exc) {
+            throw new RSAException(exc.getMessage());
+        }
+    }
 
     public static byte[] sign(PrivateKey key, byte[] data) throws SignatureException {
         try {
@@ -113,19 +154,22 @@ public class CryptoUtils {
             return verifySignature(key, signatureBytes, message.toString().getBytes());
         } catch (JSONException jsone) {
             logError(CRYPTO_UTILS_TAG, "verifySignature couldn't getString('signature')");
-        } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException exc) {
+        } catch (SignatureException exc) {
             logError(CRYPTO_UTILS_TAG, "verifySignature couldn't verify signature due to exceptions");
         }
         return false;
     }
 
-    private static boolean verifySignature(PublicKey key, byte[] signatureBytes, byte[] message)
-            throws NoSuchAlgorithmException, InvalidKeyException, SignatureException {
+    private static boolean verifySignature(PublicKey key, byte[] signatureBytes, byte[] message) throws SignatureException {
+        try {
             Signature sign = Signature.getInstance(SIGNATURE_ALGORITHM);
             sign.initVerify(key);
             sign.update(message);
             return sign.verify(signatureBytes);
+        } catch (Exception exc) {
+            throw new SignatureException(exc.getMessage());
+        }
     }
 
-    
+
 }
