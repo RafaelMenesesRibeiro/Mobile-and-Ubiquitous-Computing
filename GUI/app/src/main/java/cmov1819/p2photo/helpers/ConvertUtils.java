@@ -26,6 +26,17 @@ import cmov1819.p2photo.exceptions.RSAException;
 import static cmov1819.p2photo.helpers.CryptoUtils.ASYMMETRIC_ALGORITHM;
 
 public class ConvertUtils {
+    public static byte[] inputStreamToByteArray(InputStream inputStream) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int read = 0;
+        while ((read = inputStream.read(buffer, 0, buffer.length)) != -1) {
+            baos.write(buffer, 0, read);
+        }
+        baos.flush();
+        return baos.toByteArray();
+    }
+
     public static String inputStreamToString(InputStream inputStream) throws IOException {
         String line;
         StringBuilder stringBuilder = new StringBuilder();
