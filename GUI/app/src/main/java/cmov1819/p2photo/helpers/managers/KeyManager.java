@@ -40,8 +40,7 @@ public class KeyManager {
         }
         return instance;
     }
-
-
+    
     /** Getters and Setters */
 
     public SecretKey getmSecretKey() {
