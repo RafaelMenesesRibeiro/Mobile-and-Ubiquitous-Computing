@@ -29,8 +29,6 @@ import cmov1819.p2photo.helpers.architectures.BaseArchitecture;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 
-import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
-
 public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
     public void handlePendingMemberships(final Activity activity) {
@@ -39,12 +37,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
 
     @Override
     public void setup(final View view, final LoginActivity loginActivity) throws FailedOperationException {
-        try {
-            LoginActivity.initializeSymmetricKey(loginActivity);
-        }
-        catch (SignatureException ex) {
-            throw new FailedOperationException(ex.getMessage());
-        }
+        LoginActivity.initializeWifiDirectSetup(loginActivity);
     }
 
     /**********************************************************

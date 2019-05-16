@@ -1,23 +1,9 @@
 package cmov1819.p2photo.helpers;
 
-import android.annotation.TargetApi;
-import android.media.MediaCodec;
-import android.os.Build;
-import android.security.keystore.KeyGenParameterSpec;
-import android.security.keystore.KeyProperties;
-import android.support.annotation.RequiresApi;
-
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
+import java.security.Key;
+import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
-import java.security.SignatureException;
-import java.security.UnrecoverableEntryException;
-import java.security.cert.CertificateException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -25,55 +11,42 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
+
+import cmov1819.p2photo.helpers.managers.LogManager;
 
 public class CryptoUtils {
-    private static final String SYMMETRIC_CYPHER_PROPS = "AES/CBC/PKCS5Padding";
+    private static final String SECRET_KEY_ALGORITHM = "AES";
     private static final String KEY_STORE_PROVIDER = "AndroidKeyStore";
     private static final String KEY_STORE_ALIAS = "MOC_1819_P2PHOTO_ALIAS";
 
-    private static final IvParameterSpec IV_PARAMETER_SPEC = new IvParameterSpec(new byte[]
-            { 0x00, 0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00,
-                    0x00, 0x00, 0x00 });
+    private static SecretKey secretKey;
 
-    private static  SecretKey secretKey;
-
-    // TODO - Change this. //
-    @RequiresApi(api = Build.VERSION_CODES.M)
-    public static void initializeSymmetricKey() throws SignatureException {
-        try {
-            KeyStore keyStore = KeyStore.getInstance(KEY_STORE_PROVIDER);
-            keyStore.load(null);
-            if (!keyStore.containsAlias(KEY_STORE_ALIAS)) {
-                KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, KEY_STORE_PROVIDER);
-                keyGenerator.init(
-                        new KeyGenParameterSpec.Builder(KEY_STORE_ALIAS,
-                                KeyProperties.PURPOSE_ENCRYPT | KeyProperties.PURPOSE_DECRYPT)
-                                .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                                .setRandomizedEncryptionRequired(false)
-                                .build());
-                CryptoUtils.secretKey = keyGenerator.generateKey();
-            }
-            else {
-                CryptoUtils.secretKey = (SecretKey) keyStore.getKey(KEY_STORE_ALIAS, null);
-            }
-        }
-        catch (Exception ex) {
-            // TODO - Remove. //
-            ex.printStackTrace();
-            throw new SignatureException(ex.getMessage());
-        }
+    private CryptoUtils() {
+        // Does not allow this class to be instantiated. //
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    public static SecretKey generateAes256Key() {
+    // TODO //
+    public static Key generateSymmetricKey() {
+        throw new UnsupportedOperationException();
+    }
+
+    // TODO //
+    public static KeyPair generateAsymetricKeys() {
+        throw new UnsupportedOperationException();
+    }
+
+    private static Key getSymmetricKey() {
+        return CryptoUtils.secretKey;
+    }
+
+
+    public static SecretKey generateAesKey() {
         try {
-            KeyGenerator keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES);
-            return keyGenerator.generateKey();
+            KeyGenerator keyGenerator = KeyGenerator.getInstance(SECRET_KEY_ALGORITHM);
+            keyGenerator.init(256);
+            SecretKey key = keyGenerator.generateKey();
+            CryptoUtils.secretKey = key;
+            return key;
         }
         catch (NoSuchAlgorithmException e) {
             // Should never be here.
@@ -81,31 +54,32 @@ public class CryptoUtils {
         }
     }
 
-    public static byte[] cipherWithAes256(SecretKey key, byte[] plainBytes) {
-        return symmetricCipher(Cipher.ENCRYPT_MODE, key, plainBytes);
+    public static byte[] cipherWithAes(byte[] plainBytes) {
+        return cipherWithAes(getSymmetricKey(), plainBytes);
     }
 
-    public static byte[] cipherWithAes256(byte[] plainBytes) {
-        return symmetricCipher(Cipher.ENCRYPT_MODE, CryptoUtils.secretKey, plainBytes);
+    public static byte[] cipherWithAes(Key key, byte[] plainBytes) {
+        return useSymmetricCipher(Cipher.ENCRYPT_MODE, key, plainBytes);
     }
 
-    public static byte[] decipherWithAes256(SecretKey key, byte[] cipheredBytes) {
-        return symmetricCipher(Cipher.DECRYPT_MODE, key, cipheredBytes);
+    public static byte[] decipherWithAes(byte[] cipheredBytes) {
+        return decipherWithAes(getSymmetricKey(), cipheredBytes);
     }
 
-    public static byte[] decipherWithAes256(byte[] cipheredBytes) {
-        return symmetricCipher(Cipher.DECRYPT_MODE, CryptoUtils.secretKey, cipheredBytes);
+    public static byte[] decipherWithAes(Key key, byte[] cipheredBytes) {
+        return useSymmetricCipher(Cipher.DECRYPT_MODE, key, cipheredBytes);
     }
 
-    private static byte[] symmetricCipher(int mode, SecretKey key, byte[] initialBytes) {
+    private static byte[] useSymmetricCipher(int mode, Key key, byte[] initialBytes) {
         Cipher cipher;
         try {
-            cipher = Cipher.getInstance(SYMMETRIC_CYPHER_PROPS);
-            cipher.init(mode, key, IV_PARAMETER_SPEC);
+            cipher = Cipher.getInstance(SECRET_KEY_ALGORITHM);
+            cipher.init(mode, key);
             return cipher.doFinal(initialBytes);
         }
-        catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException | InvalidAlgorithmParameterException ex) {
-            throw new RuntimeException(ex.getMessage());
+        catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException | IllegalBlockSizeException | BadPaddingException ex) {
+            LogManager.logError(LogManager.CRYPTO_UTILS, "Could not cipher / decipher");
+            return null;
         }
     }
 }

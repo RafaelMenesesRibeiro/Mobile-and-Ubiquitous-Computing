@@ -267,8 +267,8 @@ public class LoginActivity extends AppCompatActivity {
      * WIRELESS P2P ARCHITECTURE SETUP HELPERS
      ***********************************************************/
 
-    public static void initializeSymmetricKey(Activity activity) throws SignatureException {
-        CryptoUtils.initializeSymmetricKey();
+    public static void initializeWifiDirectSetup(Activity activity) {
+        CryptoUtils.generateAesKey();
         goHome(activity);
     }
 

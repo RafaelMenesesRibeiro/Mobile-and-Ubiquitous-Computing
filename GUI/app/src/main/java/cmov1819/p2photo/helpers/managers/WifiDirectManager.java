@@ -21,7 +21,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
-import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes256;
+import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes;
 
 public class WifiDirectManager {
     private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
@@ -76,7 +76,7 @@ public class WifiDirectManager {
         // TODO Exchange this code with TLS logic
         LogManager.logInfo(WIFI_DIRECT_MGR_TAG, "Generating AES256 Key and corresponding retrieval Token...");
         String token = UUID.randomUUID().toString();
-        SecretKey key = CryptoUtils.generateAes256Key();
+        SecretKey key = CryptoUtils.generateAesKey();
         // Ask the server temporarily store the AES Key associated with this token
         registerKeyOnWebServer(targetDevice.deviceName, token, key);
 
@@ -85,7 +85,7 @@ public class WifiDirectManager {
             String identedCatalogFileContents = catalogFileContents.toString(4);
             LogManager.logInfo(WIFI_DIRECT_MGR_TAG,String.format(unformatedLog, targetDevice.deviceName, identedCatalogFileContents));
 
-            byte[] encodedCatalog = cipherWithAes256(key, catalogFileContents.toString().getBytes());
+            byte[] encodedCatalog = cipherWithAes(key, catalogFileContents.toString().getBytes());
             String cipheredCatalogFile = byteArrayToBase64String(encodedCatalog);
 
             JSONObject jsonObject = new JSONObject();
