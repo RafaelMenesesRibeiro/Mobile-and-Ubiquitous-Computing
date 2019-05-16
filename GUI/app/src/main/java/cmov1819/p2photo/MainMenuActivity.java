@@ -69,7 +69,6 @@ import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.NO_CATALOG_SELECTED;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
-
 public class MainMenuActivity
         extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
