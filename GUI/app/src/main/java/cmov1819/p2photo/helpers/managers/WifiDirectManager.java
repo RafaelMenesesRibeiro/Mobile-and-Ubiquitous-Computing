@@ -89,7 +89,7 @@ public class WifiDirectManager {
             LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
         }
     }
-    
+
     /**********************************************************
      * PHOTO REQUEST / RESPONSE METHODS
      **********************************************************/

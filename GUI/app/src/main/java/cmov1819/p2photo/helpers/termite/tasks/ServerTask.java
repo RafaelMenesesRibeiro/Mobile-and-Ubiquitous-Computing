@@ -89,10 +89,10 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
     private String processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject jsonObject) throws JSONException {
         LogManager.logInfo(INCOMING_TASK_TAG, "Processing incoming catalog...");
-        // TODO IM HERE ISSUE
+
         JSONObject catalogFile = jsonObject.getJSONObject(CATALOG_FILE);
         String catalogId = catalogFile.getString(CATALOG_ID);
-        String sender = jsonObject.getString(FROM);
+        String from = jsonObject.getString(FROM);
 
         LogManager.logInfo(INCOMING_TASK_TAG, "Deciphering catalog file...");
         String cipheredCatalogFile = jsonObject.getString(CATALOG_FILE);
