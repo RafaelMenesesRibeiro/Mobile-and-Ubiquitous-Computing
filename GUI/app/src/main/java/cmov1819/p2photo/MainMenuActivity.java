@@ -83,12 +83,33 @@ public class MainMenuActivity
 
     private String mDeviceName = "default";
     private Messenger mService = null;
-    private SimWifiP2pManager mManager = null;
     private Channel mChannel = null;
+    private SimWifiP2pManager mManager = null;
     private SimWifiP2pSocketServer mSrvSocket = null;
+    private SimWifiP2pBroadcastReceiver mReceiver = null;
+    private WifiDirectManager mWifiManager = null;
     private List<SimWifiP2pDevice> mPeers = new ArrayList<>();
     private List<SimWifiP2pDevice> mGroupPeers = new ArrayList<>();
-    private WifiDirectManager mWifiManager = null;
+    private ServiceConnection mConnection = new ServiceConnection() {
+        // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
+        @Override
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceConnected");
+            mService = new Messenger(service);
+            mManager = new SimWifiP2pManager(mService);
+            mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
+        }
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceDisconnected");
+            mService = null;
+            mManager = null;
+            mChannel = null;
+            mSrvSocket = null;
+            mPeers = new ArrayList<>();
+            mGroupPeers = new ArrayList<>();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,37 +140,16 @@ public class MainMenuActivity
      * TERMITE MANAGEMENT ATTRIBUTES AND METHODS
      **********************************************************/
 
-    private ServiceConnection mConnection = new ServiceConnection() {
-        // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
-        @Override
-        public void onServiceConnected(ComponentName className, IBinder service) {
-            LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceConnected");
-            mService = new Messenger(service);
-            mManager = new SimWifiP2pManager(mService);
-            mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
-        }
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceDisconnected");
-            mService = null;
-            mManager = null;
-            mChannel = null;
-            mSrvSocket = null;
-            mPeers = new ArrayList<>();
-            mGroupPeers = new ArrayList<>();
-        }
-    };
-
     @Override
     public void onPause() {
         super.onPause();
-        // unregisterReceiver(mReceiver);
+        unregisterReceiver(mReceiver);
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // basicTermiteSetup()
+        basicTermiteSetup();
     }
 
     /** Searches vicinity for nearby phones; */
@@ -465,7 +465,7 @@ public class MainMenuActivity
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        SimWifiP2pBroadcastReceiver mReceiver = new SimWifiP2pBroadcastReceiver(this);
+        mReceiver = new SimWifiP2pBroadcastReceiver(this);
         registerReceiver(mReceiver, filter);
     }
 

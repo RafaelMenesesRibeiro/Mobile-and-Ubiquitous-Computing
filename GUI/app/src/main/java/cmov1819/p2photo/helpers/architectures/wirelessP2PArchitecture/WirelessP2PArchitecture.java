@@ -59,13 +59,10 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         if (mainMenuActivity.getIntent().hasExtra(LoginActivity.WIFI_DIRECT_SV_RUNNING)) {
             mainMenuActivity.unbindService(mainMenuActivity.getmConnection());
         }
-
         mainMenuActivity.basicTermiteSetup();
-
         // WiFi is always on - Battery drainage is cool, because people buy new phones
         Intent intent = new Intent(mainMenuActivity, SimWifiP2pService.class);
         mainMenuActivity.bindService(intent, mainMenuActivity.getmConnection(), Context.BIND_AUTO_CREATE);
-
         // Start Server in AsyncTask
         mainMenuActivity.setmWifiManager(WifiDirectManager.init(mainMenuActivity));
     }
