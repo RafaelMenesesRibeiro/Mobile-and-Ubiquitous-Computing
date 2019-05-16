@@ -170,6 +170,4 @@ public class CryptoUtils {
             throw new SignatureException(exc.getMessage());
         }
     }
-
-
 }
