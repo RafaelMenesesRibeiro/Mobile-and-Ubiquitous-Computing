@@ -67,21 +67,15 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                     LogManager.logReceivedLogout(result);
                     break;
                 case SEARCH_USERS:
-                    connection.setRequestMethod("GET");
-                    connection.setDoOutput(false);
-                    result = findUsers(activity, connection);
+                    result = performGET(activity, connection);
                     LogManager.logReceivedSearhUser(result);
                     break;
                 case GET_CATALOG_TITLE:
-                    connection.setRequestMethod("GET");
-                    connection.setDoOutput(false);
-                    result = getCatalogTitle(activity, connection);
+                    result = performGET(activity, connection);
                     LogManager.logReceivedGetCatalogTitle(result);
                     break;
                 case GET_CATALOG:
-                    connection.setRequestMethod("GET");
-                    connection.setDoOutput(false);
-                    result = getCatalog(activity, connection);
+                    result = performGET(activity, connection);
                     LogManager.logReceivedGetCatalog(result);
                     break;
                 case NEW_CATALOG:
@@ -100,27 +94,19 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                     LogManager.logReceivedNewCatalogMember(result);
                     break;
                 case GET_MEMBERSHIPS:
-                    connection.setRequestMethod("GET");
-                    connection.setDoOutput(false);
-                    result = getMemberships(activity, connection);
+                    result = performGET(activity, connection);
                     LogManager.logReceivedGetMemberships(result);
                     break;
                 case GET_GOOGLE_IDENTIFIERS:
-                    connection.setRequestMethod("GET");
-                    connection.setDoOutput(false);
-                    result = getGoogleDriveIdentifiers(activity, connection);
+                    result = performGET(activity, connection);
                     LogManager.logReceivedGetGoogleIdentifiers(result);
                     break;
                 case GET_MEMBERSHIP_CATALOG_IDS:
-                    connection.setRequestMethod("GET");
-                    connection.setDoOutput(false);
-                    result = getMembershipCatalogIDs(activity, connection);
+                    result = performGET(activity, connection);
                     LogManager.logReceivedGetMembershipCatalogIDs(result);
                     break;
                 case GET_SERVER_LOGS:
-                    connection.setRequestMethod("GET");
-                    connection.setDoOutput(false);
-                    result = getServerLog(connection);
+                    result = performSimpleGET(connection);
                     LogManager.logReceivedServerLog(result);
                     break;
                 default:
@@ -235,27 +221,6 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
-    private ResponseData findUsers(Activity activity, HttpURLConnection connection) throws IOException {
-        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        connection.connect();
-        BasicResponse payload = P2PWebServerMediator.getSuccessResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
-    }
-
-    private ResponseData getCatalogTitle(Activity activity, HttpURLConnection connection) throws IOException {
-        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        connection.connect();
-        BasicResponse payload = getSuccessResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
-    }
-
-    private ResponseData getCatalog(Activity activity, HttpURLConnection connection) throws IOException  {
-        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        connection.connect();
-        BasicResponse payload = getSuccessResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
-    }
-
     private ResponseData newCatalog(Activity activity,
                                     HttpURLConnection connection,
                                     RequestData requestData) throws IOException {
@@ -292,28 +257,15 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
-    private ResponseData getMemberships(Activity activity, HttpURLConnection connection) throws IOException {
+    private ResponseData performGET(Activity activity, HttpURLConnection connection) throws IOException {
         connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        connection.connect();
-        BasicResponse payload = getSuccessResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
+        return performSimpleGET(connection);
     }
 
-    private ResponseData getGoogleDriveIdentifiers(Activity activity, HttpURLConnection connection) throws IOException {
-        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
+    private ResponseData performSimpleGET(HttpURLConnection connection) throws IOException {
+        connection.setDoOutput(false);
+        connection.setRequestMethod("GET");
         connection.connect();
-        BasicResponse payload = getSuccessResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
-    }
-
-    private ResponseData getMembershipCatalogIDs(Activity activity, HttpURLConnection connection) throws IOException {
-        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        connection.connect();
-        BasicResponse payload = getSuccessResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
-    }
-
-    private ResponseData getServerLog(HttpURLConnection connection) throws IOException {
         BasicResponse payload = getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
