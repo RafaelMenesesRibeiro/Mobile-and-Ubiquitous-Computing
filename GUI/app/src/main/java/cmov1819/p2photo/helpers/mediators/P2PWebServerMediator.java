@@ -180,12 +180,12 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
     }
 
     private ResponseData performSimplePOST(HttpURLConnection connection, RequestData requestData) throws IOException {
-        connection.setRequestMethod("POST");
         connection.setDoOutput(true);
-        PostRequestData postData = (PostRequestData) requestData;
-        writeJsonToOutputStream(connection, postData.getParams());
+        connection.setRequestMethod("POST");
+        writeJsonToOutputStream(connection, ((PostRequestData) requestData).getParams());
         connection.connect();
-        BasicResponse payload = getBasicResponse(connection);
+
+        BasicResponse payload = getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 

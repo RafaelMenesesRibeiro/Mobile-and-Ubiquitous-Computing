@@ -54,6 +54,11 @@ public class CloudBackedArchitecture extends BaseArchitecture {
         LoginActivity.tryEnablingPostAuthorizationFlows(view, loginActivity);
     }
 
+    @Override
+    public void setupHome(MainMenuActivity mainMenuActivity) {
+        /* No setup required */
+    }
+
     /**********************************************************
      * ADD PHOTO
      ***********************************************************/
