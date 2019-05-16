@@ -47,7 +47,6 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
             connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
             connection.setRequestProperty("Content-Type", "application/json");
             connection.setRequestProperty("Accept", "application/json");
-            connection.setDoOutput(true);
             connection.setDoInput(true);
             connection.setConnectTimeout(2000);
             RequestData.RequestType type = requestData.getRequestType();
@@ -64,15 +63,14 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                 case GET_SERVER_LOGS:
                     result = performSimpleGET(connection);
                     break;
-                case LOGOUT:
-                    result = performDelete(activity, connection);
-                    break;
                 case NEW_CATALOG_SLICE:
                     result = performPUT(activity, connection, requestData);
                     break;
+                case LOGOUT:
+                    result = performDELETE(activity, connection);
+                    break;
                 case SIGNUP:
-                    connection.setRequestMethod("POST");
-                    result = signup(connection, requestData);
+                    result = performSimplePOST(connection, requestData);
                     break;
                 case LOGIN:
                     connection.setRequestMethod("POST");
@@ -176,13 +174,6 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         }
     }
 
-    private ResponseData signup(HttpURLConnection connection, RequestData requestData) throws IOException {
-        PostRequestData postData = (PostRequestData) requestData;
-        writeJsonToOutputStream(connection, postData.getParams());
-        BasicResponse payload = getBasicResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
-    }
-
     private ResponseData login(Activity activity, HttpURLConnection connection,
                                RequestData requestData) throws IOException {
 
@@ -190,14 +181,6 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         writeJsonToOutputStream(connection, postData.getParams());
         getCookies(activity, connection);
         BasicResponse payload = getSuccessResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
-    }
-
-    private ResponseData performDelete(Activity activity, HttpURLConnection connection) throws IOException {
-        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        connection.setRequestMethod("DELETE");
-        connection.connect();
-        BasicResponse payload = P2PWebServerMediator.getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
@@ -210,15 +193,6 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         writeJsonToOutputStream(connection, postData.getParams());
         connection.connect();
 
-        BasicResponse payload = P2PWebServerMediator.getSuccessResponse(connection);
-        return new ResponseData(connection.getResponseCode(), payload);
-    }
-
-    private ResponseData performPUT(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
-        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        connection.setRequestMethod("PUT");
-        writeJsonToOutputStream(connection, ((PutRequestData) requestData).getParams());
-        connection.connect();
         BasicResponse payload = P2PWebServerMediator.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
@@ -244,6 +218,32 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         connection.setDoOutput(false);
         connection.connect();
         BasicResponse payload = getSuccessResponse(connection);
+        return new ResponseData(connection.getResponseCode(), payload);
+    }
+
+    private ResponseData performSimplePOST(HttpURLConnection connection, RequestData requestData) throws IOException {
+        connection.setRequestMethod("POST");
+        connection.setDoOutput(true);
+        PostRequestData postData = (PostRequestData) requestData;
+        writeJsonToOutputStream(connection, postData.getParams());
+        BasicResponse payload = getBasicResponse(connection);
+        return new ResponseData(connection.getResponseCode(), payload);
+    }
+
+    private ResponseData performPUT(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
+        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
+        connection.setRequestMethod("PUT");
+        writeJsonToOutputStream(connection, ((PutRequestData) requestData).getParams());
+        connection.connect();
+        BasicResponse payload = P2PWebServerMediator.getSuccessResponse(connection);
+        return new ResponseData(connection.getResponseCode(), payload);
+    }
+
+    private ResponseData performDELETE(Activity activity, HttpURLConnection connection) throws IOException {
+        connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
+        connection.setRequestMethod("DELETE");
+        connection.connect();
+        BasicResponse payload = P2PWebServerMediator.getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 }
