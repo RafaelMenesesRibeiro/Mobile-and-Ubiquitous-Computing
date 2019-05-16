@@ -102,9 +102,7 @@ public class WifiDirectManager {
         registerKeyOnWebServer(targetDevice.deviceName, token, key);
 
         try {
-            String unformatedLog = "Sending catalog to %s\nContents:\n%s\n";
-            String identedCatalogFileContents = catalogFileContents.toString(4);
-            LogManager.logInfo(WIFI_DIRECT_MGR_TAG,String.format(unformatedLog, targetDevice.deviceName, identedCatalogFileContents));
+            LogManager.logInfo(WIFI_DIRECT_MGR_TAG,"Sending catalog to " + targetDevice.deviceName);
 
             byte[] encodedCatalog = cipherWithAes(key, catalogFileContents.toString().getBytes());
             String cipheredCatalogFile = byteArrayToBase64String(encodedCatalog);
