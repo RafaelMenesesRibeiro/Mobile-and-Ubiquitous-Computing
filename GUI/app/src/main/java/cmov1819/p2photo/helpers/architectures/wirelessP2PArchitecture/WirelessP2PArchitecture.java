@@ -29,10 +29,22 @@ import cmov1819.p2photo.helpers.architectures.BaseArchitecture;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 
+import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.createPhotoStackFile;
+
 public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
     public void handlePendingMemberships(final Activity activity) {
         MainMenuActivity.handlePendingMembershipsWifiDirect(activity);
+    }
+
+    @Override
+    public void onSignUp(final LoginActivity loginActivity) throws FailedOperationException {
+        try {
+            createPhotoStackFile(loginActivity);
+        }
+        catch (Exception ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
     }
 
     @Override
