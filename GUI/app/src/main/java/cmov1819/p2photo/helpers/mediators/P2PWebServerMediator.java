@@ -62,8 +62,7 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                     LogManager.logReceivedLogin(result);
                     break;
                 case LOGOUT:
-                    connection.setRequestMethod("DELETE");
-                    result = logout(activity, connection);
+                    result = performDelete(activity, connection);
                     LogManager.logReceivedLogout(result);
                     break;
                 case SEARCH_USERS:
@@ -213,9 +212,9 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
-    private ResponseData logout(Activity activity, HttpURLConnection connection) throws IOException {
-
+    private ResponseData performDelete(Activity activity, HttpURLConnection connection) throws IOException {
         connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
+        connection.setRequestMethod("DELETE");
         connection.connect();
         BasicResponse payload = P2PWebServerMediator.getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
@@ -263,8 +262,8 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
     }
 
     private ResponseData performSimpleGET(HttpURLConnection connection) throws IOException {
-        connection.setDoOutput(false);
         connection.setRequestMethod("GET");
+        connection.setDoOutput(false);
         connection.connect();
         BasicResponse payload = getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
