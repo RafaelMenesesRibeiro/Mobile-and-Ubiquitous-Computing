@@ -38,6 +38,9 @@ import cmov1819.p2photo.msgtypes.ErrorResponse;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
+    public static final String WIFI_DIRECT_SV_RUNNING = "wifiDirectRunning";
+    private boolean wdDirectRunning = false;
+
     @Override
     public void onBackPressed() {
         // Do nothing. Prevents going back after logging out.
@@ -47,6 +50,11 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
+
+        Intent intent = getIntent();
+        if (intent.hasExtra(WIFI_DIRECT_SV_RUNNING)) {
+            wdDirectRunning = true;
+        }
 
         ArchitectureManager.setWirelessP2PArch(); // Default architecture is Wireless P2P.
         CheckBox checkBox = findViewById(R.id.tickBox);
