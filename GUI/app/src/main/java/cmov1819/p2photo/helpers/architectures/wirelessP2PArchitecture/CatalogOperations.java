@@ -17,6 +17,8 @@ import cmov1819.p2photo.helpers.ConvertUtils;
 import cmov1819.p2photo.helpers.CryptoUtils;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
+import static cmov1819.p2photo.helpers.DateUtils.generateTimestamp;
+import static cmov1819.p2photo.helpers.DateUtils.isOlderTimestamp;
 
 public class CatalogOperations {
     private static final String PHOTO_STACK_FILE_NAME = "photosStack.json";
@@ -42,7 +44,7 @@ public class CatalogOperations {
     }
 
     public static void setReplicationLimitInPhotos(final Activity activity, int replicationLimitInBytes) throws IOException, JSONException {
-        CatalogOperations.replicationLimitInPhotos = (int) (replicationLimitInBytes / 5);
+        CatalogOperations.replicationLimitInPhotos = (int) Math.ceil(replicationLimitInBytes / 5);
         checkIfStorageOverflows(activity);
     }
 
@@ -56,12 +58,12 @@ public class CatalogOperations {
         deletePhotosFromStack(activity, delta);
     }
 
-    public void createPhotoStackFile(final Activity activity) throws IOException, JSONException {
+    public static void createPhotoStackFile(final Activity activity) throws IOException {
         JSONObject jsonObject = new JSONObject();
         writePhotoStack(activity, jsonObject);
     }
 
-    public static JSONObject readPhotoStack(final Activity activity) throws IOException, JSONException {
+    private static JSONObject readPhotoStack(final Activity activity) throws IOException, JSONException {
         InputStream inputStream = activity.openFileInput(PHOTO_STACK_FILE_NAME);
         String encodedNEncrypted = inputStreamToString(inputStream);
         byte[] encrypted = Base64.decode(encodedNEncrypted, Base64.DEFAULT);
@@ -69,7 +71,7 @@ public class CatalogOperations {
         return new JSONObject(new String(decrypted));
     }
 
-    public static void writePhotoStack(final Activity activity, JSONObject jsonObject) throws IOException {
+    private static void writePhotoStack(final Activity activity, JSONObject jsonObject) throws IOException {
         byte[] decrypted = ConvertUtils.JSONObjectToByteArray(jsonObject, 4);
         byte[] encrypted = CryptoUtils.cipherWithAes(decrypted);
         String encodedNEncrypted = Base64.encodeToString(encrypted, Context.MODE_PRIVATE);
@@ -80,8 +82,7 @@ public class CatalogOperations {
 
     public static void addPhotoToStack(final Activity activity, String photoName) throws IOException, JSONException{
         JSONObject jsonObject = readPhotoStack(activity);
-        // TODO - Generate timestamp. //
-        String timestamp = "timestamp";
+        String timestamp = generateTimestamp();
         jsonObject.put(photoName, timestamp);
         writePhotoStack(activity, jsonObject);
     }
@@ -98,7 +99,7 @@ public class CatalogOperations {
         String oldest = "";
         for (Iterator key = jsonObject.keys(); key.hasNext(); ) {
             String timestamp = jsonObject.getString((String) key.next());
-            // TODO - Check if older timestamp than oldest. //
+            isOlderTimestamp(oldest, timestamp);
         }
         return oldest;
     }
