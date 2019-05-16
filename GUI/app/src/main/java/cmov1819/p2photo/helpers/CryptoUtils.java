@@ -43,7 +43,7 @@ public class CryptoUtils {
             CryptoUtils.secretKey = key;
             return key;
         }
-        catch (NoSuchAlgorithmException e) {
+        catch (Exception e) {
             // Should never be here.
             return null;
         }
