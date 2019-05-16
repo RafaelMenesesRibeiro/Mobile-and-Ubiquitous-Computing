@@ -42,13 +42,7 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         Activity activity = requestData.getActivity();
         ResponseData result = new ResponseData(-1, null);
         try {
-            URL url = new URL(requestData.getUrl());
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestProperty("Accept", "application/json");
-            connection.setDoInput(true);
-            connection.setConnectTimeout(2000);
+            HttpURLConnection connection = newBaselineConnection(new URL(requestData.getUrl()));
             RequestData.RequestType type = requestData.getRequestType();
             switch (type) {
                 case SEARCH_USERS:
@@ -91,6 +85,16 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
             LogManager.logError("Query Manager", ex.getMessage());
             return result;
         }
+    }
+
+    private HttpURLConnection newBaselineConnection(URL url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestProperty("User-Agent", "P2Photo-App-V0.1");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setDoInput(true);
+        connection.setConnectTimeout(5000);
+        return connection;
     }
 
     private void writeJsonToOutputStream(HttpURLConnection connection, JSONObject json) throws IOException {
