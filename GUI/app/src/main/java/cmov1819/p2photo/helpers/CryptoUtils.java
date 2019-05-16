@@ -30,6 +30,8 @@ public class CryptoUtils {
 
     private static SecretKey secretKey;
 
+    /** Symmetric Key Cipher Methods */
+
     private CryptoUtils() {
         // Does not allow this class to be instantiated. //
     }
@@ -91,7 +93,7 @@ public class CryptoUtils {
         }
     }
 
-    /** Public and Private Key Ciphers */
+    /** Public and Private Key Cipher Methods */
 
     public static byte[] sign(PrivateKey key, byte[] data) throws SignatureException {
         try {
@@ -124,4 +126,6 @@ public class CryptoUtils {
             sign.update(message);
             return sign.verify(signatureBytes);
     }
+
+    /** */
 }
