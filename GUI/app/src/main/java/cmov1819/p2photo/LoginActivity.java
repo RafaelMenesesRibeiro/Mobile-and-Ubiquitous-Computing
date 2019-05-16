@@ -19,8 +19,8 @@ import net.openid.appauth.AuthorizationService;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.security.SignatureException;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
@@ -36,6 +36,7 @@ import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.QueryManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
+import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.createPhotoStackFile;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
@@ -113,6 +114,13 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         if (trySignUp(usernameValue, passwordValue)) {
+            try {
+                createPhotoStackFile(this);
+            }
+            catch (IOException ex) {
+                LogManager.logError(LogManager.LOGIN_TAG, "Could not create photo's stack file. Exiting");
+                System.exit(-3);
+            }
             disableUserTextInputs(usernameEditText, passwordEditText);
             findViewById(R.id.LoginButton).performClick();
         }

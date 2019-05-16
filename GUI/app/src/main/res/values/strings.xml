@@ -51,9 +51,12 @@
     <!-- View Logs -->
     <string name="view_app_log">View App Log</string>
     <string name="view_server_log">View Server Log</string>
+    <!-- Limit Storage Space Functionality -->
+    <string name="limit_storage">Limit Storage</string>
 
     <!-- Button Labels-->
     <string name="done">Done</string>
+    <string name="button_confirm">Confirm</string>
     <string name="button_search">Search</string>
     <string name="button_create">Create</string>
     <string name="button_add">Add</string>
