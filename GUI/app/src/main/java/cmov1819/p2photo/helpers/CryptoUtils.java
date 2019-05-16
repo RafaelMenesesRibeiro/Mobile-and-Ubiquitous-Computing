@@ -31,8 +31,6 @@ import static cmov1819.p2photo.helpers.managers.LogManager.CRYPTO_UTILS_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 
 public class CryptoUtils {
-    private static final String KEY_STORE_PROVIDER = "AndroidKeyStore";
-    private static final String KEY_STORE_ALIAS = "MOC_1819_P2PHOTO_ALIAS";
     public static final String SIGNATURE_ALGORITHM = "SHA1withRSA";
     public static final String SYMMETRIC_ALGORITHM = "AES";
     public static final String ASYMMETRIC_ALGORITHM = "RSA";
@@ -53,17 +51,7 @@ public class CryptoUtils {
     private CryptoUtils() {
         // Does not allow this class to be instantiated. //
     }
-
-    // TODO //
-    public static Key generateSymmetricKey() {
-        throw new UnsupportedOperationException();
-    }
-
-    // TODO //
-    public static KeyPair generateAsymetricKeys() {
-        throw new UnsupportedOperationException();
-    }
-
+    
     private static Key getSymmetricKey() {
         return CryptoUtils.secretKey;
     }
