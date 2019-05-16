@@ -12,7 +12,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -23,7 +22,7 @@ import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOpe
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
-import cmov1819.p2photo.helpers.managers.WiFiDirectManager;
+import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
@@ -40,7 +39,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
 
     private static final int TERMITE_PORT = 10001;
 
-    private WiFiDirectManager wiFiDirectManager = null;
+    private WifiDirectManager wiFiDirectManager = null;
 
     @Override
     protected void onPreExecute() {
@@ -50,8 +49,8 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
     @Override
     protected Void doInBackground(final Void... params) {
         try {
-            // get singleton instance of our WiFiDirectManager
-            wiFiDirectManager = WiFiDirectManager.getInstance();
+            // get singleton instance of our WifiDirectManager
+            wiFiDirectManager = WifiDirectManager.getInstance();
             // setup a server socket on MainMenuActivity
             wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
             // set server socket to listen to incoming requests
@@ -107,7 +106,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         return null;
     }
 
-    private void processIncomingCatalog(WiFiDirectManager wiFiDirectManager, JSONObject jsonObject)
+    private void processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject jsonObject)
             throws JSONException {
 
         LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incomming catalog \n%s\n", jsonObject.toString(4)));
@@ -129,7 +128,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         CatalogMerge.mergeCatalogFiles(wiFiDirectManager.getMainMenuActivity(), catalogId, decipheredCatalogFile);
     }
 
-    private void processIncomingPhoto(WiFiDirectManager wiFiDirectManager, JSONObject jsonObject)
+    private void processIncomingPhoto(WifiDirectManager wiFiDirectManager, JSONObject jsonObject)
             throws JSONException {
 
         LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incomming photo\n%s\n", jsonObject.toString(4)));
@@ -158,7 +157,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         LogManager.logInfo(INCOMING_TASK_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
     }
 
-    private String replyWithRequestCatalog(final WiFiDirectManager wiFiDirectManager,
+    private String replyWithRequestCatalog(final WifiDirectManager wiFiDirectManager,
                                            JSONObject jsonObject) throws JSONException, IOException {
 
         MainMenuActivity activity = wiFiDirectManager.getMainMenuActivity();
@@ -182,7 +181,7 @@ public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
         return jsonObject.toString();
     }
 
-    private String replyWithRequestedPhoto(final WiFiDirectManager wiFiDirectManager,
+    private String replyWithRequestedPhoto(final WifiDirectManager wiFiDirectManager,
                                            JSONObject jsonObject) throws JSONException, FileNotFoundException {
 
         MainMenuActivity activity = wiFiDirectManager.getMainMenuActivity();

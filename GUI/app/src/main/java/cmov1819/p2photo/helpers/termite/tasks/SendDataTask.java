@@ -3,12 +3,14 @@ package cmov1819.p2photo.helpers.termite.tasks;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.WiFiDirectManager;
+import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
@@ -19,6 +21,8 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
     private static final int TERMITE_PORT = 10001;
 
+    private WifiDirectManager wiFiDirectManager = null;
+
     @Override
     protected void onPreExecute() {
         LogManager.logInfo(SEND_DATA_TASK_TAG, "Started new SendData task...");
@@ -26,16 +30,17 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
     @Override
     protected Void doInBackground(final Object... params) {
-        WiFiDirectManager wiFiDirectManager = (WiFiDirectManager) params[0];
+        // get singleton instance of our WifiDirectManager
+        wiFiDirectManager = WifiDirectManager.getInstance();
         SimWifiP2pDevice targetDevice = (SimWifiP2pDevice) params[1];
-        byte[] data = (byte[]) params[2];
+        JSONObject jsonData = (JSONObject) params[2];
 
         try {
             // Construct a new clientSocket
             SimWifiP2pSocket clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
             LogManager.logInfo(SEND_DATA_TASK_TAG, "Successfully created a client socket");
             // Send data to target device
-            clientSocket.getOutputStream().write(data);
+            clientSocket.getOutputStream().write((jsonData.toString() + SEND).getBytes());
             LogManager.logInfo(SEND_DATA_TASK_TAG, "Successfully written data to client socket");
             // Read any reply from target device
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
