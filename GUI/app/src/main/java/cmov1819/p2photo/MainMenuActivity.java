@@ -72,7 +72,6 @@ public class MainMenuActivity
         extends AppCompatActivity
         implements OnNavigationItemSelectedListener, PeerListListener, GroupInfoListener {
 
-    public static final String START_SCREEN = "initialScreen";
     public static final String HOME_SCREEN = SearchUserFragment.class.getName();
 
     private static Resources resources;

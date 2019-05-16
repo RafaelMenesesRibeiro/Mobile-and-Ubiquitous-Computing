@@ -293,7 +293,6 @@ public class LoginActivity extends AppCompatActivity {
         if (wifiDirectRunning) {
             mainMenuActivityIntent.putExtra(WIFI_DIRECT_SV_RUNNING, wifiDirectRunning);
         }
-        mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
         activity.startActivity(mainMenuActivityIntent);
     }
 
