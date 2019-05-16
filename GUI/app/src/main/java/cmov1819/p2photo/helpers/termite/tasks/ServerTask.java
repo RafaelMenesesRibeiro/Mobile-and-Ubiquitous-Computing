@@ -11,6 +11,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import javax.crypto.SecretKey;
@@ -31,6 +32,10 @@ import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToUtf8;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
+import static cmov1819.p2photo.helpers.managers.WifiDirectManager.REQUEST_CATALOG;
+import static cmov1819.p2photo.helpers.managers.WifiDirectManager.REQUEST_PHOTO;
+import static cmov1819.p2photo.helpers.managers.WifiDirectManager.SEND_CATALOG;
+import static cmov1819.p2photo.helpers.managers.WifiDirectManager.SEND_PHOTO;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
@@ -58,39 +63,32 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 SimWifiP2pSocket socket = wiFiDirectManager.getServerSocket().accept();
                 try {
                     // Read from input stream
-                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    String incomingJsonData = bufferedReader.readLine();
+                    InputStream inputStream = socket.getInputStream();
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+                    String data = bufferedReader.readLine();
                     // Process values
-                    JSONObject jsonObject = new JSONObject(incomingJsonData);
-                    if (jsonObject.has("operation")) {
-                        String operation = jsonObject.getString("operation");
-                        switch (operation) {
-                            case "requestingCatalog":
-                                String jsonCatalog = replyWithRequestCatalog(wiFiDirectManager, jsonObject);
-                                socket.getOutputStream().write((jsonCatalog + CONFIRM_RCV).getBytes());
+                    JSONObject request = new JSONObject(data);
+                    if (request.has("operation")) {
+                        switch (request.getString("operation")) {
+                            case REQUEST_CATALOG:
+                                doRespond(socket, replyWithRequestCatalog(wiFiDirectManager, request));
                                 break;
-                            case "sendingCatalog":
-                                // Store incoming catalog in this device
-                                processIncomingCatalog(wiFiDirectManager, jsonObject);
-                                socket.getOutputStream().write(CONFIRM_RCV.getBytes());
+                            case SEND_CATALOG:
+                                doRespond(socket, processIncomingCatalog(wiFiDirectManager, request));
                                 break;
-                            case "requestingPhoto":
-                                String jsonPhoto = replyWithRequestedPhoto(wiFiDirectManager, jsonObject);
-                                socket.getOutputStream().write((jsonPhoto + CONFIRM_RCV).getBytes());
+                            case REQUEST_PHOTO:
+                                doRespond(socket, replyWithRequestedPhoto(wiFiDirectManager, request));
                                 break;
-                            case "sendingPhto":
-                                // Store incoming photo in this device
-                                processIncomingPhoto(wiFiDirectManager, jsonObject);
-                                socket.getOutputStream().write(CONFIRM_RCV.getBytes());
+                            case SEND_PHOTO:
+                                doRespond(socket,processIncomingPhoto(wiFiDirectManager, request));
                             default:
-                                socket.getOutputStream().write(("warning: 'operation' field invalid" + CONFIRM_RCV).getBytes());
+                                doRespond(socket,"warning: unsupported 'operation'...");
                                 break;
                         }
                     } else {
-                        socket.getOutputStream().write(("error: 'operation' field not found" + CONFIRM_RCV).getBytes());
+                        doRespond(socket,"warning: requests need 'operation' field...");
                     }
                     // Close interaction
-                    socket.getOutputStream().write((CONFIRM_RCV).getBytes());
                 } catch (IOException ioe) {
                     Log.e(INCOMING_TASK_TAG, "Error reading socket: " + ioe.getMessage());
                 } catch (JSONException jsone) {
@@ -106,8 +104,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         return null;
     }
 
-    private void processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject jsonObject)
-            throws JSONException {
+    private String processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject jsonObject) throws JSONException {
 
         LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incomming catalog \n%s\n", jsonObject.toString(4)));
 
@@ -126,11 +123,11 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         JSONObject decipheredCatalogFile = new JSONObject(byteArrayToUtf8(decodedCatalogFile));
 
         CatalogMerge.mergeCatalogFiles(wiFiDirectManager.getMainMenuActivity(), catalogId, decipheredCatalogFile);
+
+        return "";
     }
 
-    private void processIncomingPhoto(WifiDirectManager wiFiDirectManager, JSONObject jsonObject)
-            throws JSONException {
-
+    private String processIncomingPhoto(WifiDirectManager wiFiDirectManager, JSONObject jsonObject) throws JSONException {
         LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incomming photo\n%s\n", jsonObject.toString(4)));
 
         String photoUuid = jsonObject.getString("photoUuid");
@@ -145,6 +142,8 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         } catch (IOException ioe) {
             LogManager.logError(INCOMING_TASK_TAG, ioe.getMessage());
         }
+
+        return "";
     }
 
     private String exchangeTokenForAESKey(String userWhoGeneratedTheToken, String token) {
@@ -205,5 +204,14 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         jsonObject.put("photoUuid", photoUuid);
         jsonObject.put("photo", byteArrayToBase64String(bitmapToByteArray(photo)));
         return jsonObject.toString();
+    }
+
+    /** Helpers */
+    private void doRespond(SimWifiP2pSocket socket, JSONObject jsonObject) throws IOException {
+        doRespond(socket, jsonObject.toString());
+    }
+
+    private void doRespond(SimWifiP2pSocket socket, String string) throws IOException {
+        socket.getOutputStream().write((string + CONFIRM_RCV).getBytes());
     }
 }
