@@ -143,6 +143,10 @@ public class LoginActivity extends AppCompatActivity {
             disableUserTextInputs(usernameEditText, passwordEditText);
             findViewById(R.id.LoginButton).performClick();
         }
+        else {
+            usernameEditText.setText("");
+            passwordEditText.setText("");
+        }
     }
 
     private boolean trySignUp(String usernameValue, String passwordValue) {
@@ -164,7 +168,13 @@ public class LoginActivity extends AppCompatActivity {
                 LogManager.logInfo(LogManager.SIGN_UP_TAG, msg);
                 LogManager.toast(this, "Created account successfully");
                 return true;
-            } else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
+            }
+            else if (code == HttpURLConnection.HTTP_CONFLICT) {
+                msg = "Sign Up unsuccessful. The chosen username already exists.";
+                LogManager.logError(LogManager.SIGN_UP_TAG, msg);
+                LogManager.toast(this, "Chosen username already exists. Choose another...");
+            }
+            else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
                 if (reason.equals(getString(R.string.bad_user))) {
@@ -177,11 +187,6 @@ public class LoginActivity extends AppCompatActivity {
                     LogManager.logError(LogManager.SIGN_UP_TAG, msg);
                     LogManager.toast(this, getString(R.string.bad_pass));
                 }
-            }
-            else if (code == 422) {
-                msg = "Sign Up unsuccessful. The chosen username already exists.";
-                LogManager.logError(LogManager.SIGN_UP_TAG, msg);
-                LogManager.toast(this, "Chosen username already exists. Choose another...");
             }
             else {
                 msg = "Sign Up unsuccessful. Server response code: " + code;
