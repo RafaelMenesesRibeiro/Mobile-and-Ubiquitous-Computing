@@ -1,8 +1,6 @@
 <resources>
     <!-- Labels -->
     <string name="app_name">cmov1819.p2photo</string>
-    <!-- Termite -->
-    <string name="termite_port">10001</string>
     <!-- Operation Endpoints -->
     <string name="p2photo_host">https://p2photo.herokuapp.com/</string>
     <string name="signup">signup</string>

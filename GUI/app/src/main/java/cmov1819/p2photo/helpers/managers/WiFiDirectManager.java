@@ -1,4 +1,4 @@
-package cmov1819.p2photo.helpers.termite;
+package cmov1819.p2photo.helpers.managers;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -8,7 +8,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
-import java.security.SignatureException;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,8 +15,8 @@ import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.CryptoUtils;
-import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.termite.tasks.IncomingSocketTask;
+import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
@@ -25,23 +24,38 @@ import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes256;
 
-public class P2PhotoWiFiDirectManager {
+public class WiFiDirectManager {
     private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
-
+    private static WiFiDirectManager instance;
     private final MainMenuActivity mMainMenuActivity;
-
-    private P2PhotoSocketManager socketManager;
-    private SimWifiP2pSocketServer mServerSocket;
-    private String mDeviceName;
 
     /**********************************************************
      * CONSTRUCTORS
      **********************************************************/
 
-    public P2PhotoWiFiDirectManager(MainMenuActivity activity) {
+    private WiFiDirectManager(MainMenuActivity activity) {
         this.mMainMenuActivity = activity;
-        this.mServerSocket = null;
-        this.socketManager = new P2PhotoSocketManager(this);
+    }
+
+    public static WiFiDirectManager init(MainMenuActivity activity) {
+        if (instance == null) {
+            instance = new WiFiDirectManager(activity);
+            new IncomingSocketTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
+        return instance;
+    }
+
+    public static WiFiDirectManager getInstance() {
+        return instance;
+    }
+
+    /**********************************************************
+     * GENERIC METHODS
+     *********************************************************/
+
+    public void doSend(final SimWifiP2pDevice targetDevice, final byte[] data) {
+        LogManager.logInfo(WIFI_DIRECT_MGR_TAG, String.format("Trying to send data to %s", targetDevice.deviceName));
+        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, targetDevice, data);
     }
 
     /**********************************************************
@@ -85,7 +99,7 @@ public class P2PhotoWiFiDirectManager {
             jsonObject.put("from", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogFile", cipheredCatalogFile);
             jsonObject.put("token", token);
-            socketManager.doSend(targetDevice, jsonObject.toString().getBytes("UTF-8"));
+            doSend(targetDevice, jsonObject.toString().getBytes("UTF-8"));
 
         } catch (JSONException jsone) {
             LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
@@ -112,12 +126,12 @@ public class P2PhotoWiFiDirectManager {
             jsonObject.put("operation", "requestingCatalog");
             jsonObject.put("from", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogId", catalogId);
-            socketManager.doSend(calleeDevice, jsonObject.toString().getBytes("UTF-8"));
+            doSend(calleeDevice, jsonObject.toString().getBytes("UTF-8"));
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
         } catch (UnsupportedEncodingException uee) {
             LogManager.logWarning(WIFI_DIRECT_MGR_TAG, uee.getMessage());
-            socketManager.doSend(calleeDevice, jsonObject.toString().getBytes());
+            doSend(calleeDevice, jsonObject.toString().getBytes());
         }
     }
 
@@ -137,7 +151,7 @@ public class P2PhotoWiFiDirectManager {
             jsonObject.put("catalogId", catalogId);
             jsonObject.put("photoUuid", photoUuid);
 
-            socketManager.doSend(calleeDevice, jsonObject.toString().getBytes("UTF-8"));
+            doSend(calleeDevice, jsonObject.toString().getBytes("UTF-8"));
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, "catalogFileContents.toString() failed resulting in exception");
         } catch (UnsupportedEncodingException uee) {
@@ -159,7 +173,7 @@ public class P2PhotoWiFiDirectManager {
             jsonObject.put("photoUuid", photoUuid);
             jsonObject.put("photo", byteArrayToBase64String(rawPhoto));
 
-            socketManager.doSend(callerDevice, jsonObject.toString().getBytes("UTF-8"));
+            doSend(callerDevice, jsonObject.toString().getBytes("UTF-8"));
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, "Unable to form JSONObject with bitmap data");
         } catch (UnsupportedEncodingException uee) {
@@ -176,22 +190,14 @@ public class P2PhotoWiFiDirectManager {
     }
 
     public SimWifiP2pSocketServer getServerSocket() {
-        return mServerSocket;
+        return mMainMenuActivity.getmSrvSocket();
     }
 
     public void setServerSocket() {
-        new IncomingSocketTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this);
+        new IncomingSocketTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void setServerSocket(SimWifiP2pSocketServer newSocket) {
-        this.mServerSocket = newSocket;
-    }
-
-    public String getDeviceName() {
-        return mDeviceName;
-    }
-
-    public void setDeviceName(String mDeviceName) {
-        this.mDeviceName = mDeviceName;
+        mMainMenuActivity.setmSrvSocket(newSocket);
     }
 }

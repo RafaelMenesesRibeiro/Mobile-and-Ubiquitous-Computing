@@ -29,19 +29,19 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
 
-        LogManager.logError(BROADCAST_RECEIVER_TAG, "Received termite notification...");
+        LogManager.logInfo(BROADCAST_RECEIVER_TAG, "Received termite notification...");
 
         String action = intent.getAction();
 
-        LogManager.logError(BROADCAST_RECEIVER_TAG, "Action: " + action);
+        LogManager.logInfo(BROADCAST_RECEIVER_TAG, "Action: " + action);
 
         if (WIFI_P2P_STATE_CHANGED_ACTION.equals(action)) {
             int state = intent.getIntExtra(SimWifiP2pBroadcast.EXTRA_WIFI_STATE, -1);
             if (state == SimWifiP2pBroadcast.WIFI_P2P_STATE_ENABLED) {
-                LogManager.logError("MAIN", "state = p2p state enabled");
+                LogManager.logInfo(BROADCAST_RECEIVER_TAG, "state = p2p state enabled");
                 makeText(activity,"WiFi Direct enabled", LENGTH_SHORT).show();
             } else {
-                LogManager.logError("MAIN", "state = p2p state disabled");
+                LogManager.logInfo(BROADCAST_RECEIVER_TAG, "state = p2p state disabled");
                 makeText(activity,"WiFi Direct disabled", LENGTH_SHORT).show();
             }
         } else if (WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {

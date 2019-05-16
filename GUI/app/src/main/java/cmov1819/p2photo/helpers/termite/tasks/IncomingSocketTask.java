@@ -1,11 +1,9 @@
-package cmov1819.p2photo.helpers.termite;
+package cmov1819.p2photo.helpers.termite.tasks;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
-
-import com.fasterxml.jackson.core.io.JsonEOFException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,14 +18,12 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import cmov1819.p2photo.MainMenuActivity;
-import cmov1819.p2photo.R;
-import cmov1819.p2photo.helpers.ConvertUtils;
-import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.managers.WiFiDirectManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
@@ -37,9 +33,14 @@ import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToUtf8;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes256;
 
-public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
-
+public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
+    private static final String CONFIRM_RCV = "\n";
+    private static final String SEND = "\n";
+
+    private static final int TERMITE_PORT = 10001;
+
+    private WiFiDirectManager wiFiDirectManager = null;
 
     @Override
     protected void onPreExecute() {
@@ -47,13 +48,12 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
     }
 
     @Override
-    protected Void doInBackground(final Object... params) {
-
-
+    protected Void doInBackground(final Void... params) {
         try {
-            P2PhotoWiFiDirectManager wiFiDirectManager = (P2PhotoWiFiDirectManager) params[0];
+            // get singleton instance of our WiFiDirectManager
+            wiFiDirectManager = WiFiDirectManager.getInstance();
             // setup a server socket on MainMenuActivity
-            wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(R.string.termite_port));
+            wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
             // set server socket to listen to incoming requests
             while (!Thread.currentThread().isInterrupted()) {
                 SimWifiP2pSocket socket = wiFiDirectManager.getServerSocket().accept();
@@ -67,38 +67,35 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
                         String operation = jsonObject.getString("operation");
                         switch (operation) {
                             case "requestingCatalog":
-                                socket.getOutputStream()
-                                        .write(replyWithRequestCatalog(wiFiDirectManager, jsonObject));
+                                String jsonCatalog = replyWithRequestCatalog(wiFiDirectManager, jsonObject);
+                                socket.getOutputStream().write((jsonCatalog + CONFIRM_RCV).getBytes());
                                 break;
                             case "sendingCatalog":
                                 // Store incoming catalog in this device
                                 processIncomingCatalog(wiFiDirectManager, jsonObject);
-                                socket.getOutputStream().write("\n".getBytes());
+                                socket.getOutputStream().write(CONFIRM_RCV.getBytes());
                                 break;
                             case "requestingPhoto":
-                                socket.getOutputStream()
-                                        .write(replyWithRequestedPhoto(wiFiDirectManager, jsonObject));
+                                String jsonPhoto = replyWithRequestedPhoto(wiFiDirectManager, jsonObject);
+                                socket.getOutputStream().write((jsonPhoto + CONFIRM_RCV).getBytes());
                                 break;
                             case "sendingPhto":
                                 // Store incoming photo in this device
                                 processIncomingPhoto(wiFiDirectManager, jsonObject);
-                                socket.getOutputStream().write("\n".getBytes());
+                                socket.getOutputStream().write(CONFIRM_RCV.getBytes());
                             default:
-                                socket.getOutputStream()
-                                        .write(("warning: 'operation' field invalid\n").getBytes());
+                                socket.getOutputStream().write(("warning: 'operation' field invalid" + CONFIRM_RCV).getBytes());
                                 break;
                         }
                     } else {
-                        socket.getOutputStream()
-                                .write(("error: 'operation' field not found\n").getBytes());
+                        socket.getOutputStream().write(("error: 'operation' field not found" + CONFIRM_RCV).getBytes());
                     }
                     // Close interaction
-                    socket.getOutputStream().write(("\n").getBytes());
+                    socket.getOutputStream().write((CONFIRM_RCV).getBytes());
                 } catch (IOException ioe) {
                     Log.e(INCOMING_TASK_TAG, "Error reading socket: " + ioe.getMessage());
                 } catch (JSONException jsone) {
                     Log.e(INCOMING_TASK_TAG, "Error reading socket: malformed json request");
-
                 } finally {
                     socket.close();
                 }
@@ -110,7 +107,7 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
         return null;
     }
 
-    private void processIncomingCatalog(P2PhotoWiFiDirectManager wiFiDirectManager, JSONObject jsonObject)
+    private void processIncomingCatalog(WiFiDirectManager wiFiDirectManager, JSONObject jsonObject)
             throws JSONException {
 
         LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incomming catalog \n%s\n", jsonObject.toString(4)));
@@ -132,7 +129,7 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
         CatalogMerge.mergeCatalogFiles(wiFiDirectManager.getMainMenuActivity(), catalogId, decipheredCatalogFile);
     }
 
-    private void processIncomingPhoto(P2PhotoWiFiDirectManager wiFiDirectManager, JSONObject jsonObject)
+    private void processIncomingPhoto(WiFiDirectManager wiFiDirectManager, JSONObject jsonObject)
             throws JSONException {
 
         LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incomming photo\n%s\n", jsonObject.toString(4)));
@@ -161,7 +158,7 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
         LogManager.logInfo(INCOMING_TASK_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
     }
 
-    private byte[] replyWithRequestCatalog(final P2PhotoWiFiDirectManager wiFiDirectManager,
+    private String replyWithRequestCatalog(final WiFiDirectManager wiFiDirectManager,
                                            JSONObject jsonObject) throws JSONException, IOException {
 
         MainMenuActivity activity = wiFiDirectManager.getMainMenuActivity();
@@ -177,21 +174,15 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
         }
         */
         JSONObject catalogFileContents = CatalogOperations.readCatalog(activity, catalogId);
-
         jsonObject = new JSONObject();
         jsonObject.put("operation", "sendCatalog");
         jsonObject.put("from", SessionManager.getUsername(wiFiDirectManager.getMainMenuActivity()));
         jsonObject.put("catalogId", catalogId);
         jsonObject.put("catalogFile", catalogFileContents.toString());
-
-        try {
-            return jsonObject.toString().getBytes("UTF-8");
-        } catch (UnsupportedEncodingException uee) {
-            return jsonObject.toString().getBytes();
-        }
+        return jsonObject.toString();
     }
 
-    private byte[] replyWithRequestedPhoto(final P2PhotoWiFiDirectManager wiFiDirectManager,
+    private String replyWithRequestedPhoto(final WiFiDirectManager wiFiDirectManager,
                                            JSONObject jsonObject) throws JSONException, FileNotFoundException {
 
         MainMenuActivity activity = wiFiDirectManager.getMainMenuActivity();
@@ -209,17 +200,11 @@ public class IncomingSocketTask extends AsyncTask<Object, String, Void> {
         }
         */
         Bitmap photo = ImageLoading.loadPhoto(activity, photoUuid);
-
         jsonObject = new JSONObject();
         jsonObject.put("operation", "sendPhoto");
         jsonObject.put("callerUsername", SessionManager.getUsername(wiFiDirectManager.getMainMenuActivity()));
         jsonObject.put("photoUuid", photoUuid);
         jsonObject.put("photo", byteArrayToBase64String(bitmapToByteArray(photo)));
-
-        try {
-            return jsonObject.toString().getBytes("UTF-8");
-        } catch (UnsupportedEncodingException uee) {
-            return jsonObject.toString().getBytes();
-        }
+        return jsonObject.toString();
     }
 }
