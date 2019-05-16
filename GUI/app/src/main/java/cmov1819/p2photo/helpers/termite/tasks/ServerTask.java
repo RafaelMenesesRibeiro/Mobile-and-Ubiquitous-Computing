@@ -13,9 +13,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.security.PublicKey;
 
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
+import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
@@ -30,7 +32,8 @@ import static cmov1819.p2photo.helpers.termite.Consts.*;
 public class ServerTask extends AsyncTask<Void, String, Void> {
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
 
-    private WifiDirectManager wiFiDirectManager = null;
+    private WifiDirectManager mWifiDirectManager = null;
+    private KeyManager mKeyManager = null;
 
     @Override
     protected void onPreExecute() {
@@ -41,12 +44,13 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     protected Void doInBackground(final Void... params) {
         try {
             // get singleton instance of our WifiDirectManager
-            wiFiDirectManager = WifiDirectManager.getInstance();
+            mWifiDirectManager = WifiDirectManager.getInstance();
+            mKeyManager = KeyManager.getInstance();
             // setup a server socket on MainMenuActivity
-            wiFiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
+            mWifiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
             // set server socket to listen to incoming requests
             while (!Thread.currentThread().isInterrupted()) {
-                SimWifiP2pSocket socket = wiFiDirectManager.getServerSocket().accept();
+                SimWifiP2pSocket socket = mWifiDirectManager.getServerSocket().accept();
                 try {
                     // Read from input stream
                     InputStream inputStream = socket.getInputStream();
@@ -57,13 +61,13 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                     if (request.has(OPERATION)) {
                         switch (request.getString(OPERATION)) {
                             case SEND_CATALOG:
-                                doRespond(socket, processIncomingCatalog(wiFiDirectManager, request));
+                                doRespond(socket, processIncomingCatalog(mWifiDirectManager, request));
                                 break;
                             case REQUEST_PHOTO:
-                                doRespond(socket, replyWithRequestedPhoto(wiFiDirectManager, request));
+                                doRespond(socket, replyWithRequestedPhoto(mWifiDirectManager, request));
                                 break;
                             case SEND_PHOTO:
-                                doRespond(socket,processIncomingPhoto(wiFiDirectManager, request));
+                                doRespond(socket,processIncomingPhoto(mWifiDirectManager, request));
                                 break;
                             default:
                                 doRespond(socket,"warning: '" + OPERATION + "' is unsupported...");
@@ -90,9 +94,14 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     private String processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject jsonObject) throws JSONException {
         LogManager.logInfo(INCOMING_TASK_TAG, "Processing incoming catalog...");
 
+        String username = jsonObject.getString(USERNAME);
+        PublicKey sendersPublicKey = mKeyManager.getPublicKeys().get(username);
+        if (sendersPublicKey == null) {
+            sendersPublicKey = null;
+        }
         JSONObject catalogFile = jsonObject.getJSONObject(CATALOG_FILE);
         String catalogId = catalogFile.getString(CATALOG_ID);
-        String from = jsonObject.getString(FROM);
+
 
         LogManager.logInfo(INCOMING_TASK_TAG, "Deciphering catalog file...");
         String cipheredCatalogFile = jsonObject.getString(CATALOG_FILE);
@@ -100,7 +109,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         // byte[] decodedCatalogFile = decipherWithAes(key, encodedCatalogFile);
         // JSONObject decipheredCatalogFile = new JSONObject(byteArrayToUtf8(decodedCatalogFile));
 
-        // CatalogMerge.mergeCatalogFiles(wiFiDirectManager.getMainMenuActivity(), catalogId, decipheredCatalogFile);
+        // CatalogMerge.mergeCatalogFiles(mWifiDirectManager.getMainMenuActivity(), catalogId, decipheredCatalogFile);
 
         return "";
     }
