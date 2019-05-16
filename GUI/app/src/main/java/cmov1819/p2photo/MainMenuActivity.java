@@ -276,6 +276,9 @@ public class MainMenuActivity
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
                 break;
+            case R.id.nav_limit_storage:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new LimitStorageFragment()).commit();
+                break;
             case R.id.nav_show_app_log:
                 getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container, new ViewAppLogFragment()).commit();
                 break;
