@@ -32,7 +32,7 @@ import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToUtf8;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
 
-public class IncomingSocketTask extends AsyncTask<Void, String, Void> {
+public class ServerTask extends AsyncTask<Void, String, Void> {
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
     private static final String CONFIRM_RCV = "\n";
     private static final String SEND = "\n";

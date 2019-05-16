@@ -19,7 +19,7 @@ import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.DateUtils;
-import cmov1819.p2photo.helpers.termite.tasks.IncomingSocketTask;
+import cmov1819.p2photo.helpers.termite.tasks.ServerTask;
 import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
@@ -65,7 +65,7 @@ public class WifiDirectManager {
     public static WifiDirectManager init(MainMenuActivity activity) {
         if (instance == null) {
             instance = new WifiDirectManager(activity);
-            new IncomingSocketTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            new ServerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
         return instance;
     }
@@ -153,7 +153,7 @@ public class WifiDirectManager {
     }
 
     public void setServerSocket() {
-        new IncomingSocketTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        new ServerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void setServerSocket(SimWifiP2pSocketServer newSocket) {
