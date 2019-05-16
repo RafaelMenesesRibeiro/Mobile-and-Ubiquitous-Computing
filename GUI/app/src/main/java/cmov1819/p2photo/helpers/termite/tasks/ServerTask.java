@@ -105,16 +105,11 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     }
 
     private String processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject jsonObject) throws JSONException {
-
-        LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incomming catalog \n%s\n", jsonObject.toString(4)));
-
-        String catalogId = jsonObject.getString("catalogId");
+        LogManager.logInfo(INCOMING_TASK_TAG, String.format("Processing incoming catalog \n%s\n", jsonObject.toString(4)));
+        // TODO IM HERE ISSUE
+        JSONObject catalogFile = jsonObject.getJSONObject("catalogFile");
+        String catalogId = catalogFile.getString("catalogId");
         String sender = jsonObject.getString("from");
-        String aesKeyRetrievalToken = jsonObject.getString("token");
-
-        LogManager.logInfo(INCOMING_TASK_TAG, "Trying to exchange token for aes key...");
-        byte[] encodedKey = base64StringToByteArray(exchangeTokenForAESKey(sender, aesKeyRetrievalToken));
-        SecretKey key = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
 
         LogManager.logInfo(INCOMING_TASK_TAG, "Deciphering catalog file...\n");
         String cipheredCatalogFile = jsonObject.getString("catalogFile");

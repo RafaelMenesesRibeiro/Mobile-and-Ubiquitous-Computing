@@ -7,20 +7,16 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.crypto.SecretKey;
-
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.DateUtils;
-import cmov1819.p2photo.helpers.termite.tasks.ServerTask;
 import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
+import cmov1819.p2photo.helpers.termite.tasks.ServerTask;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
@@ -43,13 +39,11 @@ public class WifiDirectManager {
     private static WifiDirectManager instance;
 
     private final MainMenuActivity mMainMenuActivity;
+    private final KeyManager mKeyManager;
+
     private final AtomicInteger requestId;
 
-    private final Map<String, PublicKey> publicKeysMap; // deviceName, public key
-    private final Map<String, SecretKey> secretKeyMap;  // deviceName, session key
-
-    private PrivateKey mPrivateKey;
-    private PublicKey mPublicKey;
+    private final Map<String, SimWifiP2pDevice> usernameDevice;   // username, SimWifiP2pDevice data
 
     /**********************************************************
      * CONSTRUCTORS
@@ -57,9 +51,9 @@ public class WifiDirectManager {
 
     private WifiDirectManager(MainMenuActivity activity) {
         this.mMainMenuActivity = activity;
+        this.mKeyManager = KeyManager.getInstance();
         this.requestId = new AtomicInteger(0);
-        this.publicKeysMap = new ConcurrentHashMap<>();
-        this.secretKeyMap = new ConcurrentHashMap<>();
+        this.usernameDevice = new ConcurrentHashMap<>();
     }
 
     public static WifiDirectManager init(MainMenuActivity activity) {
@@ -71,6 +65,9 @@ public class WifiDirectManager {
     }
 
     public static WifiDirectManager getInstance() {
+        if (instance == null) {
+            throw new RuntimeException("WifiDirectManager was not initiated before using getInstance, call init on MainMenu!");
+        }
         return instance;
     }
 
@@ -141,6 +138,31 @@ public class WifiDirectManager {
     }
 
     /**********************************************************
+     * HELPERS
+     **********************************************************/
+
+     public JSONObject newBaselineJson(String operation) throws JSONException {
+         JSONObject jsonObject = new JSONObject();
+         jsonObject.put("operation", operation);
+         jsonObject.put("username", SessionManager.getUsername(mMainMenuActivity));
+         return jsonObject;
+     }
+
+    public void doSend(final SimWifiP2pDevice targetDevice, JSONObject data) {
+        try {
+            LogManager.logInfo(WIFI_DIRECT_MGR_TAG, String.format("Trying to send data to %s", targetDevice.deviceName));
+            data.put("from", mMainMenuActivity.getDeviceName());
+            data.put("to", targetDevice.deviceName);
+            data.put("requestId", requestId.incrementAndGet());
+            data.put("timestamp", DateUtils.generateTimestamp());
+            data.put("signature", signData(mKeyManager.getmPrivateKey(), data));
+            new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, targetDevice, data);
+        } catch (JSONException | SignatureException exc) {
+            LogManager.logError(WIFI_DIRECT_MGR_TAG, "Unable to sign message, abort send...");
+        }
+    }
+
+    /**********************************************************
      * GETTERS AND SETTERS
      **********************************************************/
 
@@ -160,28 +182,7 @@ public class WifiDirectManager {
         mMainMenuActivity.setmSrvSocket(newSocket);
     }
 
-    /**********************************************************
-     * HELPERS
-     **********************************************************/
-
-     public JSONObject newBaselineJson(String operation) throws JSONException {
-         JSONObject jsonObject = new JSONObject();
-         jsonObject.put("operation", operation);
-         jsonObject.put("username", SessionManager.getUsername(mMainMenuActivity));
-         return jsonObject;
-     }
-
-    public void doSend(final SimWifiP2pDevice targetDevice, JSONObject data) {
-        try {
-            LogManager.logInfo(WIFI_DIRECT_MGR_TAG, String.format("Trying to send data to %s", targetDevice.deviceName));
-            data.put("from", mMainMenuActivity.getDeviceName());
-            data.put("to", targetDevice.deviceName);
-            data.put("requestId", requestId.incrementAndGet());
-            data.put("timestamp", DateUtils.generateTimestamp());
-            data.put("signature", signData(mPrivateKey, data));
-            new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, targetDevice, data);
-        } catch (JSONException | SignatureException exc) {
-            LogManager.logError(WIFI_DIRECT_MGR_TAG, "Unable to sign message, abort send...");
-        }
+    public Map<String, SimWifiP2pDevice> getUsernameDevice() {
+        return usernameDevice;
     }
 }
