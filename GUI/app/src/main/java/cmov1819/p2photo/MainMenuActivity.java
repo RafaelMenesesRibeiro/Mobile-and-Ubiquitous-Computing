@@ -2,7 +2,6 @@ package cmov1819.p2photo;
 
 import android.app.Activity;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -12,6 +11,7 @@ import android.os.IBinder;
 import android.os.Messenger;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.NavigationView.OnNavigationItemSelectedListener;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -43,10 +43,10 @@ import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBacke
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.helpers.termite.SimWifiP2pBroadcastReceiver;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -55,8 +55,6 @@ import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
-import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
-import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
@@ -66,10 +64,13 @@ import static cmov1819.p2photo.ViewCatalogFragment.CATALOG_TITLE_EXTRA;
 import static cmov1819.p2photo.ViewCatalogFragment.NO_CATALOG_SELECTED;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.readCatalog;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
+import static pt.inesc.termite.wifidirect.SimWifiP2pManager.Channel;
+import static pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
+import static pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
 
 public class MainMenuActivity
         extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, SimWifiP2pManager.PeerListListener, SimWifiP2pManager.GroupInfoListener {
+        implements OnNavigationItemSelectedListener, PeerListListener, GroupInfoListener {
 
     public static final String MAIN_MENU_TAG = "MAIN MENU ACTIVITY";
     public static final String START_SCREEN = "initialScreen";
@@ -83,7 +84,7 @@ public class MainMenuActivity
     private String mDeviceName = "default";
     private Messenger mService = null;
     private SimWifiP2pManager mManager = null;
-    private SimWifiP2pManager.Channel mChannel = null;
+    private Channel mChannel = null;
     private SimWifiP2pSocketServer mSrvSocket = null;
     private List<SimWifiP2pDevice> mPeers = new ArrayList<>();
     private List<SimWifiP2pDevice> mGroupPeers = new ArrayList<>();
@@ -93,10 +94,6 @@ public class MainMenuActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-
-        if (getIntent().hasExtra(LoginActivity.WIFI_DIRECT_SV_RUNNING)) {
-            unbindService(mConnection);
-        }
 
         MainMenuActivity.resources = getResources();
         ArchitectureManager.systemArchitecture.handlePendingMemberships(this);
@@ -110,14 +107,7 @@ public class MainMenuActivity
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        basicTermiteSetup();
-
-        // WiFi is always on - Battery drainage is cool, because people buy new phones
-        Intent intent = new Intent(this, SimWifiP2pService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-
-        // Start Server in AsyncTask
-        this.mWifiManager = WifiDirectManager.init(this);
+        ArchitectureManager.systemArchitecture.setupHome(this);
 
         // Does not redraw the fragment when the screen rotates.
         if (savedInstanceState == null) {
@@ -442,6 +432,14 @@ public class MainMenuActivity
      * GETTERS AND SETTERS
      ***********************************************************/
 
+    public ServiceConnection getmConnection() {
+        return mConnection;
+    }
+
+    public void setmWifiManager(WifiDirectManager mWifiManager) {
+        this.mWifiManager = mWifiManager;
+    }
+
     public String getDeviceName() {
         return mDeviceName;
     }
@@ -458,7 +456,7 @@ public class MainMenuActivity
         this.mSrvSocket = mSrvSocket;
     }
 
-    private void basicTermiteSetup() {
+    public void basicTermiteSetup() {
         // initialize the WDSimulator API
         SimWifiP2pSocketManager.Init(getApplicationContext());
         // register broadcast receiver

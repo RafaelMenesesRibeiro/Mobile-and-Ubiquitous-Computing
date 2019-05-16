@@ -2,6 +2,7 @@ package cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
@@ -14,7 +15,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +28,8 @@ import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.architectures.BaseArchitecture;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.managers.WifiDirectManager;
+import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.createPhotoStackFile;
 
@@ -50,6 +52,22 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
     public void setup(final View view, final LoginActivity loginActivity) throws FailedOperationException {
         LoginActivity.initializeWifiDirectSetup(loginActivity);
+    }
+
+    @Override
+    public void setupHome(MainMenuActivity mainMenuActivity) {
+        if (mainMenuActivity.getIntent().hasExtra(LoginActivity.WIFI_DIRECT_SV_RUNNING)) {
+            mainMenuActivity.unbindService(mainMenuActivity.getmConnection());
+        }
+
+        mainMenuActivity.basicTermiteSetup();
+
+        // WiFi is always on - Battery drainage is cool, because people buy new phones
+        Intent intent = new Intent(mainMenuActivity, SimWifiP2pService.class);
+        mainMenuActivity.bindService(intent, mainMenuActivity.getmConnection(), Context.BIND_AUTO_CREATE);
+
+        // Start Server in AsyncTask
+        mainMenuActivity.setmWifiManager(WifiDirectManager.init(mainMenuActivity));
     }
 
     /**********************************************************
