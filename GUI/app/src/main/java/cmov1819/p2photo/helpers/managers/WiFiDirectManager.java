@@ -53,7 +53,7 @@ public class WiFiDirectManager {
      * GENERIC METHODS
      *********************************************************/
 
-    public void doSend(final SimWifiP2pDevice targetDevice, final byte[] data) {
+    public void doSend(final SimWifiP2pDevice targetDevice, JSONObject data) {
         LogManager.logInfo(WIFI_DIRECT_MGR_TAG, String.format("Trying to send data to %s", targetDevice.deviceName));
         new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, targetDevice, data);
     }
@@ -72,39 +72,31 @@ public class WiFiDirectManager {
         }
     }
 
-    public void sendCatalog(final SimWifiP2pDevice targetDevice,
-                            final JSONObject catalogFileContents) throws RuntimeException {
-
+    public void sendCatalog(final SimWifiP2pDevice targetDevice, final JSONObject catalogFileContents) throws RuntimeException {
         // This token can be used by the targetDevice to obtain the AES Key from the server
+        // TODO Exchange this code with TLS logic
         LogManager.logInfo(WIFI_DIRECT_MGR_TAG, "Generating AES256 Key and corresponding retrieval Token...");
         String token = UUID.randomUUID().toString();
         SecretKey key = CryptoUtils.generateAes256Key();
         // Ask the server temporarily store the AES Key associated with this token
         registerKeyOnWebServer(targetDevice.deviceName, token, key);
 
-        JSONObject jsonObject = new JSONObject();
         try {
-            LogManager.logInfo(WIFI_DIRECT_MGR_TAG,
-                    String.format(
-                            "Sending catalog to %s\nContents:\n%s\n",
-                            targetDevice.deviceName,
-                            catalogFileContents.toString(4))
-            );
+            String unformatedLog = "Sending catalog to %s\nContents:\n%s\n";
+            String identedCatalogFileContents = catalogFileContents.toString(4);
+            LogManager.logInfo(WIFI_DIRECT_MGR_TAG,String.format(unformatedLog, targetDevice.deviceName, identedCatalogFileContents));
 
-            String cipheredCatalogFile = byteArrayToBase64String(
-                    cipherWithAes256(key, catalogFileContents.toString().getBytes("UTF-8"))
-            );
+            byte[] encodedCatalog = cipherWithAes256(key, catalogFileContents.toString().getBytes());
+            String cipheredCatalogFile = byteArrayToBase64String(encodedCatalog);
 
+            JSONObject jsonObject = new JSONObject();
             jsonObject.put("operation", "sendingCatalog");
             jsonObject.put("from", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogFile", cipheredCatalogFile);
             jsonObject.put("token", token);
-            doSend(targetDevice, jsonObject.toString().getBytes("UTF-8"));
-
+            doSend(targetDevice, jsonObject);
         } catch (JSONException jsone) {
             LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
-        } catch (UnsupportedEncodingException uee) {
-            LogManager.logError(WIFI_DIRECT_MGR_TAG, uee.getMessage());
         }
     }
 
@@ -120,18 +112,15 @@ public class WiFiDirectManager {
     }
 
     public void requestCatalog(final SimWifiP2pDevice calleeDevice, final String catalogId) {
-        Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request catalog: %s to %s", catalogId, calleeDevice.deviceName));
-        JSONObject jsonObject = new JSONObject();
         try {
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request catalog: %s to %s", catalogId, calleeDevice.deviceName));
+            JSONObject jsonObject = new JSONObject();
             jsonObject.put("operation", "requestingCatalog");
             jsonObject.put("from", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogId", catalogId);
-            doSend(calleeDevice, jsonObject.toString().getBytes("UTF-8"));
+            doSend(calleeDevice, jsonObject);
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
-        } catch (UnsupportedEncodingException uee) {
-            LogManager.logWarning(WIFI_DIRECT_MGR_TAG, uee.getMessage());
-            doSend(calleeDevice, jsonObject.toString().getBytes());
         }
     }
 
@@ -139,45 +128,31 @@ public class WiFiDirectManager {
      * PHOTO REQUEST / RESPONSE METHODS
      **********************************************************/
 
-    public void requestPhoto(final SimWifiP2pDevice calleeDevice,
-                             final String catalogId,
-                             final String photoUuid) {
+    public void requestPhoto(final SimWifiP2pDevice calleeDevice, final String catalogId, final String photoUuid) {
         try {
             Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request photo: %s to %s", photoUuid, calleeDevice.deviceName));
-
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("operation", "requestingPhoto");
             jsonObject.put("from", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("catalogId", catalogId);
             jsonObject.put("photoUuid", photoUuid);
-
-            doSend(calleeDevice, jsonObject.toString().getBytes("UTF-8"));
+            doSend(calleeDevice, jsonObject);
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, "catalogFileContents.toString() failed resulting in exception");
-        } catch (UnsupportedEncodingException uee) {
-            // swallow
         }
     }
 
-    public void sendPhoto(final SimWifiP2pDevice callerDevice,
-                          final String photoUuid,
-                          final Bitmap photo) {
+    public void sendPhoto(final SimWifiP2pDevice callerDevice, final String photoUuid, final Bitmap photo) {
         try {
             Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending photo to %s", callerDevice.deviceName));
-
-            byte[] rawPhoto = bitmapToByteArray(photo);
-
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("operation", "sendingPhoto");
             jsonObject.put("from", SessionManager.getUsername(mMainMenuActivity));
             jsonObject.put("photoUuid", photoUuid);
-            jsonObject.put("photo", byteArrayToBase64String(rawPhoto));
-
-            doSend(callerDevice, jsonObject.toString().getBytes("UTF-8"));
+            jsonObject.put("photo", byteArrayToBase64String(bitmapToByteArray(photo)));
+            doSend(callerDevice, jsonObject);
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, "Unable to form JSONObject with bitmap data");
-        } catch (UnsupportedEncodingException uee) {
-            // swallow
         }
     }
 
