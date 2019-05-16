@@ -14,11 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
 import cmov1819.p2photo.MainMenuActivity;
-import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -30,19 +26,15 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
-import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToUtf8;
-import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
-import static cmov1819.p2photo.helpers.managers.WifiDirectManager.REQUEST_CATALOG;
-import static cmov1819.p2photo.helpers.managers.WifiDirectManager.REQUEST_PHOTO;
-import static cmov1819.p2photo.helpers.managers.WifiDirectManager.SEND_CATALOG;
-import static cmov1819.p2photo.helpers.managers.WifiDirectManager.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
+import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_CATALOG;
+import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
     private static final String INCOMING_TASK_TAG = "INCOMING SOCKET";
-    private static final String CONFIRM_RCV = "\n";
-    private static final String SEND = "\n";
-
-    private static final int TERMITE_PORT = 10001;
 
     private WifiDirectManager wiFiDirectManager = null;
 
@@ -88,7 +80,6 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                     } else {
                         doRespond(socket,"warning: requests need 'operation' field...");
                     }
-                    // Close interaction
                 } catch (IOException ioe) {
                     Log.e(INCOMING_TASK_TAG, "Error reading socket: " + ioe.getMessage());
                 } catch (JSONException jsone) {
@@ -114,10 +105,10 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         LogManager.logInfo(INCOMING_TASK_TAG, "Deciphering catalog file...\n");
         String cipheredCatalogFile = jsonObject.getString("catalogFile");
         byte[] encodedCatalogFile = base64StringToByteArray(cipheredCatalogFile);
-        byte[] decodedCatalogFile = decipherWithAes(key, encodedCatalogFile);
-        JSONObject decipheredCatalogFile = new JSONObject(byteArrayToUtf8(decodedCatalogFile));
+        // byte[] decodedCatalogFile = decipherWithAes(key, encodedCatalogFile);
+        // JSONObject decipheredCatalogFile = new JSONObject(byteArrayToUtf8(decodedCatalogFile));
 
-        CatalogMerge.mergeCatalogFiles(wiFiDirectManager.getMainMenuActivity(), catalogId, decipheredCatalogFile);
+        // CatalogMerge.mergeCatalogFiles(wiFiDirectManager.getMainMenuActivity(), catalogId, decipheredCatalogFile);
 
         return "";
     }

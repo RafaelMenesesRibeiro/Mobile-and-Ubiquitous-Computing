@@ -27,15 +27,6 @@ import static cmov1819.p2photo.helpers.CryptoUtils.signData;
 public class WifiDirectManager {
     private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
 
-    public final static String ARE_YOU_GO = "areYouGO";
-    public final static String CONNECT_TO_GO = "connectingToGO" ;
-    public final static String LEAVE_GROUP = "memberLeaving";
-    public final static String GO_LEAVE_GROUP = "goLeaving";
-    public final static String SEND_CATALOG = "sendingCatalog";
-    public final static String REQUEST_CATALOG = "requestingCatalog";
-    public final static String SEND_PHOTO = "sendingPhoto";
-    public final static String REQUEST_PHOTO = "requestingPhoto";
-
     private static WifiDirectManager instance;
 
     private final MainMenuActivity mMainMenuActivity;
