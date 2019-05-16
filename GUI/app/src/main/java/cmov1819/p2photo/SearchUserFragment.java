@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import cmov1819.p2photo.exceptions.BadInputException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.NoResultsException;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
@@ -79,7 +78,7 @@ public class SearchUserFragment extends Fragment {
 
         try {
             RequestData requestData = new RequestData(this.getActivity(), RequestData.RequestType.SEARCH_USERS, url);
-            ResponseData result = new QueryManager().execute(requestData).get();
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) result.getPayload();

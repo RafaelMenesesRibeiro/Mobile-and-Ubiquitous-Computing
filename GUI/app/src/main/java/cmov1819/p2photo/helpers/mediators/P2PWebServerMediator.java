@@ -1,4 +1,4 @@
-package cmov1819.p2photo.helpers.managers;
+package cmov1819.p2photo.helpers.mediators;
 
 import android.app.Activity;
 import android.os.AsyncTask;
@@ -22,6 +22,7 @@ import cmov1819.p2photo.dataobjects.PostRequestData;
 import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.msgtypes.BasicResponse;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -29,7 +30,7 @@ import cmov1819.p2photo.msgtypes.SuccessResponse;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getSessionID;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateSessionID;
 
-public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
+public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseData> {
     private static final String COOKIES_HEADER = "Set-Cookie";
 
     @Override
@@ -230,14 +231,14 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
 
         connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
         connection.connect();
-        BasicResponse payload = QueryManager.getBasicResponse(connection);
+        BasicResponse payload = P2PWebServerMediator.getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
     private ResponseData findUsers(Activity activity, HttpURLConnection connection) throws IOException {
         connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
         connection.connect();
-        BasicResponse payload = QueryManager.getSuccessResponse(connection);
+        BasicResponse payload = P2PWebServerMediator.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
@@ -264,7 +265,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         sendJSON(connection, postData.getParams());
         connection.connect();
 
-        BasicResponse payload = QueryManager.getSuccessResponse(connection);
+        BasicResponse payload = P2PWebServerMediator.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
@@ -276,7 +277,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         PutRequestData putData = (PutRequestData) requestData;
         sendJSON(connection, putData.getParams());
         connection.connect();
-        BasicResponse payload = QueryManager.getSuccessResponse(connection);
+        BasicResponse payload = P2PWebServerMediator.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
@@ -287,7 +288,7 @@ public class QueryManager extends AsyncTask<RequestData, Void, ResponseData> {
         PostRequestData postData = (PostRequestData) requestData;
         sendJSON(connection, postData.getParams());
         connection.connect();
-        BasicResponse payload = QueryManager.getBasicResponse(connection);
+        BasicResponse payload = P2PWebServerMediator.getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 

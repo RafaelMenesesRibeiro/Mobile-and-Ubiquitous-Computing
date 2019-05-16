@@ -1,8 +1,6 @@
 package cmov1819.p2photo;
 
 import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,44 +10,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
-import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
-import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static android.widget.Toast.LENGTH_LONG;
-import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class NewCatalogFragment extends Fragment {
@@ -107,7 +84,7 @@ public class NewCatalogFragment extends Fragment {
             requestBody.put("catalogTitle", catalogTitle);
             requestBody.put("calleeUsername", getUsername(activity));
             RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_CATALOG, url, requestBody);
-            ResponseData result = new QueryManager().execute(requestData).get();
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
 
             String catalogID;
             int code = result.getServerCode();
