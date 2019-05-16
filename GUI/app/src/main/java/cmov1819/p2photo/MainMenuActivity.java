@@ -197,8 +197,9 @@ public class MainMenuActivity
         LogManager.logInfo(MAIN_MENU_TAG, "New membership information available...");
         mGroupPeers.clear();
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
-            // Load catalog files
+            // Set my deviceName
             mDeviceName = simWifiP2pInfo.getDeviceName();
+            // Load catalog files
             List<JSONObject> myCatalogFiles = loadMyCatalogFiles();
             // Update peers list belonging to my group and broadcast my catalog files
             for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
