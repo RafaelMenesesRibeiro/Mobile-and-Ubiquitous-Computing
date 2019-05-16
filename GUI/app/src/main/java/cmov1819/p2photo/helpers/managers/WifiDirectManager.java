@@ -125,10 +125,6 @@ public class WifiDirectManager {
         // TODO ask server to keep this aesKey for recipient username on a Map for 10 minutes then discards it.
     }
 
-    public void pullMissingCatalogFiles(List<SimWifiP2pDevice> mGroupPeers, List<String> myMissingCatalogFiles) {
-        // TODO for each missing catalog file requestCatalog to group peers.
-    }
-
     public void requestCatalog(final SimWifiP2pDevice calleeDevice, final String catalogId) {
         try {
             Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request catalog: %s to %s", catalogId, calleeDevice.deviceName));
