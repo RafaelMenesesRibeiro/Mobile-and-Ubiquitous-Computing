@@ -186,7 +186,7 @@ public class MainMenuActivity
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
         LogManager.logInfo(MAIN_MENU_TAG, "New peer information available...");
         // compile list of devices in range
-        mDeviceName = "";
+        mPeers.clear();
         mPeers.addAll(peers.getDeviceList());
     }
 
