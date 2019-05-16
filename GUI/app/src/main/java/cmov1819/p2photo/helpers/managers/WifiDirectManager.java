@@ -86,7 +86,8 @@ public class WifiDirectManager {
             try {
                 sendCatalog(device, catalogFile);
             } catch (RuntimeException se) {
-                LogManager.logError(WIFI_DIRECT_MGR_TAG, "One or more catalog postages has failed due to cipher fail.");
+                LogManager.logError(WIFI_DIRECT_MGR_TAG, "One or more catalog postages has_ " +
+                        "failed due to cipher fail.");
             }
         }
     }
