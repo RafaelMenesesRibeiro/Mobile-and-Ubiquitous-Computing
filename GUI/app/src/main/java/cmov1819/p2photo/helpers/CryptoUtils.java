@@ -55,11 +55,6 @@ public class CryptoUtils {
     }
 
     // TODO //
-    public static Key generateSymmetricKey() {
-        throw new UnsupportedOperationException();
-    }
-
-    // TODO //
     public static KeyPair generateAsymetricKeys() {
         throw new UnsupportedOperationException();
     }
@@ -76,7 +71,7 @@ public class CryptoUtils {
             CryptoUtils.secretKey = key;
             return key;
         }
-        catch (NoSuchAlgorithmException e) {
+        catch (Exception e) {
             // Should never be here.
             return null;
         }
