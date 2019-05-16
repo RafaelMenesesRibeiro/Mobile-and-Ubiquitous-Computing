@@ -89,18 +89,7 @@ public class WifiDirectManager {
             LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
         }
     }
-
-    public void requestCatalog(final SimWifiP2pDevice calleeDevice, final String catalogId) {
-        try {
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request catalog: %s to %s", catalogId, calleeDevice.deviceName));
-            JSONObject jsonObject = newBaselineJson(REQUEST_CATALOG);
-            jsonObject.put("catalogId", catalogId);
-            doSend(calleeDevice, jsonObject);
-        } catch (JSONException jsone) {
-            Log.e(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
-        }
-    }
-
+    
     /**********************************************************
      * PHOTO REQUEST / RESPONSE METHODS
      **********************************************************/
@@ -121,8 +110,8 @@ public class WifiDirectManager {
         try {
             Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending photo to %s", callerDevice.deviceName));
             JSONObject jsonObject = newBaselineJson(SEND_PHOTO);
-            jsonObject.put("photoUuid", photoUuid);
-            jsonObject.put("photo", byteArrayToBase64String(bitmapToByteArray(photo)));
+            jsonObject.put(PHOTO_UUID, photoUuid);
+            jsonObject.put(PHOTO_FILE, byteArrayToBase64String(bitmapToByteArray(photo)));
             doSend(callerDevice, jsonObject);
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, "Unable to form JSONObject with bitmap data");
@@ -135,19 +124,19 @@ public class WifiDirectManager {
 
      public JSONObject newBaselineJson(String operation) throws JSONException {
          JSONObject jsonObject = new JSONObject();
-         jsonObject.put("operation", operation);
-         jsonObject.put("username", SessionManager.getUsername(mMainMenuActivity));
+         jsonObject.put(OPERATION, operation);
+         jsonObject.put(USERNAME, SessionManager.getUsername(mMainMenuActivity));
          return jsonObject;
      }
 
     public void doSend(final SimWifiP2pDevice targetDevice, JSONObject data) {
         try {
             LogManager.logInfo(WIFI_DIRECT_MGR_TAG, String.format("Trying to send data to %s", targetDevice.deviceName));
-            data.put("from", mMainMenuActivity.getDeviceName());
-            data.put("to", targetDevice.deviceName);
-            data.put("requestId", requestId.incrementAndGet());
-            data.put("timestamp", DateUtils.generateTimestamp());
-            data.put("signature", signData(mKeyManager.getmPrivateKey(), data));
+            data.put(FROM, mMainMenuActivity.getDeviceName());
+            data.put(TO, targetDevice.deviceName);
+            data.put(RID, requestId.incrementAndGet());
+            data.put(TIMESTAMP, DateUtils.generateTimestamp());
+            data.put(SIGNATURE, signData(mKeyManager.getmPrivateKey(), data));
             new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, targetDevice, data);
         } catch (JSONException | SignatureException exc) {
             LogManager.logError(WIFI_DIRECT_MGR_TAG, "Unable to sign message, abort send...");
