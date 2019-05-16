@@ -30,7 +30,6 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
@@ -291,7 +290,9 @@ public class LoginActivity extends AppCompatActivity {
 
     public static void goHome(Activity activity) {
         Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
-        mainMenuActivityIntent.putExtra(WIFI_DIRECT_SV_RUNNING, wifiDirectRunning);
+        if (wifiDirectRunning) {
+            mainMenuActivityIntent.putExtra(WIFI_DIRECT_SV_RUNNING, wifiDirectRunning);
+        }
         mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
         activity.startActivity(mainMenuActivityIntent);
     }
