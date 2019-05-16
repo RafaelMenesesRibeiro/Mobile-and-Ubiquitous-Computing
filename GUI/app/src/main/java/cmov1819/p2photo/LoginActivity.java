@@ -39,7 +39,7 @@ import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
     public static final String WIFI_DIRECT_SV_RUNNING = "wifiDirectRunning";
-    private boolean wdDirectRunning = false;
+    public static boolean wifiDirectRunning = false;
 
     @Override
     public void onBackPressed() {
@@ -53,7 +53,7 @@ public class LoginActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         if (intent.hasExtra(WIFI_DIRECT_SV_RUNNING)) {
-            wdDirectRunning = true;
+            wifiDirectRunning = true;
         }
 
         ArchitectureManager.setWirelessP2PArch(); // Default architecture is Wireless P2P.
@@ -273,6 +273,7 @@ public class LoginActivity extends AppCompatActivity {
 
     public static void goHome(Activity activity) {
         Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
+        mainMenuActivityIntent.putExtra(WIFI_DIRECT_SV_RUNNING, wifiDirectRunning);
         mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
         activity.startActivity(mainMenuActivityIntent);
     }

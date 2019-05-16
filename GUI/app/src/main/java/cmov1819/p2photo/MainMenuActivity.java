@@ -85,7 +85,6 @@ public class MainMenuActivity
     private SimWifiP2pManager mManager = null;
     private SimWifiP2pManager.Channel mChannel = null;
     private SimWifiP2pSocketServer mSrvSocket = null;
-    private SimWifiP2pSocket mCliSocket = null;
     private List<SimWifiP2pDevice> mPeers = new ArrayList<>();
     private List<SimWifiP2pDevice> mGroupPeers = new ArrayList<>();
     private WifiDirectManager mWifiManager = null;
@@ -94,6 +93,10 @@ public class MainMenuActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
+
+        if (getIntent().hasExtra(LoginActivity.WIFI_DIRECT_SV_RUNNING)) {
+            unbindService(mConnection);
+        }
 
         MainMenuActivity.resources = getResources();
         ArchitectureManager.systemArchitecture.handlePendingMemberships(this);
@@ -111,7 +114,7 @@ public class MainMenuActivity
 
         // WiFi is always on - Battery drainage is cool, because people buy new phones
         Intent intent = new Intent(this, SimWifiP2pService.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
         // Start Server in AsyncTask
         this.mWifiManager = WifiDirectManager.init(this);
@@ -122,24 +125,11 @@ public class MainMenuActivity
         }
     }
 
-    private void basicTermiteSetup() {
-        // initialize the WDSimulator API
-        SimWifiP2pSocketManager.Init(getApplicationContext());
-        // register broadcast receiver
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        SimWifiP2pBroadcastReceiver mReceiver = new SimWifiP2pBroadcastReceiver(this);
-        registerReceiver(mReceiver, filter);
-    }
-
     /**********************************************************
      * TERMITE MANAGEMENT ATTRIBUTES AND METHODS
      **********************************************************/
 
-    private ServiceConnection connection = new ServiceConnection() {
+    private ServiceConnection mConnection = new ServiceConnection() {
         // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
@@ -151,9 +141,12 @@ public class MainMenuActivity
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
             LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceDisconnected");
-            // Our WiFi service is always on
+            mService = null;
             mManager = null;
             mChannel = null;
+            mSrvSocket = null;
+            mPeers = new ArrayList<>();
+            mGroupPeers = new ArrayList<>();
         }
     };
 
@@ -465,11 +458,17 @@ public class MainMenuActivity
         this.mSrvSocket = mSrvSocket;
     }
 
-    public SimWifiP2pSocket getmCliSocket() {
-        return mCliSocket;
+    private void basicTermiteSetup() {
+        // initialize the WDSimulator API
+        SimWifiP2pSocketManager.Init(getApplicationContext());
+        // register broadcast receiver
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
+        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
+        SimWifiP2pBroadcastReceiver mReceiver = new SimWifiP2pBroadcastReceiver(this);
+        registerReceiver(mReceiver, filter);
     }
 
-    public void setmCliSocket(SimWifiP2pSocket mCliSocket) {
-        this.mCliSocket = mCliSocket;
-    }
 }
