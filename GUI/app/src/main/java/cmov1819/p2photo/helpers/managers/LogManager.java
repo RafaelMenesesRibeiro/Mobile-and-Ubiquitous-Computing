@@ -31,7 +31,7 @@ public class LogManager {
     public static final String VIEW_APP_LOG = "View App Log";
     public static final String CRYPTO_UTILS_TAG = "Crypto Utils";
 
-    public static final String QUERY_MANAGER_TAG = "Quert Manager";
+    public static final String WEB_SERVER_MEDIATOR_TAG = "Quert Manager";
 
     private static String logText = "";
 

@@ -27,6 +27,7 @@ import cmov1819.p2photo.msgtypes.BasicResponse;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
+import static cmov1819.p2photo.helpers.managers.LogManager.logReceived;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getSessionID;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateSessionID;
 
@@ -51,6 +52,24 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
             connection.setConnectTimeout(2000);
             RequestData.RequestType type = requestData.getRequestType();
             switch (type) {
+                case SEARCH_USERS:
+                case GET_CATALOG:
+                case GET_CATALOG_TITLE:
+                case GET_MEMBERSHIPS:
+                case GET_GOOGLE_IDENTIFIERS:
+                case GET_MEMBERSHIP_CATALOG_IDS:
+                    result = performGET(activity, connection);
+                    logReceived(LogManager.WEB_SERVER_MEDIATOR_TAG, result);
+                    break;
+                case GET_SERVER_LOGS:
+                    result = performSimpleGET(connection);
+                    break;
+                case LOGOUT:
+                    result = performDelete(activity, connection);
+                    break;
+                case NEW_CATALOG_SLICE:
+                    result = performPUT(activity, connection, requestData);
+                    break;
                 case SIGNUP:
                     connection.setRequestMethod("POST");
                     result = signup(connection, requestData);
@@ -59,45 +78,20 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                     connection.setRequestMethod("POST");
                     result = login(activity, connection, requestData);
                     break;
-                case LOGOUT:
-                    result = performDelete(activity, connection);
-                    break;
-                case SEARCH_USERS:
-                    result = performGET(activity, connection);
-                    break;
-                case GET_CATALOG_TITLE:
-                    result = performGET(activity, connection);
-                    break;
-                case GET_CATALOG:
-                    result = performGET(activity, connection);
-                    break;
+
                 case NEW_CATALOG:
                     connection.setRequestMethod("POST");
                     result = newCatalog(activity, connection, requestData);
                     break;
-                case NEW_CATALOG_SLICE:
-                    connection.setRequestMethod("PUT");
-                    result = newCatalogSliceFileId(activity, connection, requestData);
-                    break;
+
                 case NEW_CATALOG_MEMBER:
                     connection.setRequestMethod("POST");
                     result = newCatalogMember(activity, connection, requestData);
                     break;
-                case GET_MEMBERSHIPS:
-                    result = performGET(activity, connection);
-                    break;
-                case GET_GOOGLE_IDENTIFIERS:
-                    result = performGET(activity, connection);
-                    break;
-                case GET_MEMBERSHIP_CATALOG_IDS:
-                    result = performGET(activity, connection);
-                    break;
-                case GET_SERVER_LOGS:
-                    result = performSimpleGET(connection);
-                    break;
+
                 default:
                     String msg = "Should never be here.";
-                    LogManager.logError(LogManager.QUERY_MANAGER_TAG, msg);
+                    LogManager.logError(LogManager.WEB_SERVER_MEDIATOR_TAG, msg);
                     break;
             }
             connection.disconnect();
@@ -109,7 +103,7 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
         }
     }
 
-    private void sendJSON(HttpURLConnection connection, JSONObject json) throws IOException {
+    private void writeJsonToOutputStream(HttpURLConnection connection, JSONObject json) throws IOException {
         OutputStream os = connection.getOutputStream();
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, "UTF-8"));
         writer.flush();
@@ -173,18 +167,18 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
             String cookie = cookiesHeader.get(0);
             updateSessionID(activity, cookie);
             String msg = "Received login cookie - " + cookie + ".";
-            LogManager.logInfo(LogManager.QUERY_MANAGER_TAG, msg);
+            LogManager.logInfo(LogManager.WEB_SERVER_MEDIATOR_TAG, msg);
         }
         else {
             updateSessionID(activity, "INVALID_SESSION");
             String msg = "No cookies were received.";
-            LogManager.logError(LogManager.QUERY_MANAGER_TAG, msg);
+            LogManager.logError(LogManager.WEB_SERVER_MEDIATOR_TAG, msg);
         }
     }
 
     private ResponseData signup(HttpURLConnection connection, RequestData requestData) throws IOException {
         PostRequestData postData = (PostRequestData) requestData;
-        sendJSON(connection, postData.getParams());
+        writeJsonToOutputStream(connection, postData.getParams());
         BasicResponse payload = getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
@@ -193,7 +187,7 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                                RequestData requestData) throws IOException {
 
         PostRequestData postData = (PostRequestData) requestData;
-        sendJSON(connection, postData.getParams());
+        writeJsonToOutputStream(connection, postData.getParams());
         getCookies(activity, connection);
         BasicResponse payload = getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
@@ -213,20 +207,17 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
 
         connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
         PostRequestData postData = (PostRequestData) requestData;
-        sendJSON(connection, postData.getParams());
+        writeJsonToOutputStream(connection, postData.getParams());
         connection.connect();
 
         BasicResponse payload = P2PWebServerMediator.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
     }
 
-    private ResponseData newCatalogSliceFileId(Activity activity,
-                                               HttpURLConnection connection,
-                                               RequestData requestData) throws IOException {
-
+    private ResponseData performPUT(Activity activity, HttpURLConnection connection, RequestData requestData) throws IOException {
         connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
-        PutRequestData putData = (PutRequestData) requestData;
-        sendJSON(connection, putData.getParams());
+        connection.setRequestMethod("PUT");
+        writeJsonToOutputStream(connection, ((PutRequestData) requestData).getParams());
         connection.connect();
         BasicResponse payload = P2PWebServerMediator.getSuccessResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
@@ -237,7 +228,7 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
 
         connection.setRequestProperty("Cookie", "sessionId=" + getSessionID(activity));
         PostRequestData postData = (PostRequestData) requestData;
-        sendJSON(connection, postData.getParams());
+        writeJsonToOutputStream(connection, postData.getParams());
         connection.connect();
         BasicResponse payload = P2PWebServerMediator.getBasicResponse(connection);
         return new ResponseData(connection.getResponseCode(), payload);
