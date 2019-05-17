@@ -195,6 +195,7 @@ public class WifiDirectManager {
             return false;
         }
     }
+    
     public boolean isValidMessage(String operation, JSONObject response, PublicKey publicKey) {
         try {
             if (!response.getString(OPERATION).equals(operation)) {
