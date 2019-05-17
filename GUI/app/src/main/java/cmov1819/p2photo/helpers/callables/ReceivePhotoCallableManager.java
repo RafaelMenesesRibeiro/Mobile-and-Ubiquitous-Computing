@@ -11,22 +11,23 @@ import static cmov1819.p2photo.helpers.managers.LogManager.CALLABLE_MGR_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 
-public class CallableManager implements Callable<Object> {
-    protected Callable<Object> callable;
+public class ReceivePhotoCallableManager implements Callable<String> {
+    protected Callable<String> callable;
     protected long timeout;
     protected TimeUnit timeUnit;
 
-    public CallableManager(Callable<Object> callable, long timeout, TimeUnit timeUnit) {
+    public ReceivePhotoCallableManager(Callable<String> callable, long timeout, TimeUnit timeUnit) {
         this.timeout = timeout;
         this.timeUnit = timeUnit;
         this.callable = callable;
     }
 
     @Override
-    public Object call() {
-        Object result = null;
+    public String call() {
+        String result = null;
         ExecutorService exec = Executors.newSingleThreadExecutor();
         try {
+            // if result is null then operation as failed or did not terminate, else everything okay!
             result = exec.submit(callable).get(timeout, timeUnit);
         } catch (InterruptedException | ExecutionException | TimeoutException exc) {
             if (exc instanceof TimeoutException) {

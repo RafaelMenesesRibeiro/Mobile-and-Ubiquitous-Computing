@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.DateUtils;
-import cmov1819.p2photo.helpers.callables.CallableManager;
+import cmov1819.p2photo.helpers.callables.ReceivePhotoCallableManager;
 import cmov1819.p2photo.helpers.callables.ProposeSessionCallable;
 import cmov1819.p2photo.helpers.callables.ProposeSessionCallableManager;
 import cmov1819.p2photo.helpers.callables.ReceivePhotoCallable;
@@ -141,21 +141,21 @@ public class WifiDirectManager {
                 int missingPhotosCount = missingPhotos.size();
 
                 ExecutorService executorService = Executors.newFixedThreadPool(missingPhotosCount);
-                ExecutorCompletionService<Object> completionService = new ExecutorCompletionService<>(executorService);
+                ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>(executorService);
 
                 for (SimWifiP2pDevice device : mGroup) {
 
 
                     for (String missingPhoto : missingPhotos) {
-                        Callable<Object> job = new ReceivePhotoCallable(device, missingPhoto, catalogId);
-                        completionService.submit(new CallableManager(job,30, TimeUnit.SECONDS));
+                        Callable<String> job = new ReceivePhotoCallable(device, missingPhoto, catalogId);
+                        completionService.submit(new ReceivePhotoCallableManager(job,30, TimeUnit.SECONDS));
                     }
 
                     for (int i = 0; i < missingPhotosCount; i++) {
                         try {
-                            Future<Object> futureResult = completionService.take();
+                            Future<String> futureResult = completionService.take();
                             if (!futureResult.isCancelled()) {
-                                String result = (String) futureResult.get();
+                                String result = futureResult.get();
                                 if (result != null) {
                                     missingPhotos.remove(result);
                                 }
@@ -211,7 +211,7 @@ public class WifiDirectManager {
             @Override
             protected List<SimWifiP2pDevice> doInBackground(Void... voids) {
                 int devicesInNeedOfSessionEstablishment = targetDevices.size();
-                
+
                 ExecutorService executorService = Executors.newFixedThreadPool(devicesInNeedOfSessionEstablishment);
                 ExecutorCompletionService<SimWifiP2pDevice> completionService = new ExecutorCompletionService<>(executorService);
 
