@@ -16,6 +16,7 @@ public class RequestData {
         GET_MEMBER_KEY,
         GET_SERVER_LOGS,
         GET_MEMBER_PUBLIC_KEY,
+        ASSERT_MEMBERSHIP,
         NEW_CATALOG,
         NEW_CATALOG_SLICE,
         NEW_CATALOG_MEMBER,
