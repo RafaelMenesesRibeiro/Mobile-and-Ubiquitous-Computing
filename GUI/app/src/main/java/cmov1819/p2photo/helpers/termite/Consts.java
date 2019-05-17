@@ -15,6 +15,8 @@ public class Consts {
     public static final String SEND_SESSION = "sendingSession";
     public static final String SEND_CHALLENGE = "sendingChallenge";
     public static final String REPLY_TO_CHALLENGE = "replyingToChallenge";
+    public static final String READY_TO_COMMIT = "commit";
+    public static final String COMMIT = "confirmCommit";
     public static final String SEND_CATALOG = "sendingCatalog";
     public static final String SEND_PHOTO = "sendingPhoto";
     public static final String REQUEST_PHOTO = "requestingPhoto";
@@ -39,10 +41,10 @@ public class Consts {
     public static final String NO_OPERATION = "unsupported";
     public static final String NO_HAVE = "none";
     public static final String FAIL = "fail";
-    public static final String REFUSED = "refused";
+    public static final String REFUSE = "refused";
     public static final String OKAY = "ok";
 
-    public static final List<String> ERRORS = Arrays.asList(NEED_OPERATION, NO_OPERATION, NO_HAVE, FAIL, REFUSED, OKAY);
+    public static final List<String> ERRORS = Arrays.asList(NEED_OPERATION, NO_OPERATION, NO_HAVE, FAIL, REFUSE, OKAY);
 
     public static boolean isError(String line) {
         return ERRORS.contains(line);
