@@ -9,3 +9,5 @@ setx TERMITE_CLI_PATH "C:\GitHub\\Mobile-and-Ubiquitous-Computing\\Termite-Cli" 
 :: Target platform; one of: mac, linux, or windows
 ::
 setx TERMITE_PLATFORM windows /m
+
+termite.bat
