@@ -197,10 +197,11 @@ public class WifiDirectManager {
         }
         for (SimWifiP2pDevice targetDevice : newGroup) {
             if (!oldGroup.contains(targetDevice)) {
-                targetDevices.add(targetDevice); // TODO HERE
+                if (getDeviceName().compareTo(targetDevice.deviceName) > 0) {
+                    targetDevices.add(targetDevice);
+                }
             }
         }
-        // TODO THIS ALGORITHM
         proposeSession(targetDevices);
     }
 
