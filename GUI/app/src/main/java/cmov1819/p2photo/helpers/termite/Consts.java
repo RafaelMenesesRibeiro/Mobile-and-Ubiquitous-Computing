@@ -28,7 +28,7 @@ public class Consts {
     public static final String TO = "to";
     public static final String SIGNATURE = "signature";
     public static final String TIMESTAMP = "timestamp";
-    public static final String RID = "requestId";
+    public static final String RID = "requestID";
     public static final String PHOTO_UUID = "photoUuid";
     public static final String PHOTO_FILE = "photoFile";
     public static final String MEMBERS_PHOTOS = "membersPhotos";
