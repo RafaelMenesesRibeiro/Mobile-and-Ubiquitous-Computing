@@ -40,8 +40,10 @@ public class BasicResponse {
 
     @Override
     public String toString() {
-        return "Code: " + code + "\n" +
-                "Operation: " + operation + "\n" +
-                "Message: " + operation + "\n";
+        return "BasicResponse{" +
+                "code=" + code +
+                ", operation='" + operation + '\'' +
+                ", message='" + message + '\'' +
+                '}';
     }
 }
