@@ -36,7 +36,6 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
             clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
             doSend(SEND_DATA_TASK_TAG, clientSocket, jsonData);
             receiveResponse(SEND_DATA_TASK_TAG, clientSocket);
-
         } catch (UnknownHostException uhe) {
             logWarning(SEND_DATA_TASK_TAG,"Specified target device is unreachable, host does not exist!");
         } catch (IOException ioe) {
