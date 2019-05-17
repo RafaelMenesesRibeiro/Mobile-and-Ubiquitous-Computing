@@ -16,6 +16,8 @@ import java.security.KeyException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 
+import javax.crypto.SecretKey;
+
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.DateUtils;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
@@ -27,6 +29,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
+import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes;
 import static cmov1819.p2photo.helpers.CryptoUtils.signData;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge.mergeCatalogFiles;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
@@ -147,14 +150,13 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 MainMenuActivity mMainMenuActivity = mWifiDirectManager.getMainMenuActivity();
 
                 if (assertMembership(mMainMenuActivity, username, catalogId)) {
-                    return processSendPhotoRequest(mMainMenuActivity, message);
+                    String clearText = processSendPhotoRequest(mMainMenuActivity, message);
+                    if (!clearText.equals("")) {
+                        SecretKey sessionKey = mKeyManager.getSessionKeys().get(username);
+                        return byteArrayToBase64String(cipherWithAes(sessionKey, clearText.getBytes()));
+                    }
                 }
-
-                return "";
             }
-        } else {
-            logInfo(SERVER_TAG,"Verifying sender's signature...");
-            mWifiDirectManager.isValidMessage(SEND_CATALOG, message, publicKey);
         }
 
         logWarning(SERVER_TAG,"Could not verify sender's signature...");
