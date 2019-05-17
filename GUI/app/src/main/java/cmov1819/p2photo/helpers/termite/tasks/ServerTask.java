@@ -48,6 +48,10 @@ import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
 import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
+import static cmov1819.p2photo.helpers.termite.Consts.NEED_OPERATION;
+import static cmov1819.p2photo.helpers.termite.Consts.NO_HAVE;
+import static cmov1819.p2photo.helpers.termite.Consts.NO_OPERATION;
+import static cmov1819.p2photo.helpers.termite.Consts.OKAY;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
@@ -106,11 +110,11 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                                 doRespond(socket, processSessionProposal(request));
                                 break;
                             default:
-                                doRespond(socket,"warning: '" + OPERATION + "' is unsupported...");
+                                doRespond(socket,NO_OPERATION);
                                 break;
                         }
                     } else {
-                        doRespond(socket,"warning: requests need 'operation' field...");
+                        doRespond(socket, NEED_OPERATION);
                     }
                 } catch (IOException ioe) {
                     Log.e(SERVER_TAG, "Error reading socket: " + ioe.getMessage());
@@ -179,44 +183,50 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
     private String processReceivedCatalog(JSONObject message) throws JSONException {
         logInfo(SERVER_TAG, "Processing incoming catalog...");
+
         String username = message.getString(USERNAME);
         PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
-        if (sendersPublicKey != null) {
-            logInfo(SERVER_TAG,"Verifying sender's signature...");
-            if (wfDirectMgr.isValidMessage(SEND_CATALOG, message, sendersPublicKey)) {
-                JSONObject catalogFile = message.getJSONObject(CATALOG_FILE);
-                String catalogId = catalogFile.getString(CATALOG_ID);
-                mergeCatalogFiles(wfDirectMgr.getMainMenuActivity(), catalogId, catalogFile);
-                return "";
-            }
+
+        if (sendersPublicKey == null) {
+            logWarning(SERVER_TAG,"Could not obtain senders public key...");
+            return REFUSED;
         }
-        logWarning(SERVER_TAG,"Could not verify sender's signature...");
-        return "";
+
+        if (wfDirectMgr.isValidMessage(SEND_CATALOG, message, sendersPublicKey)) {
+            JSONObject catalogFile = message.getJSONObject(CATALOG_FILE);
+            String catalogId = catalogFile.getString(CATALOG_ID);
+            mergeCatalogFiles(wfDirectMgr.getMainMenuActivity(), catalogId, catalogFile);
+            return OKAY;
+        }
+
+        return REFUSED;
     }
 
     private String processPhotoRequest(JSONObject message) throws JSONException {
 
         String username = message.getString(USERNAME);
         PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
-        if (sendersPublicKey != null) {
-            logInfo(SERVER_TAG,"Verifying sender's signature...");
-            if (wfDirectMgr.isValidMessage(SEND_CATALOG, message, sendersPublicKey)) {
-                String device = message.getString(FROM);
-                wfDirectMgr.getDeviceUsernameMap().put(device, username);
-                String catalogId = message.getString(CATALOG_ID);
-                MainMenuActivity mMainMenuActivity = wfDirectMgr.getMainMenuActivity();
-                if (assertMembership(mMainMenuActivity, username, catalogId)) {
-                    String clearText = processSendPhotoRequest(mMainMenuActivity, message);
-                    if (!clearText.equals("")) {
-                        SecretKey sessionKey = mKeyManager.getSessionKeys().get(username);
-                        return byteArrayToBase64String(cipherWithAes(sessionKey, clearText.getBytes()));
-                    }
+
+        if (sendersPublicKey == null) {
+            logWarning(SERVER_TAG,"Could not obtain senders public key...");
+            return REFUSED;
+        }
+
+        if (wfDirectMgr.isValidMessage(SEND_CATALOG, message, sendersPublicKey)) {
+            String device = message.getString(FROM);
+            wfDirectMgr.getDeviceUsernameMap().put(device, username);
+            String catalogId = message.getString(CATALOG_ID);
+            MainMenuActivity mMainMenuActivity = wfDirectMgr.getMainMenuActivity();
+            if (assertMembership(mMainMenuActivity, username, catalogId)) {
+                String clearText = processSendPhotoRequest(mMainMenuActivity, message);
+                if (!clearText.equals("")) {
+                    SecretKey sessionKey = mKeyManager.getSessionKeys().get(username);
+                    return byteArrayToBase64String(cipherWithAes(sessionKey, clearText.getBytes()));
                 }
             }
         }
 
-        logWarning(SERVER_TAG,"Could not verify sender's signature...");
-        return "";
+        return REFUSED;
     }
 
     private String processSendPhotoRequest(MainMenuActivity activity, JSONObject message) throws JSONException {
@@ -230,11 +240,11 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             );
             return jsonObject.toString();
         } catch (FileNotFoundException fnfe) {
-            logWarning(SERVER_TAG, "Photo not found locally");
-            return "";
+            logWarning(SERVER_TAG, "Photo not found locally...");
+            return NO_HAVE;
         } catch (SignatureException se) {
             LogManager.logError(SERVER_TAG, "Unable to sign message, abort reply...");
-            return "";
+            return FAIL;
         }
     }
 
