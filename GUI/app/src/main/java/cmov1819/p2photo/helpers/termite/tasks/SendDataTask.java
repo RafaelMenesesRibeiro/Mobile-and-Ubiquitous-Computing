@@ -14,6 +14,7 @@ import static cmov1819.p2photo.helpers.managers.LogManager.SEND_DATA_TASK_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.termite.Consts.waitAndTerminate;
 import static cmov1819.p2photo.helpers.termite.tasks.WifiDirectUtils.doSend;
 import static cmov1819.p2photo.helpers.termite.tasks.WifiDirectUtils.receiveResponse;
 
@@ -41,14 +42,7 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
         } catch (IOException ioe) {
             logError(SEND_DATA_TASK_TAG,"Failed to open client socket!");
         } finally {
-            try {
-                if (clientSocket != null ) {
-                    clientSocket.close();
-                }
-                logInfo(SEND_DATA_TASK_TAG, "Closed client socket. Operation completed...");
-            } catch (IOException e) {
-                logError(SEND_DATA_TASK_TAG,"Error closing client socket!");
-            }
+            waitAndTerminate(5000, clientSocket);
         }
 
         return null;
