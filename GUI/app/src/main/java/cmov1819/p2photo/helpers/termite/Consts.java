@@ -1,10 +1,12 @@
 package cmov1819.p2photo.helpers.termite;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-public class Consts {
+import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
+public class Consts {
     public static final String CONFIRM_RCV = "\n";
     public static final String SEND = "\n";
 
@@ -15,8 +17,9 @@ public class Consts {
     public static final String SEND_SESSION = "sendingSession";
     public static final String SEND_CHALLENGE = "sendingChallenge";
     public static final String REPLY_TO_CHALLENGE = "replyingToChallenge";
-    public static final String READY_TO_COMMIT = "commit";
-    public static final String COMMIT = "confirmCommit";
+    public static final String READY_TO_COMMIT = "readyToCommit";
+    public static final String ABORT_COMMIT = "abortCommit";
+    public static final String CONFIRM_COMMIT = "confirmCommit";
     public static final String SEND_CATALOG = "sendingCatalog";
     public static final String SEND_PHOTO = "sendingPhoto";
     public static final String REQUEST_PHOTO = "requestingPhoto";
@@ -44,11 +47,22 @@ public class Consts {
     public static final String REFUSE = "refused";
     public static final String OKAY = "ok";
 
+    public static final int TERMITE_PORT = 10001;
+
     public static final List<String> ERRORS = Arrays.asList(NEED_OPERATION, NO_OPERATION, NO_HAVE, FAIL, REFUSE, OKAY);
 
     public static boolean isError(String line) {
         return ERRORS.contains(line);
     }
 
-    public static final int TERMITE_PORT = 10001;
+    public static boolean waitAndTerminate(int waitTime, SimWifiP2pSocket socket) {
+        try {
+            Thread.sleep(waitTime);
+            socket.close();
+            return true;
+        } catch (InterruptedException | IOException exc) {
+            // swallow
+        }
+        return false;
+    }
 }
