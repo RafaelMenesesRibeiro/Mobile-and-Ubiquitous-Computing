@@ -39,7 +39,21 @@ import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithRSA;
 import static cmov1819.p2photo.helpers.CryptoUtils.signData;
 import static cmov1819.p2photo.helpers.CryptoUtils.verifySignatureWithSHA1withRSA;
 import static cmov1819.p2photo.helpers.DateUtils.isFreshTimestamp;
-import static cmov1819.p2photo.helpers.termite.Consts.*;
+import static cmov1819.p2photo.helpers.managers.LogManager.logError;
+import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
+import static cmov1819.p2photo.helpers.termite.Consts.FROM;
+import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
+import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
+import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
+import static cmov1819.p2photo.helpers.termite.Consts.RID;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
+import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
+import static cmov1819.p2photo.helpers.termite.Consts.SIGNATURE;
+import static cmov1819.p2photo.helpers.termite.Consts.TIMESTAMP;
+import static cmov1819.p2photo.helpers.termite.Consts.TO;
+import static cmov1819.p2photo.helpers.termite.Consts.USERNAME;
 
 public class WifiDirectManager {
     private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
@@ -92,7 +106,7 @@ public class WifiDirectManager {
                 sendCatalog(device, catalogFile);
             } catch (RuntimeException se) {
                 String msg = "One or more catalog postings have failed due to cipher fail.";
-                LogManager.logError(WIFI_DIRECT_MGR_TAG, msg);
+                logError(WIFI_DIRECT_MGR_TAG, msg);
             }
         }
     }
@@ -104,7 +118,7 @@ public class WifiDirectManager {
             jsonObject.put(CATALOG_FILE, catalogFile);
             doSend(device, jsonObject);
         } catch (JSONException jsone) {
-            LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
+            logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
         }
     }
 
@@ -171,6 +185,10 @@ public class WifiDirectManager {
         }
     }
 
+    /**********************************************************
+     * SESSION KEY DISTRIBUTION METHODS
+     **********************************************************/
+
     public void sendSession(final SimWifiP2pDevice device, PublicKey devicePublicKey, SecretKey newSessionKey) {
         try {
             Log.i(WIFI_DIRECT_MGR_TAG, String.format("Proposing a session key to %s", device.deviceName));
@@ -225,21 +243,21 @@ public class WifiDirectManager {
     }
 
     public void doSend(final SimWifiP2pDevice targetDevice, JSONObject data) {
-        conformToTLSBeforeSend(targetDevice, data, requestId.incrementAndGet());
-        new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, targetDevice, data);
+        try {
+            conformToTLS(data, requestId.incrementAndGet(), mMainMenuActivity.getDeviceName(), targetDevice.deviceName);
+            new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, targetDevice, data);
+        } catch (JSONException | SignatureException exc) {
+            logError(WIFI_DIRECT_MGR_TAG, "Unable to conform to TLS. Aborting send request...");
+        }
     }
 
-    public void conformToTLSBeforeSend(SimWifiP2pDevice device, JSONObject data, int rid) {
-        try {
-            LogManager.logInfo(WIFI_DIRECT_MGR_TAG, String.format("Trying to send data to %s", device.deviceName));
-            data.put(RID, rid);
-            data.put(FROM, mMainMenuActivity.getDeviceName());
-            data.put(TO, device.deviceName);
-            data.put(TIMESTAMP, DateUtils.generateTimestamp());
-            data.put(SIGNATURE, signData(mKeyManager.getmPrivateKey(), data));
-        } catch (JSONException | SignatureException exc) {
-            LogManager.logError(WIFI_DIRECT_MGR_TAG, "Unable to sign message, abort send...");
-        }
+    public void conformToTLS(JSONObject data, int rid, String from, String to)
+            throws JSONException, SignatureException {
+        data.put(RID, rid);
+        data.put(FROM, from);
+        data.put(TO, to);
+        data.put(TIMESTAMP, DateUtils.generateTimestamp());
+        data.put(SIGNATURE, signData(mKeyManager.getmPrivateKey(), data));
     }
 
     /**********************************************************
@@ -273,4 +291,5 @@ public class WifiDirectManager {
     public Map<String, String> getDeviceUsernameMap() {
         return deviceUsernameMap;
     }
+
 }

@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.util.concurrent.Callable;
 
 import javax.crypto.SecretKey;
@@ -24,6 +25,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading.savePhoto;
+import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.termite.Consts.*;
 
@@ -70,10 +72,17 @@ public class ReceivePhotoCallable implements Callable<String> {
             JSONObject jsonObject = wifiDirectManager.newBaselineJson(REQUEST_PHOTO);
             jsonObject.put(CATALOG_ID, catalogId);
             jsonObject.put(PHOTO_UUID, photoUuid);
-            wifiDirectManager.conformToTLSBeforeSend(device, jsonObject, rid);
+            wifiDirectManager.conformToTLS(
+                    jsonObject,
+                    wifiDirectManager.getRequestId(),
+                    wifiDirectManager.getMainMenuActivity().getDeviceName(),
+                    device.deviceName
+            );
             return doSend(jsonObject);
         } catch (JSONException jsone) {
-            Log.e(GET_PHOTO_FROM_PEER_TAG, "catalogFileContents.toString() failed resulting in exception");
+            logError(GET_PHOTO_FROM_PEER_TAG, "catalogFileContents.toString() failed resulting in exception");
+        } catch (SignatureException se) {
+            logError(GET_PHOTO_FROM_PEER_TAG, "Request Photo unable to conform to TLS. Aborting request...");
         }
         return false;
     }

@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 
 import java.net.HttpURLConnection;
-import java.security.KeyException;
 import java.security.PublicKey;
 import java.util.concurrent.ExecutionException;
 
@@ -59,7 +58,7 @@ public class P2PWebServerInterfaceImpl {
         return false;
     }
 
-    public static PublicKey getMemberPublicKey(Activity activity, String username) throws KeyException {
+    public static PublicKey getMemberPublicKey(Activity activity, String username) {
         logInfo(P2P_WEB_SV_INTERFACE_TAG, "Retrieving " + username + "public key from P2P WebServer...");
         String url =
                 activity.getString(p2photo_host) + activity.getString(R.string.get_member_key) + "?username=" + username;
@@ -74,7 +73,6 @@ public class P2PWebServerInterfaceImpl {
                 return ConvertUtils.base64StringToPublicKey(base64PublicKey);
             } else if (code == HttpURLConnection.HTTP_NO_CONTENT) {
                 logWarning(P2P_WEB_SV_INTERFACE_TAG,"Member: " + username + "has no registered public key!");
-                throw new KeyException("Member: " + username + "has registered public key!");
             } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 logWarning(P2P_WEB_SV_INTERFACE_TAG, ((ErrorResponse)result.getPayload()).getReason());
                 toast(activity, "Session timed out, please login again");
