@@ -14,31 +14,40 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.KeyException;
 import java.security.PublicKey;
+import java.security.SignatureException;
 
 import cmov1819.p2photo.MainMenuActivity;
+import cmov1819.p2photo.helpers.DateUtils;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.KeyManager;
-import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
+import static cmov1819.p2photo.helpers.CryptoUtils.signData;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge.mergeCatalogFiles;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
+import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.assertMembership;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
 import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
+import static cmov1819.p2photo.helpers.termite.Consts.FROM;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.RID;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SIGNATURE;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
+import static cmov1819.p2photo.helpers.termite.Consts.TIMESTAMP;
+import static cmov1819.p2photo.helpers.termite.Consts.TO;
 import static cmov1819.p2photo.helpers.termite.Consts.USERNAME;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
@@ -60,6 +69,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             mKeyManager = KeyManager.getInstance();
             // setup a server socket on MainMenuActivity
             mWifiDirectManager.setServerSocket(new SimWifiP2pSocketServer(TERMITE_PORT));
+
             // set server socket to listen to incoming requests
             while (!Thread.currentThread().isInterrupted()) {
                 SimWifiP2pSocket socket = mWifiDirectManager.getServerSocket().accept();
@@ -104,15 +114,16 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         logInfo(SERVER_TAG, "Processing incoming catalog...");
         String username = message.getString(USERNAME);
         PublicKey publicKey = tryGetKeyFromLocalMaps(username);
-        if (publicKey == null) {
-            logWarning(SERVER_TAG,"Could not verify sender's signature...");
-        } else {
+        if (publicKey != null) {
             logInfo(SERVER_TAG,"Verifying sender's signature...");
-            mWifiDirectManager.isValidMessage(SEND_CATALOG, message, publicKey);
-            JSONObject catalogFile = message.getJSONObject(CATALOG_FILE);
-            String catalogId = catalogFile.getString(CATALOG_ID);
-            mergeCatalogFiles(mWifiDirectManager.getMainMenuActivity(), catalogId, catalogFile);
+            if (mWifiDirectManager.isValidMessage(SEND_CATALOG, message, publicKey)) {
+                JSONObject catalogFile = message.getJSONObject(CATALOG_FILE);
+                String catalogId = catalogFile.getString(CATALOG_ID);
+                mergeCatalogFiles(mWifiDirectManager.getMainMenuActivity(), catalogId, catalogFile);
+                return "";
+            }
         }
+        logWarning(SERVER_TAG,"Could not verify sender's signature...");
         return "";
     }
 
@@ -121,30 +132,54 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         logInfo(SERVER_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
     }
 
-    private String replyWithRequestedPhoto(final WifiDirectManager wiFiDirectManager,
-                                           JSONObject jsonObject) throws JSONException, FileNotFoundException {
+    private String replyWithRequestedPhoto(final WifiDirectManager wiFiDirectManager, JSONObject message) throws JSONException {
 
-        MainMenuActivity activity = wiFiDirectManager.getMainMenuActivity();
-        String catalogId = jsonObject.getString(CATALOG_ID);
-        String callerUsername = jsonObject.getString(USERNAME);
-        String photoUuid = jsonObject.getString(PHOTO_UUID);
 
-        // TODO Ask P2PWebsServer if this <catalogId> has a member named <callerUsername>
-        /*
-        if (isMember(catalogId, callerUsername)) {
-            Bitmap photo = ImageLoading.loadPhoto(activity, photoUuid);
-            ...
+        String username = message.getString(USERNAME);
+        PublicKey publicKey = tryGetKeyFromLocalMaps(username);
+        if (publicKey != null) {
+            logInfo(SERVER_TAG,"Verifying sender's signature...");
+            if (mWifiDirectManager.isValidMessage(SEND_CATALOG, message, publicKey)) {
+                String device = message.getString(FROM);
+                mWifiDirectManager.getDeviceUsernameMap().put(device, username);
+                String catalogId = message.getString(CATALOG_ID);
+
+                MainMenuActivity mMainMenuActivity = mWifiDirectManager.getMainMenuActivity();
+
+                if (assertMembership(mMainMenuActivity, username, catalogId)) {
+                    return processSendPhotoRequest(mMainMenuActivity, message);
+                }
+
+                return "";
+            }
         } else {
-            return "error: target username does not belong to invoked album".getBytes();
+            logInfo(SERVER_TAG,"Verifying sender's signature...");
+            mWifiDirectManager.isValidMessage(SEND_CATALOG, message, publicKey);
         }
-        */
-        Bitmap photo = ImageLoading.loadPhoto(activity, photoUuid);
-        jsonObject = new JSONObject();
-        jsonObject.put(OPERATION, SEND_PHOTO);
-        jsonObject.put(USERNAME, SessionManager.getUsername(wiFiDirectManager.getMainMenuActivity()));
-        jsonObject.put(PHOTO_UUID, photoUuid);
-        jsonObject.put(PHOTO_FILE, byteArrayToBase64String(bitmapToByteArray(photo)));
-        return jsonObject.toString();
+
+        logWarning(SERVER_TAG,"Could not verify sender's signature...");
+        return "";
+    }
+
+    private String processSendPhotoRequest(MainMenuActivity activity, JSONObject message) throws JSONException {
+        try {
+            Bitmap photo = ImageLoading.loadPhoto(activity, message.getString(PHOTO_UUID));
+            JSONObject data = mWifiDirectManager.newBaselineJson(SEND_PHOTO);
+            data.put(PHOTO_UUID, message.getString(PHOTO_UUID));
+            data.put(PHOTO_FILE, byteArrayToBase64String(bitmapToByteArray(photo)));
+            data.put(RID, message.getString(RID));
+            data.put(FROM, activity.getDeviceName());
+            data.put(TO, message.getString(FROM));
+            data.put(TIMESTAMP, DateUtils.generateTimestamp());
+            data.put(SIGNATURE, signData(mKeyManager.getmPrivateKey(), data));
+            return data.toString();
+        } catch (FileNotFoundException fnfe) {
+            logWarning(SERVER_TAG, "Photo not found locally");
+            return "";
+        } catch (SignatureException se) {
+            LogManager.logError(SERVER_TAG, "Unable to sign message, abort reply...");
+            return "";
+        }
     }
 
     /** Helpers */
