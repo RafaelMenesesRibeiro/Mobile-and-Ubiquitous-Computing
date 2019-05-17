@@ -222,7 +222,7 @@ public class CryptoUtils {
     public static byte[] cipherWithRSA(String data, String base64PublicKey) throws RSAException {
         return cipherWithRSA(data.getBytes(), base64StringToPublicKey(base64PublicKey));
     }
-    
+
     public static byte[] cipherWithRSA(byte[] data, String base64PublicKey) throws RSAException {
         return cipherWithRSA(data, base64StringToPublicKey(base64PublicKey));
     }
