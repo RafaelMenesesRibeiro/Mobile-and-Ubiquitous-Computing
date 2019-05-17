@@ -36,9 +36,9 @@ import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.REFUSED;
-import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 import static cmov1819.p2photo.helpers.termite.Consts.isError;
 import static cmov1819.p2photo.helpers.termite.Consts.stopAndWait;
@@ -47,17 +47,15 @@ public class ProposeSessionCallable implements Callable<String> {
     private final WifiDirectManager wfDirectMgr;
     private final KeyManager mKeyManager;
     private final SimWifiP2pDevice targetDevice;
-    private final String myDeviceName;
     private final int rid;
     private PublicKey targetPublicKey;
     private SecretKey sessionKey;
 
 
-    public ProposeSessionCallable(SimWifiP2pDevice targetDevice, String myUsername) {
+    public ProposeSessionCallable(SimWifiP2pDevice targetDevice) {
         this.wfDirectMgr = WifiDirectManager.getInstance();
         this.mKeyManager = KeyManager.getInstance();
         this.targetDevice = targetDevice;
-        this.myDeviceName = myUsername;
         this.rid = wfDirectMgr.getRequestId();
     }
 
@@ -86,8 +84,8 @@ public class ProposeSessionCallable implements Callable<String> {
 
     private String propose() {
         try {
-            logInfo(RCV_PHOTO_TAG, String.format("Request photo: %s to %s", myDeviceName, targetDevice.deviceName));
-            JSONObject jsonObject = wfDirectMgr.newBaselineJson(REQUEST_PHOTO);
+            logInfo(RCV_PHOTO_TAG, "Proposing session key to user: " + targetDevice.deviceName);
+            JSONObject jsonObject = wfDirectMgr.newBaselineJson(SEND_SESSION);
             // TODO
             wfDirectMgr.conformToTLS(jsonObject, wfDirectMgr.getRequestId(), targetDevice.deviceName);
             // return doSend(jsonObject);
@@ -137,7 +135,7 @@ public class ProposeSessionCallable implements Callable<String> {
     }
 
     public boolean isValidResponse(JSONObject response) {
-        if (!wfDirectMgr.isValidMessage(myDeviceName, rid, response)) {
+        if (!wfDirectMgr.isValidMessage(wfDirectMgr.getDeviceName(), rid, response)) {
             return false;
         }
         if (!wfDirectMgr.isValidMessage(SEND_PHOTO, response, targetPublicKey)) {
