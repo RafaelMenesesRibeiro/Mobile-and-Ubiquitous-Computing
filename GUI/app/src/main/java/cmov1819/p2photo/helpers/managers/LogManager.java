@@ -35,6 +35,7 @@ public class LogManager {
     public static final String CRYPTO_UTILS_TAG = "Crypto Utils";
 
     public static final String WEB_SERVER_MEDIATOR_TAG = "Quert Manager";
+    public static final String RCV_PHOTO_TAG = "GetPhotoFromPeer";
 
     private static String logText = "";
 
