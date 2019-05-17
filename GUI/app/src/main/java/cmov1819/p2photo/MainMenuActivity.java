@@ -208,7 +208,7 @@ public class MainMenuActivity
                 mWifiManager.pushCatalogFiles(device, myCatalogFiles);
             }
 
-            mWifiManager.negotiateSessions(oldGroup, mGroupPeers);
+            // mWifiManager.negotiateSessions(oldGroup, mGroupPeers);
 
         } else {
             LogManager.logInfo(LogManager.MAIN_MENU_TAG,"Group has no devices...");
