@@ -7,13 +7,31 @@ import android.support.annotation.NonNull;
 
 import java.util.Set;
 
+import static cmov1819.p2photo.LimitStorageFragment.DEFAULT_CACHE_VALUE;
+
 public class SessionManager {
     private static final String SESSION_ID_SHARED_PREF = "p2photo.SessionIDPreference";
     private static final String SESSION_ID_KEY = "sessionID";
     private static final String USER_NAME_KEY = "username";
+    private static final String CACHE_SIZE_TAG = "cacheSize";
 
     private static String sessionID;
     private static String username = null;
+
+    /**********************************************************
+     * PREFERENCES METHODS
+     ***********************************************************/
+
+    public static void setMaxCacheImageSize(Activity activity, int size) {
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(CACHE_SIZE_TAG, size);
+    }
+
+    public static int getMaxCacheImageSize(Activity activity) {
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
+        return sharedPreferences.getInt(CACHE_SIZE_TAG, DEFAULT_CACHE_VALUE);
+    }
 
     /**********************************************************
      * COOKIE METHODS
