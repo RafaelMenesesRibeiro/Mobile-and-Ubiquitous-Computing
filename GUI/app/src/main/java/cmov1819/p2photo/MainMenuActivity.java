@@ -180,6 +180,7 @@ public class MainMenuActivity
 
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
+        // TODO Negotiate session keys with all peers of this group;
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "New membership information available...");
         LogManager.toast(this, "New membership information available...");
         mGroupPeers.clear();
