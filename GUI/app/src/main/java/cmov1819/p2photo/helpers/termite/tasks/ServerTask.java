@@ -1,7 +1,6 @@
 package cmov1819.p2photo.helpers.termite.tasks;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -25,7 +24,6 @@ import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
-import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.CryptoUtils.verifySignatureWithSHA1withRSA;
@@ -81,9 +79,6 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                             case REQUEST_PHOTO:
                                 doRespond(socket, replyWithRequestedPhoto(mWifiDirectManager, request));
                                 break;
-                            case SEND_PHOTO:
-                                doRespond(socket,processIncomingPhoto(mWifiDirectManager, request));
-                                break;
                             default:
                                 doRespond(socket,"warning: '" + OPERATION + "' is unsupported...");
                                 break;
@@ -118,20 +113,6 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             mergeCatalogFiles(mWifiDirectManager.getMainMenuActivity(), catalogId, catalogFile);
         }
 
-        return "";
-    }
-
-    private String processIncomingPhoto(WifiDirectManager wiFiDirectManager, JSONObject jsonObject) throws JSONException {
-        logInfo(SERVER_TAG, "Processing incoming photo");
-        try {
-            String photoUuid = jsonObject.getString(PHOTO_UUID);
-            String base64photo = jsonObject.getString(PHOTO_FILE);
-            byte[] encodedPhoto = base64StringToByteArray(base64photo);
-            Bitmap decodedPhoto = BitmapFactory.decodeByteArray(encodedPhoto, 0, encodedPhoto.length);
-            ImageLoading.savePhoto(wiFiDirectManager.getMainMenuActivity(), photoUuid, decodedPhoto);
-        } catch (IOException ioe) {
-            LogManager.logError(SERVER_TAG, ioe.getMessage());
-        }
         return "";
     }
 
@@ -176,7 +157,9 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             } catch (KeyException ke) {
                 LogManager.logWarning(SERVER_TAG, ke.getMessage());
             }
-            mKeyManager.getPublicKeys().put(username, key);
+            if (key != null) {
+                mKeyManager.getPublicKeys().put(username, key);
+            }
         }
         return key;
     }
