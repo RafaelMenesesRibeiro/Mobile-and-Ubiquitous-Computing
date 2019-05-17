@@ -40,8 +40,8 @@ import static cmov1819.p2photo.helpers.DateUtils.isFreshTimestamp;
 import static cmov1819.p2photo.helpers.managers.LogManager.WIFI_DIRECT_MGR_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
-import static cmov1819.p2photo.helpers.managers.LogManager.toast;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.managers.LogManager.toast;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
 import static cmov1819.p2photo.helpers.termite.Consts.GO_LEAVE_GROUP;
@@ -52,7 +52,6 @@ import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.RID;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
-import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
 import static cmov1819.p2photo.helpers.termite.Consts.SIGNATURE;
 import static cmov1819.p2photo.helpers.termite.Consts.TIMESTAMP;
 import static cmov1819.p2photo.helpers.termite.Consts.TO;
@@ -148,7 +147,7 @@ public class WifiDirectManager {
 
                     for (String missingPhoto : missingPhotos) {
                         Callable<String> job = new ReceivePhotoCallable(device, missingPhoto, catalogId);
-                        completionService.submit(new CallableManager(job,20, TimeUnit.SECONDS));
+                        completionService.submit(new CallableManager(job,30, TimeUnit.SECONDS));
                     }
 
                     for (int i = 0; i < missingPhotosCount; i++) {
@@ -217,16 +216,8 @@ public class WifiDirectManager {
                 ExecutorService executorService = Executors.newFixedThreadPool(targetDevices.size());
                 ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>(executorService);
 
-                /* TODO im here keep going - Im now deleting maps
-                try {
-                    Log.i(WIFI_DIRECT_MGR_TAG, String.format("Proposing a session key to %s", device.deviceName));
-                    JSONObject jsonObject = newBaselineJson(SEND_SESSION);
-                    jsonObject.put(SESSION_KEY, cipherWithRSA(secretKeyToBase64String(newSessionKey), devicePublicKey));
-                    doSend(device, jsonObject);
-                } catch (JSONException | RSAException exc) {
-                    Log.e(WIFI_DIRECT_MGR_TAG, "Unable to build session key proposal message...");
-                }
-                */
+                // TODO im here keep going - Im now deleting maps
+
                 return null;
             }
         }.execute();
