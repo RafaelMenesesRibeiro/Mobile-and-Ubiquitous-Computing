@@ -23,7 +23,6 @@ public class Consts {
     public static final String CATALOG_ID = "catalogId";
     public static final String CATALOG_TITLE = "catalogTitle";
     public static final String OPERATION = "operation";
-    public static final String USERNAME = "username";
     public static final String FROM = "from";
     public static final String TO = "to";
     public static final String SIGNATURE = "signature";
@@ -34,7 +33,7 @@ public class Consts {
     public static final String MEMBERS_PHOTOS = "membersPhotos";
     public static final String SESSION_KEY = "sessionKey";
     public static final String CHALLENGE = "challenge";
-    public static final String DICE_ROLL = "diceRoll";
+    public static final String SOLUTION = "solution";
 
     public static final String NEED_OPERATION = "malformed";
     public static final String NO_OPERATION = "unsupported";
