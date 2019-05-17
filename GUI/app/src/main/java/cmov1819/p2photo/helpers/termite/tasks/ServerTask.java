@@ -18,7 +18,6 @@ import java.security.PublicKey;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.KeyManager;
-import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
@@ -26,10 +25,10 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
-import static cmov1819.p2photo.helpers.CryptoUtils.verifySignatureWithSHA1withRSA;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge.mergeCatalogFiles;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
+import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
 import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
@@ -104,15 +103,16 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     private String processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject message) throws JSONException {
         logInfo(SERVER_TAG, "Processing incoming catalog...");
         String username = message.getString(USERNAME);
-        PublicKey key = tryGetKeyFromLocalMaps(username);
-
-        if (key != null && verifySignatureWithSHA1withRSA(key, message)) {
-            logInfo(SERVER_TAG, "Verifying sender's signature...");
+        PublicKey publicKey = tryGetKeyFromLocalMaps(username);
+        if (publicKey == null) {
+            logWarning(SERVER_TAG,"Could not verify sender's signature...");
+        } else {
+            logInfo(SERVER_TAG,"Verifying sender's signature...");
+            mWifiDirectManager.isValidMessage(SEND_CATALOG, message, publicKey);
             JSONObject catalogFile = message.getJSONObject(CATALOG_FILE);
             String catalogId = catalogFile.getString(CATALOG_ID);
             mergeCatalogFiles(mWifiDirectManager.getMainMenuActivity(), catalogId, catalogFile);
         }
-
         return "";
     }
 
@@ -155,7 +155,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             try {
                 key = getMemberPublicKey(mWifiDirectManager.getMainMenuActivity(), username);
             } catch (KeyException ke) {
-                LogManager.logWarning(SERVER_TAG, ke.getMessage());
+                logWarning(SERVER_TAG, ke.getMessage());
             }
             if (key != null) {
                 mKeyManager.getPublicKeys().put(username, key);
