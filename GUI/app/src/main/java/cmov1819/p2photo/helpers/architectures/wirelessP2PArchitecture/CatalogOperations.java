@@ -14,6 +14,7 @@ import java.util.Iterator;
 
 import cmov1819.p2photo.helpers.ConvertUtils;
 import cmov1819.p2photo.helpers.CryptoUtils;
+import cmov1819.p2photo.helpers.managers.LogManager;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 import static cmov1819.p2photo.helpers.DateUtils.generateTimestamp;
@@ -80,6 +81,7 @@ public class CatalogOperations {
         String timestamp = generateTimestamp();
         jsonObject.put(photoName, timestamp);
         writePhotoStack(activity, jsonObject);
+        checkIfStorageOverflows(activity);
     }
 
     private static void deletePhotosFromStack(final Activity activity, int numberToDelete) throws IOException, JSONException {
@@ -87,14 +89,18 @@ public class CatalogOperations {
         for (int i = 0; i < numberToDelete; i++) {
             String key = findOldest(jsonObject);
             jsonObject.remove(key);
+            ImageLoading.deletePhoto(activity, key);
         }
     }
 
     private static String findOldest(JSONObject jsonObject) throws JSONException {
         String oldest = "";
         for (Iterator key = jsonObject.keys(); key.hasNext(); ) {
-            String timestamp = jsonObject.getString((String) key.next());
-            isOneTimestampBeforeAnother(oldest, timestamp);
+            String keyS = (String) key.next();
+            String timestamp = jsonObject.getString(keyS);
+            if (isOneTimestampBeforeAnother(timestamp, oldest)) {
+                oldest = keyS;
+            }
         }
         return oldest;
     }
