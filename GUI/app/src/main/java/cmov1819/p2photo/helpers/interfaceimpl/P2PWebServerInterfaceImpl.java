@@ -5,7 +5,11 @@ import android.content.Intent;
 
 import java.net.HttpURLConnection;
 import java.security.KeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.LoginActivity;
@@ -13,14 +17,19 @@ import cmov1819.p2photo.R;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.exceptions.NoResultsException;
 import cmov1819.p2photo.exceptions.RSAException;
 import cmov1819.p2photo.helpers.ConvertUtils;
+import cmov1819.p2photo.helpers.CryptoUtils;
+import cmov1819.p2photo.helpers.managers.LogManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.LoginActivity.WIFI_DIRECT_SV_RUNNING;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBER_PUBLIC_KEY;
+import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.managers.LogManager.toast;
@@ -55,5 +64,49 @@ public class P2PWebServerInterfaceImpl {
             throw new FailedOperationException(exc.getMessage());
         }
         return null;
+    }
+
+    public static PublicKey requestPublicKeyFromServer(final Activity activity, String username) throws NoResultsException, FailedOperationException {
+        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_member_key)
+                + "&calleeUsername=" + SessionManager.getUsername(activity)
+                + "&toGetUsername=" + username;
+
+        try {
+            RequestData requestData = new RequestData(activity, RequestData.RequestType.GET_MEMBER_KEY, url);
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
+            int code = result.getServerCode();
+            if (code == HttpURLConnection.HTTP_OK) {
+                SuccessResponse payload = (SuccessResponse) result.getPayload();
+                String publicKey = (String) payload.getResult();
+                String msg = "Public Key received: " + publicKey;
+                LogManager.logInfo(LogManager.GET_MEMBER_KEY, msg);
+                byte[] bytes = base64StringToByteArray(publicKey);
+
+                X509EncodedKeySpec publicKS = new X509EncodedKeySpec(bytes);
+                KeyFactory keyFactory = KeyFactory.getInstance(CryptoUtils.ASYMMETRIC_ALGORITHM);
+                return keyFactory.generatePublic(publicKS);
+            }
+            else {
+                String msg = activity.getString(R.string.find_user_unsuccessful) + "Server response code: " + code;
+                LogManager.logError(LogManager.SEARCH_USER_TAG, msg);
+                throw new FailedOperationException("URL: " + url);
+            }
+        }
+        catch (ClassCastException ccex) {
+            String msg = "Caught Class Cast Exception.";
+            LogManager.logError(LogManager.GET_MEMBER_KEY, msg);
+            throw new NoResultsException(ccex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            String msg = "Request Public Key of user " + username + "was unsuccessful";
+            LogManager.logError(LogManager.GET_MEMBER_KEY, msg);
+            throw new FailedOperationException(ex.getMessage());
+        }
+        catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+            String msg = "Could not load the Public Key from server";
+            LogManager.logError(LogManager.GET_MEMBER_KEY, msg);
+            throw new NoResultsException(ex.getMessage());
+        }
     }
 }

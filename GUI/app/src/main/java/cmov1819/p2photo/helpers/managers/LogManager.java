@@ -29,6 +29,7 @@ public class LogManager {
     public static final String GET_MEMBERSHIPS_TAG = "Get Memberships";
     public static final String GET_GOOGLE_IDENTIFIERS_TAG = "Get Google Identifiers";
     public static final String GET_MEMBERSHIP_CATALOG_IDS_TAG = "Get Catalog IDs";
+    public static final String GET_MEMBER_KEY = "Get Member Key";
     public static final String GET_SERVER_LOG = "Get Server Log";
     public static final String VIEW_APP_LOG = "View App Log";
     public static final String CRYPTO_UTILS_TAG = "Crypto Utils";
