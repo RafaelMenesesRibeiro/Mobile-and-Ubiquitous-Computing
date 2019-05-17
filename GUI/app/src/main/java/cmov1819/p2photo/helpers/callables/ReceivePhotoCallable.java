@@ -2,12 +2,12 @@ package cmov1819.p2photo.helpers.callables;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,7 +17,6 @@ import java.util.concurrent.Callable;
 
 import javax.crypto.SecretKey;
 
-import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
@@ -25,13 +24,20 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading.savePhoto;
+import static cmov1819.p2photo.helpers.managers.LogManager.RCV_PHOTO_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
-import static cmov1819.p2photo.helpers.termite.Consts.*;
+import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
+import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
+import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
+import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
+import static cmov1819.p2photo.helpers.termite.Consts.isError;
 
 public class ReceivePhotoCallable implements Callable<String> {
-    private static final String GET_PHOTO_FROM_PEER_TAG = "GetPhotoFromPeer";
-
     private WifiDirectManager wifiDirectManager;
     private SimWifiP2pDevice device;
     private String username;
@@ -68,7 +74,7 @@ public class ReceivePhotoCallable implements Callable<String> {
 
     private boolean requestPhoto() {
         try {
-            Log.i(GET_PHOTO_FROM_PEER_TAG, String.format("Request photo: %s to %s", photoUuid, device.deviceName));
+            logInfo(RCV_PHOTO_TAG, String.format("Request photo: %s to %s", photoUuid, device.deviceName));
             JSONObject jsonObject = wifiDirectManager.newBaselineJson(REQUEST_PHOTO);
             jsonObject.put(CATALOG_ID, catalogId);
             jsonObject.put(PHOTO_UUID, photoUuid);
@@ -80,9 +86,9 @@ public class ReceivePhotoCallable implements Callable<String> {
             );
             return doSend(jsonObject);
         } catch (JSONException jsone) {
-            logError(GET_PHOTO_FROM_PEER_TAG, "catalogFileContents.toString() failed resulting in exception");
+            logError(RCV_PHOTO_TAG, "catalogFileContents.toString() failed resulting in exception");
         } catch (SignatureException se) {
-            logError(GET_PHOTO_FROM_PEER_TAG, "Request Photo unable to conform to TLS. Aborting request...");
+            logError(RCV_PHOTO_TAG, "Request Photo unable to conform to TLS. Aborting request...");
         }
         return false;
     }
@@ -91,29 +97,34 @@ public class ReceivePhotoCallable implements Callable<String> {
         SimWifiP2pSocket clientSocket = null;
         try {
             // Construct a new clientSocket and send request
-            LogManager.logInfo(GET_PHOTO_FROM_PEER_TAG, "Creating client socket to " + device.deviceName + "...");
+            logInfo(RCV_PHOTO_TAG, "Creating client socket to " + device.deviceName + "...");
             clientSocket = new SimWifiP2pSocket(device.getVirtIp(), TERMITE_PORT);
             clientSocket.getOutputStream().write((jsonData.toString() + SEND).getBytes());
             InputStream inputStream = clientSocket.getInputStream();
             // Read response
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             String encodedResponse = bufferedReader.readLine();
+
+            if (isError(encodedResponse)) {
+                logWarning(RCV_PHOTO_TAG, encodedResponse);
+                return false;
+            }
+
             byte[] decodedResponse = decipherWithAes(sessionKey, base64StringToByteArray(encodedResponse));
             JSONObject response = new JSONObject(new String(decodedResponse));
             // Process response
             if (isValidResponse(response)) {
                 return trySaveIncomingPhoto(response);
             }
-            LogManager.logInfo(GET_PHOTO_FROM_PEER_TAG, "Operation completed...");
         } catch (IOException ioe) {
-            Log.e(GET_PHOTO_FROM_PEER_TAG, "Error: " + ioe.getMessage());
-        } catch (Exception exc) {
-            LogManager.logError(GET_PHOTO_FROM_PEER_TAG, exc.getMessage());
+            logError(RCV_PHOTO_TAG, "IO Exception occurred while managing client sockets...");
+        } catch (JSONException jsone) {
+            logError(RCV_PHOTO_TAG, jsone.getMessage());
         } finally {
             try {
                 if (clientSocket != null) clientSocket.close();
             } catch (IOException ioe) {
-                LogManager.logError(GET_PHOTO_FROM_PEER_TAG, ioe.getMessage());
+                logError(RCV_PHOTO_TAG, ioe.getMessage());
             }
         }
         return false;
@@ -130,7 +141,7 @@ public class ReceivePhotoCallable implements Callable<String> {
     }
 
     private boolean trySaveIncomingPhoto(JSONObject jsonObject) throws JSONException {
-        logInfo(GET_PHOTO_FROM_PEER_TAG, "Processing incoming photo...");
+        logInfo(RCV_PHOTO_TAG, "Processing incoming photo...");
         try {
             String photoUuid = jsonObject.getString(PHOTO_UUID);
             String base64photo = jsonObject.getString(PHOTO_FILE);
@@ -139,8 +150,12 @@ public class ReceivePhotoCallable implements Callable<String> {
             savePhoto(wifiDirectManager.getMainMenuActivity(), photoUuid, decodedPhoto);
             return true;
         } catch (IOException ioe) {
-            LogManager.logError(GET_PHOTO_FROM_PEER_TAG, ioe.getMessage());
-            return false;
+            if (ioe instanceof FileNotFoundException) {
+                logWarning(RCV_PHOTO_TAG, "Unable to save photo to this device's disk...");
+            } else {
+                logError(RCV_PHOTO_TAG, "Output stream errors occurred while saving photos to disk...");
+            }
         }
+        return false;
     }
 }
