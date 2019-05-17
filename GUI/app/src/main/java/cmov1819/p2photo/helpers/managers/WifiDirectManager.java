@@ -26,7 +26,7 @@ import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.exceptions.RSAException;
 import cmov1819.p2photo.helpers.DateUtils;
 import cmov1819.p2photo.helpers.callables.CallableManager;
-import cmov1819.p2photo.helpers.callables.GetPhotoFromPeerCallable;
+import cmov1819.p2photo.helpers.callables.ReceivePhotoCallable;
 import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
 import cmov1819.p2photo.helpers.termite.tasks.ServerTask;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
@@ -132,7 +132,7 @@ public class WifiDirectManager {
 
                     for (String missingPhoto : missingPhotos) {
                         Callable<String> job =
-                                new GetPhotoFromPeerCallable(
+                                new ReceivePhotoCallable(
                                         device, user, missingPhoto, catalogId, sessionKey, ownerPublicKey
                                 );
                         completionService.submit(new CallableManager(job,20, TimeUnit.SECONDS));

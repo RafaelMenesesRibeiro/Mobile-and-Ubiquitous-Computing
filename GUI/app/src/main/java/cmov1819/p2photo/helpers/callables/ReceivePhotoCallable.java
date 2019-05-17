@@ -27,7 +27,7 @@ import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.Ima
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.termite.Consts.*;
 
-public class GetPhotoFromPeerCallable implements Callable<String> {
+public class ReceivePhotoCallable implements Callable<String> {
     private static final String GET_PHOTO_FROM_PEER_TAG = "GetPhotoFromPeer";
 
     private WifiDirectManager wifiDirectManager;
@@ -39,12 +39,12 @@ public class GetPhotoFromPeerCallable implements Callable<String> {
     private PublicKey publicKey;
     private int rid;
 
-    public GetPhotoFromPeerCallable(SimWifiP2pDevice device,
-                                    String username,
-                                    String photoUuid,
-                                    String catalogId,
-                                    SecretKey sessionKey,
-                                    PublicKey publicKey) {
+    public ReceivePhotoCallable(SimWifiP2pDevice device,
+                                String username,
+                                String photoUuid,
+                                String catalogId,
+                                SecretKey sessionKey,
+                                PublicKey publicKey) {
 
         this.wifiDirectManager = WifiDirectManager.getInstance();
         this.device = device;
