@@ -97,7 +97,6 @@ public class WifiDirectManager {
 
     public void pushCatalogFiles(SimWifiP2pDevice device, List<JSONObject> myCatalogFiles) {
         logInfo(WIFI_DIRECT_MGR_TAG,"Broadcasting catalog to " + device.deviceName);
-        toast(this.mMainMenuActivity,"Broadcasting catalog to " + device.deviceName);
         for (JSONObject catalogFile : myCatalogFiles) {
             try {
                 sendCatalog(device, catalogFile);
@@ -111,7 +110,6 @@ public class WifiDirectManager {
 
     public void sendCatalog(final SimWifiP2pDevice device, final JSONObject catalogFile) throws RuntimeException {
         logInfo(WIFI_DIRECT_MGR_TAG,"Sending a catalog to..."  + device.deviceName);
-        toast(this.mMainMenuActivity,"Sending a catalog to..." + device.deviceName);
         try {
             JSONObject jsonObject = newBaselineJson(SEND_CATALOG);
             jsonObject.put(CATALOG_FILE, catalogFile);

@@ -41,20 +41,18 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
             int state = intent.getIntExtra(SimWifiP2pBroadcast.EXTRA_WIFI_STATE, -1);
             if (state == SimWifiP2pBroadcast.WIFI_P2P_STATE_ENABLED) {
                 LogManager.logInfo(BROADCAST_RECEIVER_TAG, "state = p2p state enabled");
-                LogManager.toast(activity, "WiFi Direct enabled");
             } else {
                 LogManager.logInfo(BROADCAST_RECEIVER_TAG, "state = p2p state disabled");
-                LogManager.toast(activity, "WiFi Direct disabled");
             }
         } else if (WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
             activity.requestPeers();
-            LogManager.toast(activity, "Peer list changed");
+            LogManager.logInfo(BROADCAST_RECEIVER_TAG, "Peer list changed");
         } else if (WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION.equals(action)) {
             activity.requestGroupInfo();
-            LogManager.toast(activity, "Network membership changed");
+            LogManager.logInfo(BROADCAST_RECEIVER_TAG, "Network membership changed");
         } else if (WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION.equals(action)) {
             activity.requestGroupInfo();
-            LogManager.toast(activity, "Group ownership changed");
+            LogManager.logInfo(BROADCAST_RECEIVER_TAG, "Group ownership changed");
         }
     }
 }

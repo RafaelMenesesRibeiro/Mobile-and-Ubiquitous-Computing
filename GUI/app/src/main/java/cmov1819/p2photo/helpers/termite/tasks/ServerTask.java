@@ -12,6 +12,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
@@ -40,6 +42,7 @@ import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.a
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.managers.LogManager.toast;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
 import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
@@ -239,6 +242,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     /** Helpers */
 
     private PublicKey tryGetKeyFromLocalMaps(String targetDeviceName) {
+
         PublicKey key = mKeyManager.getPublicKeys().get(targetDeviceName);
         if (key == null) {
             key = getMemberPublicKey(wfDirectMgr.getMainMenuActivity(), targetDeviceName);
