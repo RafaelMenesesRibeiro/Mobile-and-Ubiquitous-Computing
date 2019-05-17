@@ -37,22 +37,27 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
         wiFiDirectManager = WifiDirectManager.getInstance();
         SimWifiP2pDevice targetDevice = (SimWifiP2pDevice) params[1];
         JSONObject jsonData = (JSONObject) params[2];
-
+        
+        SimWifiP2pSocket clientSocket = null;
         try {
             logInfo(SEND_DATA_TASK_TAG, "Creating client socket...");
-            SimWifiP2pSocket clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
+            clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
             doSend(SEND_DATA_TASK_TAG, clientSocket, jsonData);
             receiveResponse(SEND_DATA_TASK_TAG, clientSocket);
-            try {
-                clientSocket.close();
-                logInfo(SEND_DATA_TASK_TAG, "Closed client socket. Operation completed...");
-            } catch (IOException e) {
-                logError(SEND_DATA_TASK_TAG,"Error closing client socket!");
-            }
+
         } catch (UnknownHostException uhe) {
             logWarning(SEND_DATA_TASK_TAG,"Specified target device is unreachable, host does not exist!");
         } catch (IOException ioe) {
             logError(SEND_DATA_TASK_TAG,"Failed to open client socket!");
+        } finally {
+            try {
+                if (clientSocket != null ) {
+                    clientSocket.close();
+                }
+                logInfo(SEND_DATA_TASK_TAG, "Closed client socket. Operation completed...");
+            } catch (IOException e) {
+                logError(SEND_DATA_TASK_TAG,"Error closing client socket!");
+            }
         }
 
         return null;
