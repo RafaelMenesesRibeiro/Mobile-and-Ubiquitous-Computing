@@ -15,6 +15,7 @@ import java.util.concurrent.Callable;
 import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.exceptions.RSAException;
+import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import cmov1819.p2photo.helpers.termite.tasks.WifiDirectUtils;
@@ -38,9 +39,11 @@ import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.REFUSED;
+import static cmov1819.p2photo.helpers.termite.Consts.REPLY_TO_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
 import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
+import static cmov1819.p2photo.helpers.termite.Consts.SOLUTION;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 import static cmov1819.p2photo.helpers.termite.Consts.isError;
 
@@ -125,7 +128,7 @@ public class ProposeSessionCallable implements Callable<String> {
             if (jsonResponse == null) {
                 return FAIL;
             } else {
-                return answerChallenge(jsonResponse);
+                return answerChallenge(clientSocket, jsonResponse);
             }
         } catch (IOException ioe) {
             logError(PROPOSE_SESSION_MGR_TAG, "IO Exception occurred while managing client sockets...");
@@ -139,16 +142,31 @@ public class ProposeSessionCallable implements Callable<String> {
         return FAIL;
     }
 
-    private String answerChallenge(JSONObject jsonResponse) {
+    private String answerChallenge(SimWifiP2pSocket clientSocket, JSONObject jsonResponse) {
         try {
             String base64Challenge = jsonResponse.getString(CHALLENGE);
             byte[] cipheredChallenge = base64StringToByteArray(base64Challenge);
             byte[] decipheredChallenge = decipherWithRSA(cipheredChallenge, mKeyManager.getmPrivateKey());
-            String challengeResponse = new String(decipheredChallenge);
+            String challengeSolution = new String(decipheredChallenge);
+
+            String myOwnChallenge = CryptoUtils.newUUIDString();
+            String myBase64Challenge = byteArrayToBase64String(cipherWithRSA(myOwnChallenge, targetDevicePublicKey));
+            mKeyManager.getExpectedChallenges().put(jsonResponse.getString("FROM"), myBase64Challenge);
+            JSONObject jsonSolvedChallenge = wfDirectMgr.newBaselineJson(REPLY_TO_CHALLENGE);
+            jsonSolvedChallenge.put(SOLUTION, challengeSolution);
+            jsonSolvedChallenge.put(CHALLENGE, myBase64Challenge);
+            wfDirectMgr.conformToTLS(jsonSolvedChallenge, rid, jsonResponse.getString("FROM"));
+            WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, jsonSolvedChallenge);
+            String readLine = WifiDirectUtils.receiveResponse(PROPOSE_SESSION_MGR_TAG, clientSocket);
+
+            // TODO CONTINUE FROM HERE VERIFY COMMIT
+
         } catch (JSONException e) {
             logError(PROPOSE_SESSION_MGR_TAG, "Couldn't retrieve base64 challenge from challenge response...");
         } catch (RSAException e) {
             logError(PROPOSE_SESSION_MGR_TAG, "Unable to decipher challenge with this private key...");
+        } catch (SignatureException e) {
+            logError(PROPOSE_SESSION_MGR_TAG, "Unable to sign answer to challenge challenge with this private key...");
         }
         return FAIL;
     }
