@@ -140,7 +140,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
         String username = message.getString(USERNAME);
         PrivateKey mPrivateKey = mKeyManager.getmPrivateKey();
-        PublicKey sendersPublicKey = getMemberPublicKey(wfDirectMgr.getMainMenuActivity(), username);
+        PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
 
         if (sendersPublicKey == null) {
             return REFUSED;
