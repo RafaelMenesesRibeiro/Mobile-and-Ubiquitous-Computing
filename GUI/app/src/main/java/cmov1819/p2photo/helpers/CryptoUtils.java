@@ -223,10 +223,24 @@ public class CryptoUtils {
         return cipherWithRSA(data.getBytes(), base64PublicKey);
     }
 
+    public static byte[] cipherWithRSA(String data, PublicKey key) throws RSAException {
+        return cipherWithRSA(data.getBytes(), key);
+    }
+
     public static byte[] cipherWithRSA(byte[] data, String base64PublicKey) throws RSAException {
         try {
             Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
             cipher.init(Cipher.ENCRYPT_MODE, base64StringToPublicKey(base64PublicKey));
+            return cipher.doFinal(data);
+        } catch (Exception exc) {
+            throw new RSAException(exc.getMessage());
+        }
+    }
+
+    public static byte[] cipherWithRSA(byte[] data, PublicKey key) throws RSAException {
+        try {
+            Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
+            cipher.init(Cipher.ENCRYPT_MODE, key);
             return cipher.doFinal(data);
         } catch (Exception exc) {
             throw new RSAException(exc.getMessage());

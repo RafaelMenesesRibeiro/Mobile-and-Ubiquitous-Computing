@@ -27,6 +27,9 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.List;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import cmov1819.p2photo.exceptions.RSAException;
 
 import static cmov1819.p2photo.helpers.CryptoUtils.ASYMMETRIC_ALGORITHM;
@@ -77,6 +80,10 @@ public class ConvertUtils {
 
     public static Bitmap byteArrayOutputStreamToBitmap(ByteArrayOutputStream outputStream) throws IOException {
         byte[] bitmapBytes = outputStream.toByteArray();
+        return byteArrayToBitmap(bitmapBytes);
+    }
+
+    public static Bitmap byteArrayToBitmap(byte[] bitmapBytes) throws IOException {
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
     }
 
@@ -142,5 +149,14 @@ public class ConvertUtils {
         } catch (InvalidKeySpecException | NoSuchAlgorithmException exc) {
             throw new RSAException(exc.getMessage());
         }
+    }
+
+    public static String secretKeyToBase64String(SecretKey key) {
+         return byteArrayToBase64String(key.getEncoded());
+    }
+
+    public static SecretKey base64StringToSecretKey(String base64SecretKey) {
+        byte[] encodedKey = base64StringToByteArray(base64SecretKey);
+        return new SecretKeySpec(encodedKey, CryptoUtils.SYMMETRIC_ALGORITHM);
     }
 }
