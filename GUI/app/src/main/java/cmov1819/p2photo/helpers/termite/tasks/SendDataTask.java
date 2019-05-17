@@ -4,22 +4,21 @@ import android.os.AsyncTask;
 
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.UnknownHostException;
 
-import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
+import static cmov1819.p2photo.helpers.managers.LogManager.SEND_DATA_TASK_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
+import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.termite.tasks.WifiDirectUtils.doSend;
+import static cmov1819.p2photo.helpers.termite.tasks.WifiDirectUtils.receiveResponse;
 
 public class SendDataTask extends AsyncTask<Object, String, Void> {
-    private static final String SEND_DATA_TASK_TAG = "SEND DATA";
     private static final String CONFIRM_RCV = "\n";
     private static final String SEND = "\n";
 
@@ -29,7 +28,7 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
     @Override
     protected void onPreExecute() {
-        LogManager.logInfo(SEND_DATA_TASK_TAG, "Started new SendData task...");
+        logInfo(SEND_DATA_TASK_TAG, "Started new SendData task...");
     }
 
     @Override
@@ -40,13 +39,13 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
         JSONObject jsonData = (JSONObject) params[2];
 
         try {
-            LogManager.logInfo(SEND_DATA_TASK_TAG, "Creating client socket...");
+            logInfo(SEND_DATA_TASK_TAG, "Creating client socket...");
             SimWifiP2pSocket clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
-            doSend(clientSocket, jsonData);
-            receiveResponse(clientSocket);
+            doSend(SEND_DATA_TASK_TAG, clientSocket, jsonData);
+            receiveResponse(SEND_DATA_TASK_TAG, clientSocket);
             try {
                 clientSocket.close();
-                LogManager.logInfo(SEND_DATA_TASK_TAG, "Closed client socket. Operation completed...");
+                logInfo(SEND_DATA_TASK_TAG, "Closed client socket. Operation completed...");
             } catch (IOException e) {
                 logError(SEND_DATA_TASK_TAG,"Error closing client socket!");
             }
@@ -59,26 +58,8 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
         return null;
     }
 
-    private void receiveResponse(SimWifiP2pSocket clientSocket) {
-        try {
-            InputStream inputStream = clientSocket.getInputStream();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            bufferedReader.readLine();
-        } catch (IOException ioe) {
-            logError(SEND_DATA_TASK_TAG,"Could not read reply from output socket input stream...");
-        }
-    }
-
-    private void doSend(SimWifiP2pSocket clientSocket, JSONObject jsonData) {
-        try {
-            clientSocket.getOutputStream().write((jsonData.toString() + SEND).getBytes());
-        } catch (IOException ioe) {
-            logError(SEND_DATA_TASK_TAG,"Could not effectuate write on output socket...");
-        }
-    }
-
     @Override
     protected void onPostExecute(Void result) {
-        LogManager.logInfo(SEND_DATA_TASK_TAG, "SendData task finished successfully...");
+        logInfo(SEND_DATA_TASK_TAG, "SendData task finished successfully...");
     }
 }
