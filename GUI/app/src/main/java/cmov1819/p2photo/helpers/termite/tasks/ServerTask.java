@@ -20,6 +20,7 @@ import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.exceptions.RSAException;
+import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -65,6 +66,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.SEND_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
 import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
+import static cmov1819.p2photo.helpers.termite.Consts.SOLUTION;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
@@ -137,7 +139,22 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         return null;
     }
 
-    private String processChangeReply(JSONObject request) {
+    private String processChangeReply(JSONObject challengeReply) throws JSONException {
+
+        // Decipher the challenge the neighbor sent to me and convert it back to a uuid
+        String base64Challenge = challengeReply.getString(CHALLENGE);
+        byte[] cipheredChallenge = base64StringToByteArray(base64Challenge);
+        byte[] decipheredChallenge = decipherWithRSA(cipheredChallenge, mKeyManager.getmPrivateKey());
+        String challengeSolution = new String(decipheredChallenge);
+        // Make a challenge similar to the one he made, cipher it in his public key and send it as usual, with the
+        // solution to his challenge
+        String myOwnChallenge = CryptoUtils.newUUIDString();
+        String myBase64Challenge = byteArrayToBase64String(cipherWithRSA(myOwnChallenge, targetDevicePublicKey));
+        mKeyManager.getExpectedChallenges().put(jsonResponse.getString("FROM"), myBase64Challenge);
+        JSONObject jsonSolvedChallenge = wfDirectMgr.newBaselineJson(REPLY_TO_CHALLENGE);
+        jsonSolvedChallenge.put(SOLUTION, challengeSolution);
+        jsonSolvedChallenge.put(CHALLENGE, myBase64Challenge);
+
     }
 
     @Override
