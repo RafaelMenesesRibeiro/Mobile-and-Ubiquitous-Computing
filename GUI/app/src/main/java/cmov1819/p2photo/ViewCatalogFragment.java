@@ -28,7 +28,6 @@ import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 
 import static cmov1819.p2photo.MainMenuActivity.HOME_SCREEN;
-import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
 
 public class ViewCatalogFragment extends Fragment {
     public static final String CATALOG_ID_EXTRA = "catalogID";
@@ -53,7 +52,6 @@ public class ViewCatalogFragment extends Fragment {
             }
             catch (ClassCastException ex) {
                 Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
-                mainMenuActivityIntent.putExtra(START_SCREEN, HOME_SCREEN);
                 startActivity(mainMenuActivityIntent);
             }
         }

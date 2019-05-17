@@ -55,6 +55,8 @@
     <string name="view_server_log">View Server Log</string>
     <!-- Limit Storage Space Functionality -->
     <string name="limit_storage">Limit Storage</string>
+    <!-- Logout Functionality -->
+    <string name="logout_functionality">Logout</string>
 
     <!-- Button Labels-->
     <string name="done">Done</string>
