@@ -23,21 +23,15 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
-import static cmov1819.p2photo.helpers.CryptoUtils.verifySignatureWithSHA1withRSA;
-import static cmov1819.p2photo.helpers.DateUtils.isFreshTimestamp;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading.savePhoto;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
-import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
-import static cmov1819.p2photo.helpers.termite.Consts.RID;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
-import static cmov1819.p2photo.helpers.termite.Consts.TIMESTAMP;
-import static cmov1819.p2photo.helpers.termite.Consts.USERNAME;
 
 public class GetPhotoFromPeerCallable implements Callable<String> {
     private static final String GET_PHOTO_FROM_PEER_TAG = "GetPhotoFromPeer";
@@ -74,7 +68,7 @@ public class GetPhotoFromPeerCallable implements Callable<String> {
             return photoUuid;
         }
         return null;
-       // return (JSONObject) getResponseMessage(connection, Expect.GOOD_STATE_RESPONSE);
+        // return (JSONObject) getResponseMessage(connection, Expect.GOOD_STATE_RESPONSE);
     }
 
     private boolean requestPhoto() {
@@ -124,27 +118,13 @@ public class GetPhotoFromPeerCallable implements Callable<String> {
     }
 
     public boolean isValidResponse(JSONObject response) {
-        try {
-            if (!response.getString(OPERATION).equals(SEND_PHOTO)) {
-                return false;
-            }
-
-            if (!response.getString(USERNAME).equals(username)) {
-                return false;
-            }
-
-            if (response.getInt(RID) != rid) {
-                return  false;
-            }
-
-            if (!isFreshTimestamp(response.getString(TIMESTAMP))) {
-                return false;
-            }
-
-            return verifySignatureWithSHA1withRSA(publicKey, response);
-        } catch (JSONException jsone) {
+        if (!wifiDirectManager.isValidMessage(username, rid, response)) {
             return false;
         }
+        if (!wifiDirectManager.isValidMessage(SEND_PHOTO, response, publicKey)) {
+            return false;
+        }
+        return true;
     }
 
     private boolean trySaveIncomingPhoto(JSONObject jsonObject) throws JSONException {
