@@ -21,7 +21,6 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.R;
-import cmov1819.p2photo.ViewCatalogFragment;
 import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
@@ -30,7 +29,7 @@ import cmov1819.p2photo.helpers.architectures.BaseArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -46,8 +45,18 @@ public class CloudBackedArchitecture extends BaseArchitecture {
     }
 
     @Override
+    public void onSignUp(final LoginActivity loginActivity) {
+        /* Nothing to do.  */
+    }
+
+    @Override
     public void setup(final View view, final LoginActivity loginActivity) {
         LoginActivity.tryEnablingPostAuthorizationFlows(view, loginActivity);
+    }
+
+    @Override
+    public void setupHome(MainMenuActivity mainMenuActivity) {
+        /* No setup required */
     }
 
     /**********************************************************
@@ -89,7 +98,7 @@ public class CloudBackedArchitecture extends BaseArchitecture {
             );
 
             RequestData requestData = new RequestData(activity, GET_GOOGLE_IDENTIFIERS, url);
-            ResponseData result = new QueryManager().execute(requestData).get();
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
 
             int code = result.getServerCode();
             if (code != HttpURLConnection.HTTP_OK) {
@@ -155,7 +164,7 @@ public class CloudBackedArchitecture extends BaseArchitecture {
                     (Activity)context, RequestData.RequestType.NEW_CATALOG_SLICE, url, requestBody
             );
 
-            ResponseData result = new QueryManager().execute(requestData).get();
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
 
             int code = result.getServerCode();
 
@@ -193,9 +202,6 @@ public class CloudBackedArchitecture extends BaseArchitecture {
     @Override
     public void viewCatalog(final Activity activity, final View view, String catalogID, String catalogTitle) {
         List<String> googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(activity, catalogID);
-        TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
-        catalogTitleTextView.setText(catalogTitle);
-
         GoogleDriveMediator googleDriveMediator = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getGoogleDriveMediator(activity);
         AuthStateManager authStateManager = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
 
@@ -212,7 +218,7 @@ public class CloudBackedArchitecture extends BaseArchitecture {
 
         try {
             RequestData requestData = new RequestData(activity, GET_CATALOG, url);
-            ResponseData responseData = new QueryManager().execute(requestData).get();
+            ResponseData responseData = new P2PWebServerMediator().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 SuccessResponse payload = (SuccessResponse) responseData.getPayload();
                 return (List<String> ) payload.getResult();

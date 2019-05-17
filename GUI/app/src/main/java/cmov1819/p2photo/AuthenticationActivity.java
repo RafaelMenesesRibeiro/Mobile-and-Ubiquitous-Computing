@@ -34,7 +34,6 @@ public class AuthenticationActivity extends AppCompatActivity {
         }
 
         Intent mainMenuActivityIntent = new Intent(AuthenticationActivity.this, MainMenuActivity.class);
-        mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
         startActivity(mainMenuActivityIntent);
 
         finish();

@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +26,7 @@ import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.NoMembershipException;
 import cmov1819.p2photo.exceptions.UsernameException;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
@@ -112,11 +111,11 @@ public class NewCatalogMemberFragment extends Fragment {
             RequestData requestData = new PostRequestData(this.getActivity(),
                     RequestData.RequestType.NEW_CATALOG_MEMBER, url, requestBody);
 
-            ResponseData result = new QueryManager().execute(requestData).get();
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
             int code = result.getServerCode();
 
             if (code == HttpURLConnection.HTTP_OK) {
-                // TODO - Change screen? //
+                // Do nothing. //
             }
             else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();

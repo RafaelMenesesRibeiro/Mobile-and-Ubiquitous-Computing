@@ -2,6 +2,7 @@ package cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
@@ -11,16 +12,15 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import cmov1819.p2photo.LimitStorageFragment;
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.ViewCatalogFragment;
@@ -28,23 +28,46 @@ import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.architectures.BaseArchitecture;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
+import cmov1819.p2photo.helpers.managers.WifiDirectManager;
+import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 
-import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
+import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.createPhotoStackFile;
+import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.setReplicationLimitInPhotos;
+import static cmov1819.p2photo.helpers.managers.SessionManager.setMaxCacheImageSize;
 
 public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
     public void handlePendingMemberships(final Activity activity) {
-        MainMenuActivity.handlePendingMembershipsWifiDirect(activity);
+    }
+
+    @Override
+    public void onSignUp(final LoginActivity loginActivity) throws FailedOperationException {
+        try {
+            createPhotoStackFile(loginActivity);
+            setMaxCacheImageSize(loginActivity, LimitStorageFragment.DEFAULT_CACHE_VALUE);
+            setReplicationLimitInPhotos(loginActivity, LimitStorageFragment.DEFAULT_CACHE_VALUE);
+        }
+        catch (Exception ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
     }
 
     @Override
     public void setup(final View view, final LoginActivity loginActivity) throws FailedOperationException {
-        try {
-            LoginActivity.initializeSymmetricKey(loginActivity);
+        LoginActivity.initializeWifiDirectSetup(loginActivity);
+    }
+
+    @Override
+    public void setupHome(MainMenuActivity mainMenuActivity) {
+        if (mainMenuActivity.getIntent().hasExtra(LoginActivity.WIFI_DIRECT_SV_RUNNING)) {
+            mainMenuActivity.unbindService(mainMenuActivity.getmConnection());
         }
-        catch (SignatureException ex) {
-            throw new FailedOperationException(ex.getMessage());
-        }
+        mainMenuActivity.basicTermiteSetup();
+        // WiFi is always on - Battery drainage is cool, because people buy new phones
+        Intent intent = new Intent(mainMenuActivity, SimWifiP2pService.class);
+        mainMenuActivity.bindService(intent, mainMenuActivity.getmConnection(), Context.BIND_AUTO_CREATE);
+        // Start Server in AsyncTask
+        mainMenuActivity.setmWifiManager(WifiDirectManager.init(mainMenuActivity));
     }
 
     /**********************************************************
@@ -57,8 +80,9 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         int fileLength = (int) file.length();
         byte[] fileContents = new byte[fileLength];
 
+        InputStream inputStream = null;
         try {
-            InputStream inputStream = new FileInputStream(file);
+            inputStream = new FileInputStream(file);
             int bytesRead = inputStream.read(fileContents);
             if (bytesRead != fileLength) {
                 throw new FailedOperationException("Couldn't read the image file.");
@@ -68,17 +92,18 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         catch(IOException ioe){
             throw new FailedOperationException(ioe.getMessage());
         }
+        finally {
+            try { inputStream.close(); }
+            catch (NullPointerException | IOException ex) { /* Nothing can be done. */ }
+        }
 
         // Saves the temp image's bytes to internal storage in a permanent file.
         String username = SessionManager.getUsername(activity);
         String photoName = String.format("%s_%s_%s", catalogId, username, UUID.randomUUID().toString().replace("/", ""));
-        FileOutputStream outputStream;
         try {
-            outputStream = activity.openFileOutput(photoName, Context.MODE_PRIVATE);
-            outputStream.write(fileContents);
-            outputStream.close();
+            ImageLoading.savePhoto(activity, photoName, fileContents);
         }
-        catch (IOException ex) {
+        catch (JSONException | IOException ex) {
             throw new FailedOperationException(ex.getMessage());
         }
 
@@ -127,8 +152,6 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             CatalogOperations.writeCatalog(activity, catalogID, catalogFile);
         }
         catch (JSONException | IOException exc) {
-            // TODO - Remove. //
-            exc.printStackTrace();
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
             LogManager.toast(activity, "Failed to create catalog slice");
         }

@@ -20,8 +20,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
-import java.security.SignatureException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.util.concurrent.ExecutionException;
+
+import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.dataobjects.PostRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
@@ -32,13 +36,24 @@ import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
+import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
+import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
+import static cmov1819.p2photo.helpers.CryptoUtils.generateAesKey;
+import static cmov1819.p2photo.helpers.CryptoUtils.generateRSAKeys;
+import static cmov1819.p2photo.helpers.CryptoUtils.loadAESKeys;
+import static cmov1819.p2photo.helpers.CryptoUtils.loadRSAKeys;
+import static cmov1819.p2photo.helpers.CryptoUtils.storeAESKey;
+import static cmov1819.p2photo.helpers.CryptoUtils.storeRSAKeys;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
 
 public class LoginActivity extends AppCompatActivity {
+    public static final String WIFI_DIRECT_SV_RUNNING = "wifiDirectRunning";
+    public static boolean wifiDirectRunning = false;
+
     @Override
     public void onBackPressed() {
         // Do nothing. Prevents going back after logging out.
@@ -48,6 +63,11 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login_screen);
+
+        Intent intent = getIntent();
+        if (intent.hasExtra(WIFI_DIRECT_SV_RUNNING)) {
+            wifiDirectRunning = true;
+        }
 
         ArchitectureManager.setWirelessP2PArch(); // Default architecture is Wireless P2P.
         CheckBox checkBox = findViewById(R.id.tickBox);
@@ -112,13 +132,36 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        if (trySignUp(usernameValue, passwordValue)) {
+        KeyPair keyPair = null;
+        try {
+            SecretKey secretKey = generateAesKey();
+            storeAESKey(this, secretKey);
+            keyPair = generateRSAKeys();
+            storeRSAKeys(this, keyPair);
+        }
+        catch (Exception ex) {
+            LogManager.logError(LogManager.LOGIN_TAG, ex.getMessage());
+            System.exit(-3);
+        }
+
+        if (trySignUp(usernameValue, passwordValue, keyPair.getPublic())) {
+            try {
+                ArchitectureManager.systemArchitecture.onSignUp(this);
+            }
+            catch (Exception ex) {
+                LogManager.logError(LogManager.LOGIN_TAG, ex.getMessage());
+                System.exit(-3);
+            }
             disableUserTextInputs(usernameEditText, passwordEditText);
             findViewById(R.id.LoginButton).performClick();
         }
+        else {
+            usernameEditText.setText("");
+            passwordEditText.setText("");
+        }
     }
 
-    private boolean trySignUp(String usernameValue, String passwordValue) {
+    private boolean trySignUp(String usernameValue, String passwordValue, PublicKey publicKey) {
         try {
             String msg = "Starting Sign Up operation for user: " + usernameValue + "...";
             LogManager.logInfo(LogManager.SIGN_UP_TAG, msg);
@@ -126,18 +169,25 @@ public class LoginActivity extends AppCompatActivity {
             JSONObject requestBody = new JSONObject();
             requestBody.put("username", usernameValue);
             requestBody.put("password", passwordValue);
+            requestBody.put("publicKey", byteArrayToBase64String(publicKey.getEncoded()));
 
             String url = getString(R.string.p2photo_host) + getString(R.string.signup);
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.SIGNUP, url, requestBody);
 
-            ResponseData result = new QueryManager().execute(requestData).get();
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
             int code = result.getServerCode();
             if (code == HttpURLConnection.HTTP_OK) {
                 msg = "Sign Up successful";
                 LogManager.logInfo(LogManager.SIGN_UP_TAG, msg);
                 LogManager.toast(this, "Created account successfully");
                 return true;
-            } else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
+            }
+            else if (code == HttpURLConnection.HTTP_CONFLICT) {
+                msg = "Sign Up unsuccessful. The chosen username already exists.";
+                LogManager.logError(LogManager.SIGN_UP_TAG, msg);
+                LogManager.toast(this, "Chosen username already exists. Choose another...");
+            }
+            else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
                 String reason = errorResponse.getReason();
                 if (reason.equals(getString(R.string.bad_user))) {
@@ -150,11 +200,6 @@ public class LoginActivity extends AppCompatActivity {
                     LogManager.logError(LogManager.SIGN_UP_TAG, msg);
                     LogManager.toast(this, getString(R.string.bad_pass));
                 }
-            }
-            else if (code == 422) {
-                msg = "Sign Up unsuccessful. The chosen username already exists.";
-                LogManager.logError(LogManager.SIGN_UP_TAG, msg);
-                LogManager.toast(this, "Chosen username already exists. Choose another...");
             }
             else {
                 msg = "Sign Up unsuccessful. Server response code: " + code;
@@ -198,11 +243,37 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         enableUserTextInputs(usernameEditText, passwordEditText);
+
+        KeyPair keyPair = null;
         try {
+            keyPair = loadRSAKeys(this);
+        }
+        catch (FailedOperationException ex) {
+            // Tries to generate another KeyPair and sends the public key to the server.
+            try {
+                keyPair = generateRSAKeys();
+                CryptoUtils.sendPublicKeyToServer(this, keyPair.getPublic());
+            }
+            catch (FailedOperationException | NoSuchAlgorithmException nsalex) {
+                // If it can't, the app exits, as it will not be able to communicate with others.
+                LogManager.logError(LogManager.LOGIN_TAG, ex.getMessage());
+                System.exit(-1);
+            }
+            // Tries to store the generate keys for next time.
+            try {
+                storeRSAKeys(this, keyPair);
+            }
+            catch (FailedOperationException faopex) { /* Do nothing. Next time it logs in, generates more keys. */ }
+        }
+        // If it can't load the AES key, with which it ciphers the photos in local storage,
+        // the app exits, as it won't be able to perform any photo related operation.
+        try {
+            SecretKey secretKey = loadAESKeys(this);
+            KeyManager.init(secretKey, keyPair.getPrivate(), keyPair.getPublic());
+
             ArchitectureManager.systemArchitecture.setup(view, this);
         }
         catch (FailedOperationException ex) {
-            // TODO - Is this the best way? //
             LogManager.logError(LogManager.LOGIN_TAG, ex.getMessage());
             System.exit(-1);
         }
@@ -219,7 +290,7 @@ public class LoginActivity extends AppCompatActivity {
 
             String url = getString(R.string.p2photo_host) + getString(R.string.login);
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.LOGIN, url, requestBody);
-            ResponseData result = new QueryManager().execute(requestData).get();
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
 
             int code = result.getServerCode();
 
@@ -259,7 +330,9 @@ public class LoginActivity extends AppCompatActivity {
 
     public static void goHome(Activity activity) {
         Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
-        mainMenuActivityIntent.putExtra("initialScreen", SearchUserFragment.class.getName());
+        if (wifiDirectRunning) {
+            mainMenuActivityIntent.putExtra(WIFI_DIRECT_SV_RUNNING, wifiDirectRunning);
+        }
         activity.startActivity(mainMenuActivityIntent);
     }
 
@@ -267,8 +340,7 @@ public class LoginActivity extends AppCompatActivity {
      * WIRELESS P2P ARCHITECTURE SETUP HELPERS
      ***********************************************************/
 
-    public static void initializeSymmetricKey(Activity activity) throws SignatureException {
-        CryptoUtils.initializeSymmetricKey();
+    public static void initializeWifiDirectSetup(Activity activity) {
         goHome(activity);
     }
 

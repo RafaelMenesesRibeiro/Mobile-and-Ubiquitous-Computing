@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,9 @@ public class ViewAppLogFragment extends Fragment {
         return view;
     }
 
-    private void populate(final View view) {
+    private void populate(final View view) {    
+        TextView logText = view.findViewById(R.id.appLogTextBox);
+        logText.setMovementMethod(new ScrollingMovementMethod());
         final TextView textBox = view.findViewById(R.id.appLogTextBox);
         Button refreshButton = view.findViewById(R.id.done);
         refreshButton.setOnClickListener(new View.OnClickListener() {

@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.msgtypes.BasicResponse;
 
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_SERVER_LOGS;
@@ -53,7 +53,7 @@ public class ViewServerLogFragment extends Fragment {
         String serverLog = "";
         try {
             RequestData requestData = new RequestData(activity, GET_SERVER_LOGS, url);
-            ResponseData responseData = new QueryManager().execute(requestData).get();
+            ResponseData responseData = new P2PWebServerMediator().execute(requestData).get();
             if (responseData.getServerCode() == HttpURLConnection.HTTP_OK) {
                 BasicResponse payload = responseData.getPayload();
                 serverLog = payload.getMessage();

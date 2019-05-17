@@ -198,3 +198,7 @@ GUI/.idea/libraries/Gradle__com_android_support_support_v4_26_1_0_aar.xml
 GUI/.idea/libraries/Gradle__com_android_support_support_media_compat_26_1_0_aar.xml
 GUI/.idea/codeStyles/codeStyleConfig.xml
 GUI/.idea/libraries/Gradle___Termite_WifiP2P_API__aar.xml
+GUI/.idea/libraries/Gradle___Termite_WifiP2P_API__aar.xml
+GUI/app/.project
+GUI/Termite-WifiP2P-API/.project
+GUI/gradlew

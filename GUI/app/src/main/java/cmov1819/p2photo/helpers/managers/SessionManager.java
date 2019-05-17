@@ -7,17 +7,31 @@ import android.support.annotation.NonNull;
 
 import java.util.Set;
 
+import static cmov1819.p2photo.LimitStorageFragment.DEFAULT_CACHE_VALUE;
+
 public class SessionManager {
     private static final String SESSION_ID_SHARED_PREF = "p2photo.SessionIDPreference";
     private static final String SESSION_ID_KEY = "sessionID";
     private static final String USER_NAME_KEY = "username";
+    private static final String CACHE_SIZE_TAG = "cacheSize";
 
     private static String sessionID;
     private static String username = null;
 
-    // TODO - Remove these. //
-    private static Set<String> catalogMembershipIDs;
-    private static Set<String> catalogMembershipNames;
+    /**********************************************************
+     * PREFERENCES METHODS
+     ***********************************************************/
+
+    public static void setMaxCacheImageSize(Activity activity, int size) {
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt(CACHE_SIZE_TAG, size);
+    }
+
+    public static int getMaxCacheImageSize(Activity activity) {
+        SharedPreferences sharedPreferences = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
+        return sharedPreferences.getInt(CACHE_SIZE_TAG, DEFAULT_CACHE_VALUE);
+    }
 
     /**********************************************************
      * COOKIE METHODS
@@ -58,40 +72,4 @@ public class SessionManager {
     public static void deleteUsername(@NonNull  Activity activity) {
         updateUsername(activity, null);
     }
-
-    /**********************************************************
-     * MEMBERSHIP METHODS
-     ***********************************************************/
-
-    // TODO - Remove these. //
-
-    public static Set<String> getCatalogMembershipsNames(Activity activity) {
-        if (catalogMembershipNames != null) { return catalogMembershipNames; }
-        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
-        return sharedPref.getStringSet("membershipNames", null);
-    }
-
-    public static void updateCatalogMembershipsNames(Activity activity, Set<String> catalogMemberships) {
-        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putStringSet("membershipNames", catalogMemberships);
-        editor.apply();
-        SessionManager.catalogMembershipNames = catalogMemberships;
-    }
-
-    public static Set<String> getCatalogMembershipsIDs(Activity activity) {
-        if (catalogMembershipIDs != null) { return catalogMembershipIDs; }
-        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
-        Set<String> set = sharedPref.getStringSet("membershipIDs", null);
-        return set;
-    }
-
-    public static void updateCatalogMembershipsIDs(Activity activity, Set<String> catalogMemberships) {
-        SharedPreferences sharedPref = activity.getSharedPreferences(SESSION_ID_SHARED_PREF, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putStringSet("membershipIDs", catalogMemberships);
-        editor.apply();
-        SessionManager.catalogMembershipIDs = catalogMemberships;
-    }
-
 }

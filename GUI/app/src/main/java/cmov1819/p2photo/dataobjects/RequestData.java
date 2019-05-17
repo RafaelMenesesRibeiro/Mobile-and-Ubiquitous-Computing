@@ -10,13 +10,17 @@ public class RequestData {
         SEARCH_USERS,
         GET_CATALOG_TITLE,
         GET_CATALOG,
+        GET_GOOGLE_IDENTIFIERS,
+        GET_MEMBERSHIP_CATALOG_IDS,
+        GET_MEMBERSHIPS,
+        GET_MEMBER_KEY,
+        GET_SERVER_LOGS,
+        GET_MEMBER_PUBLIC_KEY,
+        ASSERT_MEMBERSHIP,
         NEW_CATALOG,
         NEW_CATALOG_SLICE,
         NEW_CATALOG_MEMBER,
-        GET_MEMBERSHIPS,
-        GET_GOOGLE_IDENTIFIERS,
-        GET_MEMBERSHIP_CATALOG_IDS,
-        GET_SERVER_LOGS
+        NEW_MEMBER_PUBLIC_KEY
     }
 
     private Activity activity;

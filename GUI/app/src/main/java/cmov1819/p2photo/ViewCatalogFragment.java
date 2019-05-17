@@ -20,27 +20,15 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.adapters.ImageGridAdapter;
-import cmov1819.p2photo.dataobjects.RequestData;
-import cmov1819.p2photo.dataobjects.ResponseData;
-import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
-import cmov1819.p2photo.helpers.managers.AuthStateManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.QueryManager;
-import cmov1819.p2photo.helpers.mediators.GoogleDriveMediator;
-import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.MainMenuActivity.HOME_SCREEN;
-import static cmov1819.p2photo.MainMenuActivity.START_SCREEN;
-import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_CATALOG;
-import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class ViewCatalogFragment extends Fragment {
     public static final String CATALOG_ID_EXTRA = "catalogID";
@@ -65,7 +53,6 @@ public class ViewCatalogFragment extends Fragment {
             }
             catch (ClassCastException ex) {
                 Intent mainMenuActivityIntent = new Intent(activity, MainMenuActivity.class);
-                mainMenuActivityIntent.putExtra(START_SCREEN, HOME_SCREEN);
                 startActivity(mainMenuActivityIntent);
             }
         }
@@ -98,6 +85,8 @@ public class ViewCatalogFragment extends Fragment {
                 int index = dropdownMenu.getSelectedItemPosition();
                 catalogID = catalogIDs.get(index);
                 String catalogTitle = catalogTitles.get(index);
+                TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
+                catalogTitleTextView.setText(catalogTitle);
                 ArchitectureManager.systemArchitecture.viewCatalog(activity, view, catalogID, catalogTitle);
             }
         });
@@ -145,6 +134,8 @@ public class ViewCatalogFragment extends Fragment {
             return false;
         }
 
+        TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
+        catalogTitleTextView.setText(catalogTitle);
         ArchitectureManager.systemArchitecture.viewCatalog(activity, view, catalogID, catalogTitle);
         return true;
     }
