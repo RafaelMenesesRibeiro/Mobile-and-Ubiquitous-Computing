@@ -14,10 +14,11 @@ public class KeyManager {
     private final PrivateKey mPrivateKey;
     private final PublicKey mPublicKey;
 
-    private final Map<String, PublicKey> publicKeys;            // username, public key
-    private final Map<String, SecretKey> sessionKeys;           // username, session key
-    private final Map<String, SecretKey> uncommitSessionKeys;   // username, session key
-    private final Map<String, String> expectedChallenges;       // username, uuidString
+    private final Map<String, PublicKey> publicKeys;                // username, public key
+    private final Map<String, SecretKey> sessionKeys;               // username, session key
+    private final Map<String, SecretKey> unCommitSessionKeys;       // username, session key
+    private final Map<String, SecretKey> readyToCommitSessionKeys;  // username, session key
+    private final Map<String, String> expectedChallenges;           // username, uuidString
 
     private KeyManager(SecretKey aes, PrivateKey privateKey, PublicKey publicKey) {
         this.mSecretKey = aes;
@@ -25,7 +26,8 @@ public class KeyManager {
         this.mPublicKey = publicKey;
         this.publicKeys = new ConcurrentHashMap<>();
         this.sessionKeys = new ConcurrentHashMap<>();
-        this.uncommitSessionKeys = new ConcurrentHashMap<>();
+        this.unCommitSessionKeys = new ConcurrentHashMap<>();
+        this.readyToCommitSessionKeys = new ConcurrentHashMap<>();
         this.expectedChallenges = new ConcurrentHashMap<>();
     }
 
@@ -65,11 +67,15 @@ public class KeyManager {
         return sessionKeys;
     }
 
-    public Map<String, SecretKey> getUncommitSessionKeys() {
-        return uncommitSessionKeys;
+    public Map<String, SecretKey> getUnCommitSessionKeys() {
+        return unCommitSessionKeys;
     }
 
     public Map<String, String> getExpectedChallenges() {
         return expectedChallenges;
+    }
+
+    public Map<String, SecretKey> getReadyToCommitSessionKeys() {
+        return readyToCommitSessionKeys;
     }
 }
