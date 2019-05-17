@@ -5,6 +5,7 @@ import android.app.Activity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import static cmov1819.p2photo.helpers.termite.Consts.RID;
 import static cmov1819.p2photo.helpers.termite.Consts.TIMESTAMP;
 
 public class PostRequestData extends RequestData {
@@ -32,6 +33,11 @@ public class PostRequestData extends RequestData {
             // It is better to request the server than to try and stop the request.
             // Less error prone and more easily read and maintained.
         }
+    }
+
+    public void addRequestID(int requestID) {
+        try { params.put(RID, requestID); }
+        catch (JSONException ex) { /* Ignores it. */ }
     }
 
     @Override

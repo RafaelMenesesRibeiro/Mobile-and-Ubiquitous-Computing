@@ -23,6 +23,7 @@ import cmov1819.p2photo.dataobjects.PutRequestData;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.helpers.managers.LogManager;
+import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import cmov1819.p2photo.msgtypes.BasicResponse;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -41,6 +42,8 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
 
         if (requestData instanceof PostRequestData) {
             ((PostRequestData) requestData).addTimestamp(generateTimestamp());
+            try { ((PostRequestData) requestData).addRequestID(WifiDirectManager.getInstance().getRequestId()); }
+            catch (RuntimeException ex) { ((PostRequestData) requestData).addRequestID(0); }
         }
 
         LogManager.logSentMessage(requestData);
