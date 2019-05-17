@@ -15,8 +15,6 @@ import java.io.InputStreamReader;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.crypto.SecretKey;
 
@@ -70,8 +68,6 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
     private WifiDirectManager wfDirectMgr = null;
     private KeyManager mKeyManager = null;
-    private final Map<String, String> expectedChallenges = new ConcurrentHashMap<>();
-    private final Map<String, SecretKey> uncommitSessionKeys = new ConcurrentHashMap<>();
 
     @Override
     protected void onPreExecute() {
@@ -135,6 +131,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     }
 
     private String processSessionProposal(JSONObject message) throws JSONException {
+        // TODO REVIEW THIS PROTOCOL PHASE SPECIALLY CONCURRENCY WISE
         logInfo(SERVER_TAG, "Processing session proposal, purpose phase...");
 
         String username = message.getString(FROM);
@@ -151,7 +148,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 byte[] cipheredSessionKey = base64StringToByteArray(message.getString(SESSION_KEY));
                 byte[] decipheredSessionKey = decipherWithRSA(cipheredSessionKey, mPrivateKey);
                 SecretKey sessionKey = byteArrayToSecretKey(decipheredSessionKey);
-                uncommitSessionKeys.put(username, sessionKey);
+                mKeyManager.getUncommitSessionKeys().put(username, sessionKey);
             }  catch (RSAException rsa) {
                 logWarning(SERVER_TAG, "Unable to decipher un-commit session key with this device private key...");
                 return REFUSED;
@@ -161,7 +158,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 logInfo(SERVER_TAG, "Initiating challenge phase to " + username + "...");
                 JSONObject jsonChallenge = wfDirectMgr.newBaselineJson(SEND_CHALLENGE);
                 String challenge = newUUIDString();
-                expectedChallenges.put(username, challenge);
+                mKeyManager.getExpectedChallenges().put(username, challenge);
                 challenge = byteArrayToBase64String(cipherWithRSA(challenge, sendersPublicKey));
                 jsonChallenge.put(CHALLENGE, challenge);
                 wfDirectMgr.conformToTLS(jsonChallenge, message.getInt(RID), message.getString(FROM));

@@ -34,10 +34,11 @@ public class LogManager {
     public static final String VIEW_APP_LOG = "View App Log";
     public static final String CRYPTO_UTILS_TAG = "Crypto Utils";
     public static final String WEB_SERVER_MEDIATOR_TAG = "Web Server Mediator";
-    public static final String RCV_PHOTO_TAG = "Get Photo From Peer";
+    public static final String GET_PHOTO_FROM_PEER = "Get Photo From Peer";
     public static final String PROPOSE_SESSION_MGR_TAG = "Propose Session to New Group Member";
     public static final String CALLABLE_MGR_TAG = "Callable Manager";
     public static final String WIFI_DIRECT_MGR_TAG = "WiFi Direct Manager";
+    public static final String SEND_DATA_TASK_TAG = "SEND DATA";
 
     private static String logText = "";
 

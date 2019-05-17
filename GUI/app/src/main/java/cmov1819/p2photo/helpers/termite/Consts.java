@@ -3,9 +3,6 @@ package cmov1819.p2photo.helpers.termite;
 import java.util.Arrays;
 import java.util.List;
 
-import static cmov1819.p2photo.helpers.managers.LogManager.PROPOSE_SESSION_MGR_TAG;
-import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
-
 public class Consts {
 
     public static final String CONFIRM_RCV = "\n";
@@ -37,6 +34,7 @@ public class Consts {
     public static final String MEMBERS_PHOTOS = "membersPhotos";
     public static final String SESSION_KEY = "sessionKey";
     public static final String CHALLENGE = "challenge";
+    public static final String DICE_ROLL = "diceRoll";
 
     public static final String NEED_OPERATION = "malformed";
     public static final String NO_OPERATION = "unsupported";
@@ -49,15 +47,6 @@ public class Consts {
 
     public static boolean isError(String line) {
         return ERRORS.contains(line);
-    }
-
-    public static void stopAndWait(int maxWait) {
-        try {
-            logInfo(PROPOSE_SESSION_MGR_TAG, "Waiting randomly between 0 and 3000 milliseconds...");
-            Thread.sleep((long)(Math.random() * maxWait));
-        } catch (InterruptedException ie) {
-            // swallow and resume execution
-        }
     }
 
     public static final int TERMITE_PORT = 10001;

@@ -6,29 +6,29 @@ import android.graphics.BitmapFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.concurrent.Callable;
 
 import javax.crypto.SecretKey;
 
+import cmov1819.p2photo.exceptions.RSAException;
 import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
+import cmov1819.p2photo.helpers.termite.tasks.WifiDirectUtils;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
-import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
+import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
+import static cmov1819.p2photo.helpers.ConvertUtils.secretKeyToByteArray;
+import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithRSA;
 import static cmov1819.p2photo.helpers.CryptoUtils.generateAesKey;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading.savePhoto;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
 import static cmov1819.p2photo.helpers.managers.LogManager.PROPOSE_SESSION_MGR_TAG;
-import static cmov1819.p2photo.helpers.managers.LogManager.RCV_PHOTO_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
@@ -36,20 +36,19 @@ import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.REFUSED;
-import static cmov1819.p2photo.helpers.termite.Consts.SEND;
-import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
+import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 import static cmov1819.p2photo.helpers.termite.Consts.isError;
-import static cmov1819.p2photo.helpers.termite.Consts.stopAndWait;
 
 public class ProposeSessionCallable implements Callable<String> {
     private final WifiDirectManager wfDirectMgr;
     private final KeyManager mKeyManager;
     private final SimWifiP2pDevice targetDevice;
     private final int rid;
-    private PublicKey targetPublicKey;
-    private SecretKey sessionKey;
+    private PublicKey targetDevicePublicKey;
+    private SecretKey unCommitSessionKey;
 
 
     public ProposeSessionCallable(SimWifiP2pDevice targetDevice) {
@@ -62,90 +61,89 @@ public class ProposeSessionCallable implements Callable<String> {
     @Override
     public String call() {
         logInfo(PROPOSE_SESSION_MGR_TAG, "Initiating a proposal protocol to device: " + targetDevice.deviceName);
-        stopAndWait(3000);
-        initProposal();
-        return null;
+        return proposalProtocol();
     }
 
-    private String initProposal() {
-        SecretKey unCommitSessionKey = generateAesKey();
+    private String proposalProtocol() {
+        String readLine = propose();
+        if (!isError(readLine)) {
+            try {
+                JSONObject challengeResponse = new JSONObject(readLine);
+                wfDirectMgr.isValidResponse(challengeResponse, SEND_CHALLENGE, rid, targetDevicePublicKey);
+            } catch (JSONException jsone) {
+                logError(PROPOSE_SESSION_MGR_TAG, "Failed to rebuild JSON of challenge response!");
+                return FAIL;
+            }
+
+        }
+        return readLine;
+    }
+
+    private String propose() {
+        unCommitSessionKey = generateAesKey();
         if (unCommitSessionKey == null) {
             logError(PROPOSE_SESSION_MGR_TAG,"Failed to generate a session key for user: " + targetDevice.deviceName + ". Aborting...");
             return FAIL;
         } else {
             logInfo(PROPOSE_SESSION_MGR_TAG,"User: " + targetDevice.deviceName + " now has a un-commit session key...");
             mKeyManager.getUncommitSessionKeys().put(targetDevice.deviceName, unCommitSessionKey);
+            // TODO Put in un-commit status OK?
         }
-        PublicKey proposalCode = mKeyManager.getPublicKeys().get(targetDevice.deviceName);
-        mKeyManager.getSessionKeys().put(targetDevice.deviceName, unCommitSessionKey);
 
-        return REFUSED;
-    }
+        targetDevicePublicKey = tryGetKeyFromLocalMaps(targetDevice.deviceName);
+        if (targetDevicePublicKey == null) {
+            logError(PROPOSE_SESSION_MGR_TAG,"User: " + targetDevice.deviceName + " doesn't have a registered key...");
+            return REFUSED;
+        }
 
-    private String propose() {
         try {
-            logInfo(RCV_PHOTO_TAG, "Proposing session key to user: " + targetDevice.deviceName);
-            JSONObject jsonObject = wfDirectMgr.newBaselineJson(SEND_SESSION);
-            // TODO
-            wfDirectMgr.conformToTLS(jsonObject, wfDirectMgr.getRequestId(), targetDevice.deviceName);
-            // return doSend(jsonObject);
+            byte[] encodedSessionKey = secretKeyToByteArray(unCommitSessionKey);
+            byte[] cipheredSessionKey = cipherWithRSA(encodedSessionKey, targetDevicePublicKey);
+            String base64SessionKey = byteArrayToBase64String(cipheredSessionKey);
+            JSONObject requestData = wfDirectMgr.newBaselineJson(SEND_SESSION);
+            requestData.put(SESSION_KEY, base64SessionKey);
+            wfDirectMgr.conformToTLS(requestData, rid, targetDevice.deviceName);
+            return doSend(requestData);
+        } catch (RSAException e) {
+            logError(PROPOSE_SESSION_MGR_TAG, "This device could not cipher un-commit session key with RSA...");
+            return FAIL;
         } catch (JSONException jsone) {
-            logError(RCV_PHOTO_TAG, "Propose has failed while building a json message");
-        } catch (SignatureException se) {
-            logError(RCV_PHOTO_TAG, "ProposeSessionKey was unable to conform to TLS. Aborting request...");
+            logError(PROPOSE_SESSION_MGR_TAG, "This device could not build a proposal message due to JSON Exception!");
+            return FAIL;
+        } catch (SignatureException jsone) {
+            logError(PROPOSE_SESSION_MGR_TAG, "This device could not sign the proposal message! Aborting...");
+            return FAIL;
         }
-        return REFUSED;
     }
 
-    private boolean doSend(JSONObject jsonData) {
+    private String doSend(JSONObject jsonRequest) {
         SimWifiP2pSocket clientSocket = null;
         try {
-            // Construct a new clientSocket and send request
-            logInfo(RCV_PHOTO_TAG, "Creating client socket to " + targetDevice.deviceName + "...");
+            logInfo(PROPOSE_SESSION_MGR_TAG, "Creating client socket to " + targetDevice.deviceName + "...");
             clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
-            clientSocket.getOutputStream().write((jsonData.toString() + SEND).getBytes());
-            InputStream inputStream = clientSocket.getInputStream();
-            // Read response
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-            String encodedResponse = bufferedReader.readLine();
+
+            WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, jsonRequest);
+            String encodedResponse = WifiDirectUtils.receiveResponse(PROPOSE_SESSION_MGR_TAG, clientSocket);
 
             if (isError(encodedResponse)) {
-                logWarning(RCV_PHOTO_TAG, encodedResponse);
-                return false;
+                logWarning(PROPOSE_SESSION_MGR_TAG, encodedResponse);
+                return FAIL;
             }
 
-            byte[] decodedResponse = decipherWithAes(sessionKey, base64StringToByteArray(encodedResponse));
-            JSONObject response = new JSONObject(new String(decodedResponse));
-            // Process response
-            if (isValidResponse(response)) {
-                return trySaveIncomingPhoto(response);
-            }
         } catch (IOException ioe) {
-            logError(RCV_PHOTO_TAG, "IO Exception occurred while managing client sockets...");
-        } catch (JSONException jsone) {
-            logError(RCV_PHOTO_TAG, jsone.getMessage());
+            logError(PROPOSE_SESSION_MGR_TAG, "IO Exception occurred while managing client sockets...");
         } finally {
             try {
                 if (clientSocket != null) clientSocket.close();
             } catch (IOException ioe) {
-                logError(RCV_PHOTO_TAG, ioe.getMessage());
+                logError(PROPOSE_SESSION_MGR_TAG, ioe.getMessage());
             }
         }
-        return false;
-    }
-
-    public boolean isValidResponse(JSONObject response) {
-        if (!wfDirectMgr.isValidMessage(wfDirectMgr.getDeviceName(), rid, response)) {
-            return false;
-        }
-        if (!wfDirectMgr.isValidMessage(SEND_PHOTO, response, targetPublicKey)) {
-            return false;
-        }
-        return true;
+        return REFUSED;
     }
 
     private boolean trySaveIncomingPhoto(JSONObject jsonObject) throws JSONException {
-        logInfo(RCV_PHOTO_TAG, "Processing incoming photo...");
+        logInfo(PROPOSE_SESSION_MGR_TAG, "Processing incoming photo...");
         try {
             String photoUuid = jsonObject.getString(PHOTO_UUID);
             String base64photo = jsonObject.getString(PHOTO_FILE);
@@ -155,9 +153,9 @@ public class ProposeSessionCallable implements Callable<String> {
             return true;
         } catch (IOException ioe) {
             if (ioe instanceof FileNotFoundException) {
-                logWarning(RCV_PHOTO_TAG, "Unable to save photo to this targetDevice's disk...");
+                logWarning(PROPOSE_SESSION_MGR_TAG, "Unable to save photo to this targetDevice's disk...");
             } else {
-                logError(RCV_PHOTO_TAG, "Output stream errors occurred while saving photos to disk...");
+                logError(PROPOSE_SESSION_MGR_TAG, "Output stream errors occurred while saving photos to disk...");
             }
         }
         return false;
