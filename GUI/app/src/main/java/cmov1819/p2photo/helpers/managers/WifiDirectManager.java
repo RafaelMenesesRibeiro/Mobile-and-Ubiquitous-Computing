@@ -292,4 +292,7 @@ public class WifiDirectManager {
         return deviceUsernameMap;
     }
 
+    public String getDeviceName() {
+        return mMainMenuActivity.getDeviceName();
+    }
 }

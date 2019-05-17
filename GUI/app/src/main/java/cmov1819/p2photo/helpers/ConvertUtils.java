@@ -156,7 +156,10 @@ public class ConvertUtils {
     }
 
     public static SecretKey base64StringToSecretKey(String base64SecretKey) {
-        byte[] encodedKey = base64StringToByteArray(base64SecretKey);
+        return byteArrayToSecretKey(base64StringToByteArray(base64SecretKey));
+    }
+
+    public static SecretKey byteArrayToSecretKey(byte[] encodedKey) {
         return new SecretKeySpec(encodedKey, CryptoUtils.SYMMETRIC_ALGORITHM);
     }
 }
