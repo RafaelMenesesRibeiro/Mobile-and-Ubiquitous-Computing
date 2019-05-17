@@ -38,7 +38,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
-import static cmov1819.p2photo.helpers.termite.Consts.REFUSED;
+import static cmov1819.p2photo.helpers.termite.Consts.REFUSE;
 import static cmov1819.p2photo.helpers.termite.Consts.REPLY_TO_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
@@ -75,7 +75,7 @@ public class ProposeSessionCallable implements Callable<String> {
             // TODO Something here
         }
         logWarning(PROPOSE_SESSION_MGR_TAG, "Refusing proposal, challenge response is not well signed or doesn't contain necessary fields!");
-        return REFUSED;
+        return REFUSE;
     }
 
     private String propose() {
@@ -87,14 +87,14 @@ public class ProposeSessionCallable implements Callable<String> {
             return FAIL;
         } else {
             logInfo(PROPOSE_SESSION_MGR_TAG,"User: " + targetDevice.deviceName + " now has a un-commit session key...");
-            mKeyManager.getUncommitSessionKeys().put(targetDevice.deviceName, unCommitSessionKey);
+            mKeyManager.getUnCommitSessionKeys().put(targetDevice.deviceName, unCommitSessionKey);
         }
 
         // Try to load my neighbor's public key locally or remotely so I can cipher the session key
         targetDevicePublicKey = tryGetKeyFromLocalMaps(targetDevice.deviceName);
         if (targetDevicePublicKey == null) {
             logError(PROPOSE_SESSION_MGR_TAG,"User: " + targetDevice.deviceName + " doesn't have a registered key...");
-            return REFUSED;
+            return REFUSE;
         }
 
         try {
@@ -166,8 +166,8 @@ public class ProposeSessionCallable implements Callable<String> {
             // Using the previous created sockets, write and read from the channel
             WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, jsonSolvedChallenge);
             String readLine = WifiDirectUtils.receiveResponse(PROPOSE_SESSION_MGR_TAG, clientSocket);
-            // Verify if the answer is a COMMIT type and includes the solution to my challenge
-            // TODO CONTINUE FROM HERE VERIFY COMMIT
+            // Verify if the answer is a READY_TO_COMMIT type and includes the solution to my challenge
+            
             // If commit valid, reply with simple "OK", else send "ABORT"
             // EOF ????
         } catch (JSONException e) {
