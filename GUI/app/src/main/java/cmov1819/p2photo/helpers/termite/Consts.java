@@ -58,7 +58,9 @@ public class Consts {
     public static boolean waitAndTerminate(int waitTime, SimWifiP2pSocket socket) {
         try {
             Thread.sleep(waitTime);
-            socket.close();
+            if (socket != null) {
+                socket.close();
+            }
             return true;
         } catch (InterruptedException | IOException exc) {
             // swallow
