@@ -28,6 +28,8 @@ import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
 import static cmov1819.p2photo.LoginActivity.WIFI_DIRECT_SV_RUNNING;
+import static cmov1819.p2photo.R.string.assert_membership;
+import static cmov1819.p2photo.R.string.p2photo_host;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBER_PUBLIC_KEY;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
@@ -37,10 +39,39 @@ import static cmov1819.p2photo.helpers.managers.LogManager.toast;
 public class P2PWebServerInterfaceImpl {
     private static final String P2P_WEB_SV_INTERFACE_TAG = "P2PWebServerInterfaceImpl";
 
+    public static boolean assertMembership(Activity activity, String username, String catalogId) {
+        logInfo(P2P_WEB_SV_INTERFACE_TAG, "Querying P2PWebServer regarding user membership");
+        String baseUrl = "%s%s?username=%s&catalogID=%s";
+        String url = String.format(
+                baseUrl, activity.getString(p2photo_host), activity.getString(assert_membership), username, catalogId);
+
+        RequestData request = new RequestData(activity, GET_MEMBER_PUBLIC_KEY, url);
+        try {
+            ResponseData result = new P2PWebServerMediator().execute(request).get();
+            int code = result.getServerCode();
+            if (code == HttpURLConnection.HTTP_OK) {
+                logInfo(P2P_WEB_SV_INTERFACE_TAG, "Retrieved membership result...");
+                SuccessResponse payload = (SuccessResponse) result.getPayload();
+                return (Integer) payload.getResult() == 0;
+            } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                logWarning(P2P_WEB_SV_INTERFACE_TAG, ((ErrorResponse)result.getPayload()).getReason());
+                toast(activity, "Session timed out, please login again");
+                Intent loginIntent = new Intent(activity, LoginActivity.class);
+                loginIntent.putExtra(WIFI_DIRECT_SV_RUNNING,true);
+                activity.startActivity(loginIntent);
+            } else {
+                logWarning(P2P_WEB_SV_INTERFACE_TAG, ((ErrorResponse)result.getPayload()).getReason());
+            }
+        } catch (ExecutionException | InterruptedException exc) {
+            throw new FailedOperationException(exc.getMessage());
+        }
+        return false;
+    }
+
     public static PublicKey getMemberPublicKey(Activity activity, String username) throws KeyException {
         logInfo(P2P_WEB_SV_INTERFACE_TAG, "Retrieving " + username + "public key from P2P WebServer...");
         String url =
-                activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_member_key) + "?username=" + username;
+                activity.getString(p2photo_host) + activity.getString(R.string.get_member_key) + "?username=" + username;
         RequestData request = new RequestData(activity, GET_MEMBER_PUBLIC_KEY, url);
         try {
             ResponseData result = new P2PWebServerMediator().execute(request).get();
@@ -67,7 +98,7 @@ public class P2PWebServerInterfaceImpl {
     }
 
     public static PublicKey requestPublicKeyFromServer(final Activity activity, String username) throws NoResultsException, FailedOperationException {
-        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.get_member_key)
+        String url = activity.getString(p2photo_host) + activity.getString(R.string.get_member_key)
                 + "&calleeUsername=" + SessionManager.getUsername(activity)
                 + "&toGetUsername=" + username;
 
