@@ -133,7 +133,9 @@ public class WifiDirectManager {
 
                     for (String missingPhoto : missingPhotos) {
                         Callable<String> job =
-                                new GetPhotoFromPeerCallable(device, user, missingPhoto, catalogId, sessionKey,ownerPublicKey);
+                                new GetPhotoFromPeerCallable(
+                                        device, user, missingPhoto, catalogId, sessionKey, ownerPublicKey
+                                );
                         completionService.submit(new CallableManager(job,20, TimeUnit.SECONDS));
                     }
 
