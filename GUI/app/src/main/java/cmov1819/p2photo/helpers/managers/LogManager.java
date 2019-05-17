@@ -39,6 +39,7 @@ public class LogManager {
     public static final String CALLABLE_MGR_TAG = "Callable Manager";
     public static final String WIFI_DIRECT_MGR_TAG = "WiFi Direct Manager";
     public static final String SEND_DATA_TASK_TAG = "SEND DATA";
+    public static final String SERVER_TAG = "SERVER SOCKET";
 
     private static String logText = "";
 
