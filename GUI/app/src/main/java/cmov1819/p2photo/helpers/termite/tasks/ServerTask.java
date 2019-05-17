@@ -15,12 +15,12 @@ import java.io.InputStreamReader;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.util.Map;
 
 import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.exceptions.RSAException;
-import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -40,11 +40,13 @@ import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.Cat
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.assertMembership;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
 import static cmov1819.p2photo.helpers.managers.LogManager.SERVER_TAG;
+import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
 import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
+import static cmov1819.p2photo.helpers.termite.Consts.READY_TO_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
 import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
@@ -57,7 +59,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.OKAY;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
-import static cmov1819.p2photo.helpers.termite.Consts.REFUSED;
+import static cmov1819.p2photo.helpers.termite.Consts.REFUSE;
 import static cmov1819.p2photo.helpers.termite.Consts.REPLY_TO_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.RID;
@@ -110,7 +112,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                                 doRespond(socket, processSessionProposal(request));
                                 break;
                             case REPLY_TO_CHALLENGE:
-                                doRespond(socket, processChangeReply(request));
+                                doRespond(socket, processChallengeReply(request));
                                 break;
                             case LEAVE_GROUP:
                                 doRespond(socket, processSubjectLeaving(request));
@@ -139,24 +141,6 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         return null;
     }
 
-    private String processChangeReply(JSONObject challengeReply) throws JSONException {
-
-        // Decipher the challenge the neighbor sent to me and convert it back to a uuid
-        String base64Challenge = challengeReply.getString(CHALLENGE);
-        byte[] cipheredChallenge = base64StringToByteArray(base64Challenge);
-        byte[] decipheredChallenge = decipherWithRSA(cipheredChallenge, mKeyManager.getmPrivateKey());
-        String challengeSolution = new String(decipheredChallenge);
-        // Make a challenge similar to the one he made, cipher it in his public key and send it as usual, with the
-        // solution to his challenge
-        String myOwnChallenge = CryptoUtils.newUUIDString();
-        String myBase64Challenge = byteArrayToBase64String(cipherWithRSA(myOwnChallenge, targetDevicePublicKey));
-        mKeyManager.getExpectedChallenges().put(jsonResponse.getString("FROM"), myBase64Challenge);
-        JSONObject jsonSolvedChallenge = wfDirectMgr.newBaselineJson(REPLY_TO_CHALLENGE);
-        jsonSolvedChallenge.put(SOLUTION, challengeSolution);
-        jsonSolvedChallenge.put(CHALLENGE, myBase64Challenge);
-
-    }
-
     @Override
     protected void onPostExecute(Void result) {
         logInfo(SERVER_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
@@ -170,7 +154,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
 
         if (sendersPublicKey == null) {
-            return REFUSED;
+            return REFUSE;
         }
 
         if (wfDirectMgr.isValidMessage(SEND_SESSION, message, sendersPublicKey)) {
@@ -179,10 +163,10 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 byte[] cipheredSessionKey = base64StringToByteArray(message.getString(SESSION_KEY));
                 byte[] decipheredSessionKey = decipherWithRSA(cipheredSessionKey, mPrivateKey);
                 SecretKey sessionKey = byteArrayToSecretKey(decipheredSessionKey);
-                mKeyManager.getUncommitSessionKeys().put(username, sessionKey);
+                mKeyManager.getUnCommitSessionKeys().put(username, sessionKey);
             }  catch (RSAException rsa) {
                 logWarning(SERVER_TAG, "Unable to decipher un-commit session key with this device private key...");
-                return REFUSED;
+                return REFUSE;
             }
 
             try {
@@ -202,7 +186,52 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 return FAIL;
             }
         }
-        return REFUSED;
+        return REFUSE;
+    }
+
+    private String processChallengeReply(JSONObject challengeReply) {
+        try {
+            // Retrieve expected challenge for this user
+            Map<String, String> expectedChallenges = mKeyManager.getExpectedChallenges();
+            String username = challengeReply.getString(FROM);
+            String correctSolution = expectedChallenges.get(username);
+            String givenSolution = challengeReply.getString(SOLUTION);
+            // Assert existence and correctness of given solution if no JSON exception occurs
+            if (correctSolution == null) {
+                logWarning(SERVER_TAG,"processChallengeReply didn't expect this user to send a challenge.");
+                return REFUSE;
+            } else if (correctSolution.equals(givenSolution)) {
+                // If solution is correct I also need to reply to the user who answered my challenge
+                String base64challenge = challengeReply.getString(CHALLENGE);
+                byte[] cipheredChallenge = base64StringToByteArray(base64challenge);
+                byte[] decipheredChallenge = decipherWithRSA(cipheredChallenge, mKeyManager.getmPrivateKey());
+                String solution = new String(decipheredChallenge);
+                // Everything is ready on my end to commit, so I move the session key to Ready to Commit map
+                SecretKey keyToCommit = mKeyManager.getUnCommitSessionKeys().get(username);
+                if (keyToCommit == null) {
+                    logError(SERVER_TAG,"processChallengeReply was supposed to have a un-commit key but didn't...");
+                    return FAIL;
+                }
+                mKeyManager.getReadyToCommitSessionKeys().put(username, keyToCommit);
+                // I create a commit response and wait for an OK or ABORT message
+                JSONObject commitResponse = wfDirectMgr.newBaselineJson(READY_TO_COMMIT);
+                commitResponse.put(SOLUTION, solution);
+                wfDirectMgr.conformToTLS(commitResponse, challengeReply.getInt(RID), username);
+                return commitResponse.toString();
+            }
+        } catch (JSONException exc) {
+            logError(SERVER_TAG,"processChallengeReply couldn't obtained required JSON fields on processChallengeReply.");
+            return REFUSE;
+        } catch (RSAException exc) {
+            logError(SERVER_TAG,"processChallengeReply couldn't decipher sent challenge using this device private key.");
+            return REFUSE;
+        } catch (SignatureException exc) {
+            logError(SERVER_TAG,"processChallengeReply couldn't sign the ready to commit reply...");
+            return FAIL;
+        }
+
+        logWarning(SERVER_TAG,"processChallengeReply asserts that given solution is wrong...");
+        return FAIL;
     }
 
     private String processReceivedCatalog(JSONObject message) throws JSONException {
@@ -213,7 +242,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
         if (sendersPublicKey == null) {
             logWarning(SERVER_TAG,"Could not obtain senders public key...");
-            return REFUSED;
+            return REFUSE;
         }
 
         if (wfDirectMgr.isValidMessage(SEND_CATALOG, message, sendersPublicKey)) {
@@ -223,7 +252,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             return OKAY;
         }
 
-        return REFUSED;
+        return REFUSE;
     }
 
     private String processPhotoRequest(JSONObject message) throws JSONException {
@@ -232,7 +261,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
         if (sendersPublicKey == null) {
             logWarning(SERVER_TAG,"Could not obtain senders public key...");
-            return REFUSED;
+            return REFUSE;
         }
 
         if (wfDirectMgr.isValidMessage(SEND_CATALOG, message, sendersPublicKey)) {
@@ -247,7 +276,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             }
         }
 
-        return REFUSED;
+        return REFUSE;
     }
 
     private String processSendPhotoRequest(MainMenuActivity activity, JSONObject message) throws JSONException {
@@ -273,13 +302,13 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
         if (sendersPublicKey == null) {
             logWarning(SERVER_TAG,"Could not obtain senders public key...");
-            return REFUSED;
+            return REFUSE;
         }
         if (wfDirectMgr.isValidMessage(LEAVE_GROUP, message, sendersPublicKey)) {
             mKeyManager.getSessionKeys().remove(username);
             return OKAY;
         }
-        return REFUSED;
+        return REFUSE;
     }
 
     private String processLeaderLeaving(JSONObject message) throws JSONException {
@@ -288,7 +317,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
         if (sendersPublicKey == null) {
             logWarning(SERVER_TAG,"Could not obtain senders public key...");
-            return REFUSED;
+            return REFUSE;
         }
         if (wfDirectMgr.isValidMessage(GO_LEAVE_GROUP, message, sendersPublicKey)) {
             mKeyManager.getSessionKeys().remove(username);
@@ -297,7 +326,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
             return OKAY;
         }
-        return REFUSED;
+        return REFUSE;
     }
 
     /** Helpers */
