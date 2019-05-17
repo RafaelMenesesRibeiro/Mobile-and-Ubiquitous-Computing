@@ -137,7 +137,6 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
     private String replyWithRequestedPhoto(final WifiDirectManager wiFiDirectManager, JSONObject message) throws JSONException {
 
-
         String username = message.getString(USERNAME);
         PublicKey publicKey = tryGetKeyFromLocalMaps(username);
         if (publicKey != null) {
