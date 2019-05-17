@@ -264,7 +264,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         }
         return "";
     }
-    
+
     private String processReceivedCatalog(JSONObject message) throws JSONException {
         logInfo(SERVER_TAG, "Processing incoming catalog...");
 
