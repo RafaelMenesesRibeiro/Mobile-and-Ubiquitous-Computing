@@ -44,24 +44,13 @@ public class LimitStorageFragment extends Fragment {
             public void onClick(View v) {
                 int seekBarValue = seekBar.getProgress();
                 try {
+                    setMaxCacheImageSize(activity, seekBarValue);
                     CatalogOperations.setReplicationLimitInPhotos(activity, seekBarValue);
                 }
                 catch (IOException | JSONException ex) {
                     // TODO. //
                 }
             }
-        });
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                setMaxCacheImageSize(activity, progress);
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) { /* Do nothing */ }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) { /* Do nothing */ }
         });
     }
 }
