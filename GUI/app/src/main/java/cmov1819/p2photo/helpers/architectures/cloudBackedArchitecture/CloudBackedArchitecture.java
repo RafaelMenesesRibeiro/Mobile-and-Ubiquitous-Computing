@@ -202,9 +202,6 @@ public class CloudBackedArchitecture extends BaseArchitecture {
     @Override
     public void viewCatalog(final Activity activity, final View view, String catalogID, String catalogTitle) {
         List<String> googleSliceFileIdentifiersList = getGoogleSliceFileIdentifiersList(activity, catalogID);
-        TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
-        catalogTitleTextView.setText(catalogTitle);
-
         GoogleDriveMediator googleDriveMediator = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getGoogleDriveMediator(activity);
         AuthStateManager authStateManager = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
 

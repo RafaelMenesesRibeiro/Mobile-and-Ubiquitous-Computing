@@ -8,7 +8,8 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE IF NOT EXISTS users (
 	username varchar(50) PRIMARY KEY,
 	password_hash varchar NOT NULL,
-	session_id varchar(50) UNIQUE
+	session_id varchar(50) UNIQUE,
+	public_key text
 );
 
 CREATE TABLE IF NOT EXISTS sessions (

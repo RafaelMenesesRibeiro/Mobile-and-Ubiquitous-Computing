@@ -26,19 +26,15 @@ public class CatalogOperations {
     public static JSONObject readCatalog(Activity activity, String catalogID) throws IOException, JSONException {
         String fileName = String.format("catalog_%s.json", catalogID);
         InputStream inputStream = activity.openFileInput(fileName);
-        String encodedNEncrypted = inputStreamToString(inputStream);
-        byte[] encrypted = Base64.decode(encodedNEncrypted, Base64.DEFAULT);
-        byte[] decrypted = CryptoUtils.decipherWithAes(encrypted);
-        return new JSONObject(new String(decrypted));
+        String read = inputStreamToString(inputStream);
+        return new JSONObject(read);
     }
 
     public static void writeCatalog(Activity activity, String catalogID, JSONObject contents) throws IOException {
         String fileName = String.format("catalog_%s.json", catalogID);
-        byte[] decrypted = ConvertUtils.JSONObjectToByteArray(contents, 4);
-        byte[] encrypted = CryptoUtils.cipherWithAes(decrypted);
-        String encodedNEncrypted = Base64.encodeToString(encrypted, Base64.DEFAULT);
+        byte[] toWrite = ConvertUtils.JSONObjectToByteArray(contents, 4);
         FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
-        outputStream.write(encodedNEncrypted.getBytes());
+        outputStream.write(toWrite);
         outputStream.close();
     }
 

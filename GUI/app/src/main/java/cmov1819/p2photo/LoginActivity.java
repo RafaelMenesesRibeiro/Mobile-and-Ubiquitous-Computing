@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.concurrent.ExecutionException;
 
 import javax.crypto.SecretKey;
@@ -42,6 +43,7 @@ import static cmov1819.p2photo.helpers.CryptoUtils.generateAesKey;
 import static cmov1819.p2photo.helpers.CryptoUtils.generateRSAKeys;
 import static cmov1819.p2photo.helpers.CryptoUtils.loadAESKeys;
 import static cmov1819.p2photo.helpers.CryptoUtils.loadRSAKeys;
+import static cmov1819.p2photo.helpers.CryptoUtils.sendPublicKeyToServer;
 import static cmov1819.p2photo.helpers.CryptoUtils.storeAESKey;
 import static cmov1819.p2photo.helpers.CryptoUtils.storeRSAKeys;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
@@ -128,12 +130,20 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        if (trySignUp(usernameValue, passwordValue)) {
+        KeyPair keyPair = null;
+        try {
+            SecretKey secretKey = generateAesKey();
+            storeAESKey(this, secretKey);
+            keyPair = generateRSAKeys();
+            storeRSAKeys(this, keyPair);
+        }
+        catch (Exception ex) {
+            LogManager.logError(LogManager.LOGIN_TAG, ex.getMessage());
+            System.exit(-3);
+        }
+
+        if (trySignUp(usernameValue, passwordValue, keyPair.getPublic())) {
             try {
-                SecretKey secretKey = generateAesKey();
-                storeAESKey(this, secretKey);
-                KeyPair keyPair = generateRSAKeys();
-                storeRSAKeys(this, keyPair);
                 ArchitectureManager.systemArchitecture.onSignUp(this);
             }
             catch (Exception ex) {
@@ -149,7 +159,7 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    private boolean trySignUp(String usernameValue, String passwordValue) {
+    private boolean trySignUp(String usernameValue, String passwordValue, PublicKey publicKey) {
         try {
             String msg = "Starting Sign Up operation for user: " + usernameValue + "...";
             LogManager.logInfo(LogManager.SIGN_UP_TAG, msg);
@@ -157,6 +167,7 @@ public class LoginActivity extends AppCompatActivity {
             JSONObject requestBody = new JSONObject();
             requestBody.put("username", usernameValue);
             requestBody.put("password", passwordValue);
+            requestBody.put("publicKey", publicKey);
 
             String url = getString(R.string.p2photo_host) + getString(R.string.signup);
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.SIGNUP, url, requestBody);

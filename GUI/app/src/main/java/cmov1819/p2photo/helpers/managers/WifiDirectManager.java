@@ -235,6 +235,7 @@ public class WifiDirectManager {
         return usernameDeviceMap;
     }
 
+
     public Map<String, String> getDeviceUsernameMap() {
         return deviceUsernameMap;
     }

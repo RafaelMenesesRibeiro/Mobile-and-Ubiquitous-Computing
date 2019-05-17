@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,6 +85,8 @@ public class ViewCatalogFragment extends Fragment {
                 int index = dropdownMenu.getSelectedItemPosition();
                 catalogID = catalogIDs.get(index);
                 String catalogTitle = catalogTitles.get(index);
+                TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
+                catalogTitleTextView.setText(catalogTitle);
                 ArchitectureManager.systemArchitecture.viewCatalog(activity, view, catalogID, catalogTitle);
             }
         });
@@ -131,6 +134,8 @@ public class ViewCatalogFragment extends Fragment {
             return false;
         }
 
+        TextView catalogTitleTextView = view.findViewById(R.id.catalogTitleLabel);
+        catalogTitleTextView.setText(catalogTitle);
         ArchitectureManager.systemArchitecture.viewCatalog(activity, view, catalogID, catalogTitle);
         return true;
     }
