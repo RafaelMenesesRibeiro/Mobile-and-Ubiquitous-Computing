@@ -1,2 +1,14 @@
-launchapp e1
-launchapp e2
+newdevice A
+newdevice B
+deployemulator
+deployemulator
+wait 10
+list emus
+assignaddr e1
+assignaddr e2
+binddevice A e1
+binddevice B e2
+installapp e1
+installapp e2
+runapp e1
+runapp e2
