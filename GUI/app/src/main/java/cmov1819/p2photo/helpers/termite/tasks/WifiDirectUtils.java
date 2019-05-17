@@ -11,7 +11,7 @@ import cmov1819.p2photo.helpers.termite.Consts;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
-import static cmov1819.p2photo.helpers.termite.Consts.REFUSED;
+import static cmov1819.p2photo.helpers.termite.Consts.REFUSE;
 
 public class WifiDirectUtils {
 
@@ -31,6 +31,6 @@ public class WifiDirectUtils {
         } catch (IOException ioe) {
             logError(tag,"Could not read reply from output socket input stream...");
         }
-        return REFUSED;
+        return REFUSE;
     }
 }
