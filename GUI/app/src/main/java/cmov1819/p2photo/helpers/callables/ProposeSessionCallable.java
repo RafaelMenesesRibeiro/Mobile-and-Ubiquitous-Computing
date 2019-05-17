@@ -161,26 +161,26 @@ public class ProposeSessionCallable implements Callable<String> {
             String readLine = WifiDirectUtils.receiveResponse(PROPOSE_SESSION_MGR_TAG, clientSocket);
             // Verify if the answer is a READY_TO_COMMIT type and includes the solution to my challenge
             if (isError(readLine)) {
-                WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, ABORT_COMMIT);
+                WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, wfDirectMgr.newBaselineJson(ABORT_COMMIT));
                 logWarning(PROPOSE_SESSION_MGR_TAG, targetDevice + " sent an error response...");
                 return REFUSE;
             }
 
             JSONObject readyToCommitResponse = new JSONObject(readLine);
             if (!wfDirectMgr.isValidResponse(readyToCommitResponse, READY_TO_COMMIT, rid, targetDevicePublicKey)) {
-                WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, ABORT_COMMIT);
+                WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, wfDirectMgr.newBaselineJson(ABORT_COMMIT));
                 logWarning(PROPOSE_SESSION_MGR_TAG, targetDevice + " sent an invalid message...");
                 return FAIL;
             }
 
             if (!readyToCommitResponse.getString(READY_TO_COMMIT).equals(READY_TO_COMMIT)) {
-                WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, ABORT_COMMIT);
+                WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, wfDirectMgr.newBaselineJson(ABORT_COMMIT));
                 logWarning(PROPOSE_SESSION_MGR_TAG, targetDevice + " doesn't want to commit...");
                 return FAIL;
             }
             // Commit and tell the other guy to commit
             mKeyManager.getSessionKeys().put(username, unCommitSessionKey);
-            WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, CONFIRM_COMMIT);
+            WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, wfDirectMgr.newBaselineJson(CONFIRM_COMMIT));
             logInfo(PROPOSE_SESSION_MGR_TAG, targetDevice + " session key established!");
             return OKAY;
 
