@@ -240,6 +240,16 @@ public class WifiDirectManager {
         }
     }
 
+    public boolean isValidResponse(JSONObject response, String operation, int rid, PublicKey senderPublicKey) {
+        if (!isValidMessage(getDeviceName(), rid, response)) {
+            return false;
+        }
+        if (!isValidMessage(operation, response, senderPublicKey)) {
+            return false;
+        }
+        return true;
+    }
+
     public boolean isValidMessage(String operation, JSONObject response, PublicKey publicKey) {
         try {
             if (!response.getString(OPERATION).equals(operation)) {
