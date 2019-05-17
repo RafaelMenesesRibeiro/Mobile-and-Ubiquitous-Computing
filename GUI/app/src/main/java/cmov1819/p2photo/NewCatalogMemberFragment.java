@@ -25,6 +25,7 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.NoMembershipException;
 import cmov1819.p2photo.exceptions.UsernameException;
+import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.helpers.managers.SessionManager;
@@ -115,7 +116,7 @@ public class NewCatalogMemberFragment extends Fragment {
             int code = result.getServerCode();
 
             if (code == HttpURLConnection.HTTP_OK) {
-                // Do nothing. //
+                ArchitectureManager.systemArchitecture.updateCatalogUser(activity, catalogID, username);
             }
             else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();

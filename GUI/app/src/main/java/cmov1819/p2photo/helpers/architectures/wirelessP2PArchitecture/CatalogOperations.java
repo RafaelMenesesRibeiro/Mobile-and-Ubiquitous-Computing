@@ -3,18 +3,27 @@ package cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Base64;
+import android.util.Log;
+
+import com.google.gson.JsonObject;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import cmov1819.p2photo.helpers.ConvertUtils;
 import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.managers.LogManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 import static cmov1819.p2photo.helpers.DateUtils.generateTimestamp;
@@ -26,6 +35,18 @@ public class CatalogOperations {
 
     public static JSONObject readCatalog(Activity activity, String catalogID) throws IOException, JSONException {
         String fileName = String.format("catalog_%s.json", catalogID);
+        File file = activity.getApplicationContext().getFileStreamPath(fileName);
+        if (file == null || !file.exists()) {
+            LogManager.logInfo(LogManager.VIEW_CATALOG_TAG, "Catalog " + fileName + "not found");
+            JSONObject emptyCatalog = new JSONObject();
+            emptyCatalog.put("catalogId", catalogID);
+            emptyCatalog.put("catalogTitle", "");
+            Map<String, List<String>> membersPhotos = new HashMap<>();
+            membersPhotos.put(SessionManager.getUsername(activity), new ArrayList<String>());
+            emptyCatalog.put("membersPhotos", new JSONObject(membersPhotos));
+            return emptyCatalog;
+        }
+
         InputStream inputStream = activity.openFileInput(fileName);
         String read = inputStreamToString(inputStream);
         return new JSONObject(read);

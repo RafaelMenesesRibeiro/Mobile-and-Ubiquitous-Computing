@@ -232,6 +232,15 @@ public class CloudBackedArchitecture extends BaseArchitecture {
     }
 
     /**********************************************************
+     * UPDATE CATALOG USERS
+     ***********************************************************/
+
+    @Override
+    public void updateCatalogUser(final Activity activity, String catalogID, String user) {
+        //Does nothing.
+    }
+
+    /**********************************************************
      * GOOGLE DRIVE HELPERS
      ***********************************************************/
 

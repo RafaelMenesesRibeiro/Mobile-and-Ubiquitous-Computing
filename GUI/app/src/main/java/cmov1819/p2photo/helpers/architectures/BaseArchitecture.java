@@ -24,4 +24,6 @@ public abstract class BaseArchitecture {
     public abstract void newCatalogSlice(final Activity activity, String catalogID, String catalogTitle);
 
     public abstract void viewCatalog(final Activity activity, final View view, String catalogID, String catalogTitle);
+
+    public abstract void updateCatalogUser(final Activity activity, String catalogID, String user);
 }

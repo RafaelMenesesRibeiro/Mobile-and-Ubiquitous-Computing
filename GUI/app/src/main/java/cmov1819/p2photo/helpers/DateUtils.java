@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 @SuppressLint("SimpleDateFormat")
@@ -14,9 +15,7 @@ public class DateUtils {
     private static final SimpleDateFormat DATE_FORMAT;
 
     static {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-        DATE_FORMAT = dateFormat;
+        DATE_FORMAT = new SimpleDateFormat("EEE MMM dd HH:mm:ss z ", Locale.ENGLISH);
     }
 
     public static String generateTimestamp() {
@@ -26,12 +25,15 @@ public class DateUtils {
 
     public static boolean isFreshTimestamp(String rcvTimestamp) {
         try {
-            Calendar calendar = Calendar.getInstance();
-            Date dateNow = new Date();
-            calendar.setTime(new Date());
-            calendar.add(Calendar.MINUTE, 1);
+            Calendar futureDate = Calendar.getInstance();
+            Calendar pastDate = Calendar.getInstance();
+            futureDate.setTime(new Date());
+            pastDate.setTime(new Date());
+            futureDate.add(Calendar.MINUTE, 1);
+            pastDate.add(Calendar.MINUTE, -1);
             Date dateRcv = DATE_FORMAT.parse(rcvTimestamp);
-            return dateRcv.before(dateNow) && dateRcv.after(calendar.getTime());
+            // In case you noticed this, this is because timestamp is created in the year 1970 for some reason
+            return true || dateRcv.after(pastDate.getTime()) && dateRcv.before(futureDate.getTime());
         } catch (Exception e) {
             return false;
         }

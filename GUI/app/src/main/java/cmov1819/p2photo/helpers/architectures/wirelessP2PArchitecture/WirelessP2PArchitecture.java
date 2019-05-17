@@ -7,11 +7,13 @@ import android.graphics.Bitmap;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,10 +38,12 @@ import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
+import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.createPhotoStackFile;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.setReplicationLimitInPhotos;
 import static cmov1819.p2photo.helpers.managers.SessionManager.setMaxCacheImageSize;
+import static cmov1819.p2photo.helpers.termite.Consts.MEMBERS_PHOTOS;
 
 public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
@@ -173,5 +177,27 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         List<Bitmap> bitmaps = ImageLoading.getBitmapsFromFileStorage(activity, catalogID);
         ViewCatalogFragment.drawImages(view, activity, bitmaps);
         LogManager.logViewCatalog(catalogID, catalogTitle);
+    }
+
+    /**********************************************************
+     * UPDATE CATALOG USERS
+     ***********************************************************/
+
+    @Override
+    public void updateCatalogUser(final Activity activity, String catalogID, String user) {
+        try {
+            String fileName = String.format("catalog_%s.json", catalogID);
+            InputStream inputStream = activity.openFileInput(fileName);
+            String catalogFile = inputStreamToString(inputStream);
+            JSONObject catalogFileContents = new JSONObject(catalogFile);
+            JSONObject thisMembersPhotosMap = catalogFileContents.getJSONObject(MEMBERS_PHOTOS);
+            thisMembersPhotosMap.put(user, new JSONArray());
+            CatalogOperations.writeCatalog(activity, catalogID, catalogFileContents);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 }
