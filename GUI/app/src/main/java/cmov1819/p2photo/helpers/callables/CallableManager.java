@@ -7,10 +7,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static cmov1819.p2photo.helpers.managers.LogManager.CALLABLE_MGR_TAG;
+import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 
 public class CallableManager implements Callable<String> {
-    private static final String CALLABLE_MGR_TAG = "CALLABLE MANAGER";
     protected Callable<String> callable;
     protected long timeout;
     protected TimeUnit timeUnit;
@@ -31,7 +32,7 @@ public class CallableManager implements Callable<String> {
             if (exc instanceof TimeoutException) {
                 logWarning(CALLABLE_MGR_TAG, "Peer took too long to reply...");
             } else {
-                logWarning(CALLABLE_MGR_TAG, exc.getMessage());
+                logError(CALLABLE_MGR_TAG, exc.getMessage());
             }
         }
         exec.shutdown();
