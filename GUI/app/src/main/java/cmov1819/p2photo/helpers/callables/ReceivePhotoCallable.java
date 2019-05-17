@@ -17,7 +17,6 @@ import java.util.concurrent.Callable;
 
 import javax.crypto.SecretKey;
 
-import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
@@ -27,7 +26,15 @@ import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading.savePhoto;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
-import static cmov1819.p2photo.helpers.termite.Consts.*;
+import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
+import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
+import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
+import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
+import static cmov1819.p2photo.helpers.termite.Consts.isError;
 
 public class ReceivePhotoCallable implements Callable<String> {
     private static final String GET_PHOTO_FROM_PEER_TAG = "GetPhotoFromPeer";
@@ -91,29 +98,34 @@ public class ReceivePhotoCallable implements Callable<String> {
         SimWifiP2pSocket clientSocket = null;
         try {
             // Construct a new clientSocket and send request
-            LogManager.logInfo(GET_PHOTO_FROM_PEER_TAG, "Creating client socket to " + device.deviceName + "...");
+            logInfo(GET_PHOTO_FROM_PEER_TAG, "Creating client socket to " + device.deviceName + "...");
             clientSocket = new SimWifiP2pSocket(device.getVirtIp(), TERMITE_PORT);
             clientSocket.getOutputStream().write((jsonData.toString() + SEND).getBytes());
             InputStream inputStream = clientSocket.getInputStream();
             // Read response
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
             String encodedResponse = bufferedReader.readLine();
+
+            if (isError(encodedResponse)) {
+                logWarning(GET_PHOTO_FROM_PEER_TAG, encodedResponse);
+                return false;
+            }
+
             byte[] decodedResponse = decipherWithAes(sessionKey, base64StringToByteArray(encodedResponse));
             JSONObject response = new JSONObject(new String(decodedResponse));
             // Process response
             if (isValidResponse(response)) {
                 return trySaveIncomingPhoto(response);
             }
-            LogManager.logInfo(GET_PHOTO_FROM_PEER_TAG, "Operation completed...");
         } catch (IOException ioe) {
-            Log.e(GET_PHOTO_FROM_PEER_TAG, "Error: " + ioe.getMessage());
+            logError(GET_PHOTO_FROM_PEER_TAG, "Error: " + ioe.getMessage());
         } catch (Exception exc) {
-            LogManager.logError(GET_PHOTO_FROM_PEER_TAG, exc.getMessage());
+            logError(GET_PHOTO_FROM_PEER_TAG, exc.getMessage());
         } finally {
             try {
                 if (clientSocket != null) clientSocket.close();
             } catch (IOException ioe) {
-                LogManager.logError(GET_PHOTO_FROM_PEER_TAG, ioe.getMessage());
+                logError(GET_PHOTO_FROM_PEER_TAG, ioe.getMessage());
             }
         }
         return false;
@@ -139,7 +151,7 @@ public class ReceivePhotoCallable implements Callable<String> {
             savePhoto(wifiDirectManager.getMainMenuActivity(), photoUuid, decodedPhoto);
             return true;
         } catch (IOException ioe) {
-            LogManager.logError(GET_PHOTO_FROM_PEER_TAG, ioe.getMessage());
+            logError(GET_PHOTO_FROM_PEER_TAG, ioe.getMessage());
             return false;
         }
     }
