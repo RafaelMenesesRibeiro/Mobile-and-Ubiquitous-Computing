@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -41,6 +42,7 @@ import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 
+import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.CryptoUtils.generateAesKey;
 import static cmov1819.p2photo.helpers.CryptoUtils.generateRSAKeys;
 import static cmov1819.p2photo.helpers.CryptoUtils.loadAESKeys;
@@ -169,7 +171,7 @@ public class LoginActivity extends AppCompatActivity {
             JSONObject requestBody = new JSONObject();
             requestBody.put("username", usernameValue);
             requestBody.put("password", passwordValue);
-            requestBody.put("publicKey", publicKey);
+            requestBody.put("publicKey", byteArrayToBase64String(publicKey.getEncoded()));
 
             String url = getString(R.string.p2photo_host) + getString(R.string.signup);
             RequestData requestData = new PostRequestData(this, RequestData.RequestType.SIGNUP, url, requestBody);

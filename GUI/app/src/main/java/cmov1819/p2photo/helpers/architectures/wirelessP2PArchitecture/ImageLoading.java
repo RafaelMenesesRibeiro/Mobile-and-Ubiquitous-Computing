@@ -23,6 +23,7 @@ import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
@@ -102,9 +103,10 @@ public class ImageLoading {
         SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
         byte[] cipheredBitmap = cipherWithAes(secretKey, contents);
 
-        // TODO - Only add if not my photo. //
-        addPhotoToStack(activity, fileName);
-        // TODO - Verify if space.Enough(); ConvertUtils.bitmapToByteArray might be useful
+        String representsMyPhoto = "_" + SessionManager.getUsername(activity) + "_";
+        if (!fileName.contains(representsMyPhoto)) {
+            addPhotoToStack(activity, fileName);
+        }
         FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
         outputStream.write(cipheredBitmap);
         outputStream.close();

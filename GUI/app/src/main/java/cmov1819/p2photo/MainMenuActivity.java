@@ -174,8 +174,6 @@ public class MainMenuActivity
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
 
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "Number of peers: " + peers.getDeviceList().size());
-        LogManager.toast(this, "Number of peers: " + peers.getDeviceList().size());
-
         // compile list of devices in range
         mPeers.clear();
         mPeers.addAll(peers.getDeviceList());
@@ -191,29 +189,25 @@ public class MainMenuActivity
         // TODO Negotiate session keys with all peers of this group;
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "SimWifiP2pInfo size: " + simWifiP2pInfo.getDevicesInNetwork().size());
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "SimWifiP2pDeviceList size: " + simWifiP2pDeviceList.getDeviceList().size());
-        LogManager.toast(this, "SimWifiP2pInfo size: " + simWifiP2pInfo.getDevicesInNetwork().size());
-        LogManager.toast(this, "SimWifiP2pDeviceList size: " + simWifiP2pDeviceList.getDeviceList().size());
 
         mGroupPeers.clear();
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
             // Set my deviceName
             mDeviceName = simWifiP2pInfo.getDeviceName();
-            LogManager.toast(this, "My device name: " + mDeviceName);
+            LogManager.logInfo(LogManager.MAIN_MENU_TAG, "My device name: " + mDeviceName);
 
             // Load catalog files
             List<JSONObject> myCatalogFiles = loadMyCatalogFiles();
 
             // Update peers list belonging to my group and broadcast my catalog files
             for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
-                LogManager.toast(this, "Device in network: " + deviceName);
+                LogManager.logInfo(LogManager.MAIN_MENU_TAG, "Device in network: " + deviceName);
                 SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
                 mGroupPeers.add(device);
                 mWifiManager.pushCatalogFiles(device, myCatalogFiles);
             }
         } else {
             LogManager.logInfo(LogManager.MAIN_MENU_TAG,"Group has no devices...");
-            LogManager.toast(this, "Group has no devices...");
-
         }
     }
 
