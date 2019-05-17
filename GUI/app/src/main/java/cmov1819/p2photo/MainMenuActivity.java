@@ -92,14 +92,14 @@ public class MainMenuActivity
         // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceConnected");
+            LogManager.logInfo(LogManager.MAIN_MENU_TAG, "ServiceConnection#onServiceConnected");
             mService = new Messenger(service);
             mManager = new SimWifiP2pManager(mService);
             mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
         }
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceDisconnected");
+            LogManager.logInfo(LogManager.MAIN_MENU_TAG, "ServiceConnection#onServiceDisconnected");
             mService = null;
             mManager = null;
             mChannel = null;
@@ -165,8 +165,9 @@ public class MainMenuActivity
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
 
-        LogManager.logInfo(MAIN_MENU_TAG, "New peer information available...");
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "New peer information available...");
+        LogManager.toast(this, "New peer information available...");
+
         // compile list of devices in range
         mPeers.clear();
         mPeers.addAll(peers.getDeviceList());
@@ -179,8 +180,8 @@ public class MainMenuActivity
 
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
-        LogManager.logInfo(MAIN_MENU_TAG, "New membership information available...");
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "New membership information available...");
+        LogManager.toast(this, "New membership information available...");
         mGroupPeers.clear();
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
             // Set my deviceName
