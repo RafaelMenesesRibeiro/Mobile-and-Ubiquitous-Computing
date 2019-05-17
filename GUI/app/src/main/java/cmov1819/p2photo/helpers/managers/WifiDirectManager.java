@@ -1,6 +1,5 @@
 package cmov1819.p2photo.helpers.managers;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -26,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.DateUtils;
 import cmov1819.p2photo.helpers.callables.CallableManager;
+import cmov1819.p2photo.helpers.callables.ProposeSessionCallable;
 import cmov1819.p2photo.helpers.callables.ReceivePhotoCallable;
 import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
 import cmov1819.p2photo.helpers.termite.tasks.ServerTask;
@@ -46,6 +46,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
 import static cmov1819.p2photo.helpers.termite.Consts.GO_LEAVE_GROUP;
 import static cmov1819.p2photo.helpers.termite.Consts.LEAVE_GROUP;
+import static cmov1819.p2photo.helpers.termite.Consts.OKAY;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
@@ -140,21 +141,21 @@ public class WifiDirectManager {
                 int missingPhotosCount = missingPhotos.size();
 
                 ExecutorService executorService = Executors.newFixedThreadPool(missingPhotosCount);
-                ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>(executorService);
+                ExecutorCompletionService<Object> completionService = new ExecutorCompletionService<>(executorService);
 
                 for (SimWifiP2pDevice device : mGroup) {
 
 
                     for (String missingPhoto : missingPhotos) {
-                        Callable<String> job = new ReceivePhotoCallable(device, missingPhoto, catalogId);
+                        Callable<Object> job = new ReceivePhotoCallable(device, missingPhoto, catalogId);
                         completionService.submit(new CallableManager(job,30, TimeUnit.SECONDS));
                     }
 
                     for (int i = 0; i < missingPhotosCount; i++) {
                         try {
-                            Future<String> futureResult = completionService.take();
+                            Future<Object> futureResult = completionService.take();
                             if (!futureResult.isCancelled()) {
-                                String result = futureResult.get();
+                                String result = (String) futureResult.get();
                                 if (result != null) {
                                     missingPhotos.remove(result);
                                 }
@@ -205,19 +206,37 @@ public class WifiDirectManager {
         proposeSession(targetDevices);
     }
 
-    @SuppressLint("StaticFieldLeak")
-    @SuppressWarnings("Duplicates")
-    private void proposeSession(final List<SimWifiP2pDevice> targetDevices) {
+    private static void proposeSession(final List<SimWifiP2pDevice> targetDevices) {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... voids) {
                 WifiDirectManager mWifiDirectManager = WifiDirectManager.getInstance();
-                List<SimWifiP2pDevice> mGroup = mWifiDirectManager.getMainMenuActivity().getmGroupPeers();
 
-                ExecutorService executorService = Executors.newFixedThreadPool(targetDevices.size());
-                ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>(executorService);
+                int devicesInNeedOfSessionEstablishment = targetDevices.size();
 
-                // TODO im here keep going - Im now deleting maps
+                ExecutorService executorService = Executors.newFixedThreadPool(devicesInNeedOfSessionEstablishment);
+                ExecutorCompletionService<SimWifiP2pDevice> completionService = new ExecutorCompletionService<>(executorService);
+
+                for (SimWifiP2pDevice device : targetDevices) {
+                    Callable<String> job = new ProposeSessionCallable(device);
+                    completionService.submit(new CallableManager(job,30, TimeUnit.SECONDS));
+                }
+
+                List<SimWifiP2pDevice> devicesNeedingSecondAttempt = new ArrayList<>();
+
+                for (int i = 0; i < devicesInNeedOfSessionEstablishment; i++) {
+                    try {
+                        Future<SimWifiP2pDevice> futureResult = completionService.take();
+                        if (!futureResult.isCancelled()) {
+                            SimWifiP2pDevice result = futureResult.get();
+                            if (result == null) {
+                                devicesNeedingSecondAttempt.add(result);
+                            }
+                        }
+                    } catch (ExecutionException | InterruptedException exc) {
+                        logWarning(WIFI_DIRECT_MGR_TAG, "A photo download may have been interrupted or timed out!");
+                    }
+                }
 
                 return null;
             }

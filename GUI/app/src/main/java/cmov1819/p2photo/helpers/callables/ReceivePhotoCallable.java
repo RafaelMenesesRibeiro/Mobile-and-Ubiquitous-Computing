@@ -36,7 +36,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 import static cmov1819.p2photo.helpers.termite.Consts.isError;
 import static cmov1819.p2photo.helpers.termite.Consts.waitAndTerminate;
 
-public class ReceivePhotoCallable implements Callable<String> {
+public class ReceivePhotoCallable implements Callable<Object> {
     private WifiDirectManager wdDirectMgr;
     private SimWifiP2pDevice targetDevice;
     private String photoUuid;
@@ -56,7 +56,7 @@ public class ReceivePhotoCallable implements Callable<String> {
     }
 
     @Override
-    public String call() {
+    public Object call() {
         if (requestPhoto()) {
             return photoUuid;
         }
