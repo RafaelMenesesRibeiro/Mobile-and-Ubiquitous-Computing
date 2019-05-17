@@ -7,10 +7,12 @@ import android.content.Intent;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
+import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 
 import static android.widget.Toast.LENGTH_SHORT;
 import static android.widget.Toast.makeText;
+import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.EXTRA_DEVICE_LIST;
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.EXTRA_GROUP_INFO;
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION;
 import static pt.inesc.termite.wifidirect.SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION;
@@ -39,21 +41,20 @@ public class SimWifiP2pBroadcastReceiver extends BroadcastReceiver {
             int state = intent.getIntExtra(SimWifiP2pBroadcast.EXTRA_WIFI_STATE, -1);
             if (state == SimWifiP2pBroadcast.WIFI_P2P_STATE_ENABLED) {
                 LogManager.logInfo(BROADCAST_RECEIVER_TAG, "state = p2p state enabled");
-                makeText(activity,"WiFi Direct enabled", LENGTH_SHORT).show();
+                LogManager.toast(activity, "WiFi Direct enabled");
             } else {
                 LogManager.logInfo(BROADCAST_RECEIVER_TAG, "state = p2p state disabled");
-                makeText(activity,"WiFi Direct disabled", LENGTH_SHORT).show();
+                LogManager.toast(activity, "WiFi Direct disabled");
             }
         } else if (WIFI_P2P_PEERS_CHANGED_ACTION.equals(action)) {
-            makeText(activity,"Peer list changed", LENGTH_SHORT).show();
+            activity.requestPeers();
+            LogManager.toast(activity, "Peer list changed");
         } else if (WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION.equals(action)) {
-            SimWifiP2pInfo groupInfo = (SimWifiP2pInfo)intent.getSerializableExtra(EXTRA_GROUP_INFO);
-            groupInfo.print();
-            makeText(activity,"Network membership changed", LENGTH_SHORT).show();
+            activity.requestGroupInfo();
+            LogManager.toast(activity, "Network membership changed");
         } else if (WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION.equals(action)) {
-            SimWifiP2pInfo groupInfo = (SimWifiP2pInfo)intent.getSerializableExtra(EXTRA_GROUP_INFO);
-            groupInfo.print();
-            makeText(activity,"Group ownership changed", LENGTH_SHORT).show();
+            activity.requestGroupInfo();
+            LogManager.toast(activity, "Group ownership changed");
         }
     }
 }

@@ -15,8 +15,6 @@ import java.io.InputStreamReader;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.crypto.SecretKey;
 
@@ -40,6 +38,7 @@ import static cmov1819.p2photo.helpers.CryptoUtils.newUUIDString;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge.mergeCatalogFiles;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.assertMembership;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
+import static cmov1819.p2photo.helpers.managers.LogManager.SERVER_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
@@ -68,12 +67,9 @@ import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
-    private static final String SERVER_TAG = "SERVER SOCKET";
 
     private WifiDirectManager wfDirectMgr = null;
     private KeyManager mKeyManager = null;
-    private final Map<String, String> expectedChallenges = new ConcurrentHashMap<>();
-    private final Map<String, SecretKey> uncommitSessionKeys = new ConcurrentHashMap<>();
 
     @Override
     protected void onPreExecute() {
@@ -159,7 +155,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 byte[] cipheredSessionKey = base64StringToByteArray(message.getString(SESSION_KEY));
                 byte[] decipheredSessionKey = decipherWithRSA(cipheredSessionKey, mPrivateKey);
                 SecretKey sessionKey = byteArrayToSecretKey(decipheredSessionKey);
-                uncommitSessionKeys.put(username, sessionKey);
+                mKeyManager.getUncommitSessionKeys().put(username, sessionKey);
             }  catch (RSAException rsa) {
                 logWarning(SERVER_TAG, "Unable to decipher un-commit session key with this device private key...");
                 return REFUSED;
@@ -169,7 +165,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 logInfo(SERVER_TAG, "Initiating challenge phase to " + username + "...");
                 JSONObject jsonChallenge = wfDirectMgr.newBaselineJson(SEND_CHALLENGE);
                 String challenge = newUUIDString();
-                expectedChallenges.put(username, challenge);
+                mKeyManager.getExpectedChallenges().put(username, challenge);
                 challenge = byteArrayToBase64String(cipherWithRSA(challenge, sendersPublicKey));
                 jsonChallenge.put(CHALLENGE, challenge);
                 wfDirectMgr.conformToTLS(jsonChallenge, message.getInt(RID), message.getString(FROM));

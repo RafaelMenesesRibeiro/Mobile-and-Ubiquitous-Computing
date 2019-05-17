@@ -66,6 +66,10 @@ public class ConvertUtils {
         return new Gson().fromJson(jsonArray.toString(), new TypeToken<List<String>>(){}.getType());
     }
 
+    public static byte[] secretKeyToByteArray(SecretKey secretKey) {
+        return secretKey.getEncoded();
+    }
+
     public byte[] bitmapToByteArray(Bitmap bitmap, int quality) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.PNG, quality, byteArrayOutputStream);
