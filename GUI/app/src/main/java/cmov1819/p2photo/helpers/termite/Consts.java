@@ -1,5 +1,8 @@
 package cmov1819.p2photo.helpers.termite;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class Consts {
 
     public static final String CONFIRM_RCV = "\n";
@@ -39,6 +42,11 @@ public class Consts {
     public static final String REFUSED = "refused";
     public static final String OKAY = "ok";
 
+    public static final List<String> ERRORS = Arrays.asList(NEED_OPERATION, NO_OPERATION, NO_HAVE, FAIL, REFUSED, OKAY);
+
+    public static boolean isError(String line) {
+        return ERRORS.contains(line);
+    }
 
     public static final int TERMITE_PORT = 10001;
 }
