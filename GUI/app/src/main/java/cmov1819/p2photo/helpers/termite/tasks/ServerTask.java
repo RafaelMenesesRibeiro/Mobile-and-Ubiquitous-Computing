@@ -38,6 +38,7 @@ import static cmov1819.p2photo.helpers.CryptoUtils.newUUIDString;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge.mergeCatalogFiles;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.assertMembership;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
+import static cmov1819.p2photo.helpers.managers.LogManager.SERVER_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
@@ -64,7 +65,6 @@ import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
-    private static final String SERVER_TAG = "SERVER SOCKET";
 
     private WifiDirectManager wfDirectMgr = null;
     private KeyManager mKeyManager = null;
@@ -131,7 +131,6 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     }
 
     private String processSessionProposal(JSONObject message) throws JSONException {
-        // TODO REVIEW THIS PROTOCOL PHASE SPECIALLY CONCURRENCY WISE
         logInfo(SERVER_TAG, "Processing session proposal, purpose phase...");
 
         String username = message.getString(FROM);
