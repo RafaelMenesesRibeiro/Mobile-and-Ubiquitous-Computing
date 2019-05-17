@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.security.SignatureException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -165,5 +166,8 @@ public class WifiDirectManager {
 
     public Map<String, SimWifiP2pDevice> getUsernameDevice() {
         return usernameDevice;
+    }
+
+    public Collection<? extends Bitmap> pullPhotos(List<String> missingPhotos) {
     }
 }
