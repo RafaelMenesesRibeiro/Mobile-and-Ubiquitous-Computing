@@ -301,7 +301,6 @@ public class MainMenuActivity
         int code = result.getServerCode();
         if (code == HttpURLConnection.HTTP_OK) {
             String catalogTitle = (String)((SuccessResponse)result.getPayload()).getResult();
-            // TODO - If this is throwing exception, it may be because of the method CloudBackedArchitecture returns these. //
             GoogleDriveMediator googleDriveMediator = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getGoogleDriveMediator(activity);
             AuthStateManager authStateManager = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
             googleDriveMediator.newCatalogSlice(activity, catalogTitle, catalogId, authStateManager.getAuthState());
