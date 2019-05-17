@@ -2,6 +2,7 @@ package cmov1819.p2photo.helpers.interfaceimpl;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.se.omapi.Session;
 
 import java.net.HttpURLConnection;
 import java.security.PublicKey;
@@ -14,6 +15,7 @@ import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.RSAException;
 import cmov1819.p2photo.helpers.ConvertUtils;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -31,9 +33,9 @@ public class P2PWebServerInterfaceImpl {
 
     public static boolean assertMembership(Activity activity, String username, String catalogId) {
         logInfo(P2P_WEB_SV_INTERFACE_TAG, "Querying P2PWebServer regarding user membership");
-        String baseUrl = "%s%s?username=%s&catalogID=%s";
+        String baseUrl = "%s%s?calleeUsername=%s&toGetUsername=%s&catalogID=%s";
         String url = String.format(
-                baseUrl, activity.getString(p2photo_host), activity.getString(assert_membership), username, catalogId);
+                baseUrl, activity.getString(p2photo_host), activity.getString(assert_membership), SessionManager.getUsername(activity), username, catalogId);
 
         RequestData request = new RequestData(activity, GET_MEMBER_PUBLIC_KEY, url);
         try {
@@ -61,7 +63,7 @@ public class P2PWebServerInterfaceImpl {
     public static PublicKey getMemberPublicKey(Activity activity, String username) {
         logInfo(P2P_WEB_SV_INTERFACE_TAG, "Retrieving " + username + "public key from P2P WebServer...");
         String url =
-                activity.getString(p2photo_host) + activity.getString(R.string.get_member_key) + "?username=" + username;
+                activity.getString(p2photo_host) + activity.getString(R.string.get_member_key) + "?calleeUsername=" + SessionManager.getUsername(activity) + "&toGetUsername=" + username;
         RequestData request = new RequestData(activity, GET_MEMBER_PUBLIC_KEY, url);
         try {
             ResponseData result = new P2PWebServerMediator().execute(request).get();
