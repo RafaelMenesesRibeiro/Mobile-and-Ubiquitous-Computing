@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.SeekBar;
 
 import android.support.annotation.NonNull;
+import android.widget.TextView;
 
 import org.json.JSONException;
 
@@ -38,6 +39,7 @@ public class LimitStorageFragment extends Fragment {
         final SeekBar seekBar = view.findViewById(R.id.seekBar);
         seekBar.setMax(256);
         seekBar.setProgress(getMaxCacheImageSize(activity));
+        changeSeekText(seekBar.getProgress());
         Button done = view.findViewById(R.id.done);
         done.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,5 +54,22 @@ public class LimitStorageFragment extends Fragment {
                 }
             }
         });
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                changeSeekText(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) { /* Do nothing */ }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) { /* Do nothing */ }
+        });
+    }
+
+    private void changeSeekText(int progress) {
+        TextView valueText = view.findViewById(R.id.limitStorageValue);
+        valueText.setText("Chosen: " + progress);
     }
 }
