@@ -115,7 +115,7 @@ public class NewCatalogMemberFragment extends Fragment {
             int code = result.getServerCode();
 
             if (code == HttpURLConnection.HTTP_OK) {
-                // TODO - Change screen? //
+                // Do nothing. //
             }
             else if (code == HttpURLConnection.HTTP_BAD_REQUEST) {
                 ErrorResponse errorResponse = (ErrorResponse) result.getPayload();

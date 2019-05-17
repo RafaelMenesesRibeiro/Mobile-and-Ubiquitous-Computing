@@ -249,7 +249,6 @@ public class LoginActivity extends AppCompatActivity {
             ArchitectureManager.systemArchitecture.setup(view, this);
         }
         catch (FailedOperationException ex) {
-            // TODO - Is this the best way? //
             LogManager.logError(LogManager.LOGIN_TAG, ex.getMessage());
             System.exit(-1);
         }
