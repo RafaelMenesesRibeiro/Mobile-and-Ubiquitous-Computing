@@ -20,6 +20,7 @@ public class LogManager {
     public static final String NEW_CATALOG_TAG = "New Catalog";
     public static final String NEW_CATALOG_MEMBER_TAG = "New Catalog Member";
     public static final String NEW_CATALOG_SLICE_TAG  = "New Catalog Slice";
+    public static final String NEW_MEMBER_KEY = "New Member Key";
     public static final String SEARCH_USER_TAG = "Search User";
     public static final String VIEW_CATALOG_TAG = "View Catalog";
     public static final String VIEW_USER_CATALOGS_TAG = "View User Catalogs";

@@ -70,6 +70,7 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                 case LOGIN:
                     result = performLoginPOST(activity, connection, requestData);
                     break;
+                case NEW_MEMBER_PUBLIC_KEY:
                 case NEW_CATALOG:
                 case NEW_CATALOG_MEMBER:
                     result = performPOST(activity, connection, requestData);

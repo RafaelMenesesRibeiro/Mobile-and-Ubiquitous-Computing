@@ -42,6 +42,7 @@ import static cmov1819.p2photo.helpers.CryptoUtils.generateAesKey;
 import static cmov1819.p2photo.helpers.CryptoUtils.generateRSAKeys;
 import static cmov1819.p2photo.helpers.CryptoUtils.loadAESKeys;
 import static cmov1819.p2photo.helpers.CryptoUtils.loadRSAKeys;
+import static cmov1819.p2photo.helpers.CryptoUtils.sendPublicKeyToServer;
 import static cmov1819.p2photo.helpers.CryptoUtils.storeAESKey;
 import static cmov1819.p2photo.helpers.CryptoUtils.storeRSAKeys;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
@@ -134,6 +135,9 @@ public class LoginActivity extends AppCompatActivity {
                 storeAESKey(this, secretKey);
                 KeyPair keyPair = generateRSAKeys();
                 storeRSAKeys(this, keyPair);
+
+                // TODO -> sendPublicKeyToServer(this, keyPair.getPublic());
+
                 ArchitectureManager.systemArchitecture.onSignUp(this);
             }
             catch (Exception ex) {
