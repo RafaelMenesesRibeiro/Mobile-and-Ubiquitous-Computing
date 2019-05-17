@@ -2,7 +2,6 @@ package cmov1819.p2photo.helpers;
 
 import android.app.Activity;
 import android.content.Context;
-import android.util.Base64;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -39,14 +38,10 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.RSAException;
-import cmov1819.p2photo.helpers.managers.ArchitectureManager;
-import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
-import cmov1819.p2photo.msgtypes.SuccessResponse;
 
-import static android.provider.Settings.System.getString;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPrivateKey;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPublicKey;
