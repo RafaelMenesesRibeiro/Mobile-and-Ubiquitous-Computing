@@ -72,7 +72,7 @@ public class ProposeSessionCallable implements Callable<String> {
     private String proposalProtocol() {
         String readLine = propose();
         if (!isError(readLine)) {
-
+            // TODO Something here
         }
         logWarning(PROPOSE_SESSION_MGR_TAG, "Refusing proposal, challenge response is not well signed or doesn't contain necessary fields!");
         return REFUSED;
@@ -80,15 +80,17 @@ public class ProposeSessionCallable implements Callable<String> {
 
     private String propose() {
         unCommitSessionKey = generateAesKey();
+
+        // Try to generate a session key and put it on un-commit map
         if (unCommitSessionKey == null) {
             logError(PROPOSE_SESSION_MGR_TAG,"Failed to generate a session key for user: " + targetDevice.deviceName + ". Aborting...");
             return FAIL;
         } else {
             logInfo(PROPOSE_SESSION_MGR_TAG,"User: " + targetDevice.deviceName + " now has a un-commit session key...");
             mKeyManager.getUncommitSessionKeys().put(targetDevice.deviceName, unCommitSessionKey);
-            // TODO Put in un-commit status OK?
         }
 
+        // Try to load my neighbor's public key locally or remotely so I can cipher the session key
         targetDevicePublicKey = tryGetKeyFromLocalMaps(targetDevice.deviceName);
         if (targetDevicePublicKey == null) {
             logError(PROPOSE_SESSION_MGR_TAG,"User: " + targetDevice.deviceName + " doesn't have a registered key...");
@@ -96,6 +98,7 @@ public class ProposeSessionCallable implements Callable<String> {
         }
 
         try {
+            // Send a session key to my neighbor with a session key, my signature, a rid and other TLS data
             byte[] encodedSessionKey = secretKeyToByteArray(unCommitSessionKey);
             byte[] cipheredSessionKey = cipherWithRSA(encodedSessionKey, targetDevicePublicKey);
             String base64SessionKey = byteArrayToBase64String(cipheredSessionKey);
@@ -118,16 +121,18 @@ public class ProposeSessionCallable implements Callable<String> {
     private String doSend(JSONObject jsonRequest) {
         SimWifiP2pSocket clientSocket = null;
         try {
+            // Create the client socket to the neighbor and try not to lose it's reference
             logInfo(PROPOSE_SESSION_MGR_TAG, "Creating client socket to " + targetDevice.deviceName + "...");
             clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
-
+            // Write and read from the the channel, respectively
             WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, jsonRequest);
             String response = WifiDirectUtils.receiveResponse(PROPOSE_SESSION_MGR_TAG, clientSocket);
-
+            // Process server response after verifying it's a well formed JSON ChallengeResponse
             JSONObject jsonResponse = isChallengeResponse(response);
             if (jsonResponse == null) {
                 return FAIL;
             } else {
+                // If everything looks OK answerChallenge and on the process, make my own challenge to the neighbor
                 return answerChallenge(clientSocket, jsonResponse);
             }
         } catch (IOException ioe) {
@@ -144,11 +149,13 @@ public class ProposeSessionCallable implements Callable<String> {
 
     private String answerChallenge(SimWifiP2pSocket clientSocket, JSONObject jsonResponse) {
         try {
+            // Decipher the challenge the neighbor sent to me and convert it back to a uuid
             String base64Challenge = jsonResponse.getString(CHALLENGE);
             byte[] cipheredChallenge = base64StringToByteArray(base64Challenge);
             byte[] decipheredChallenge = decipherWithRSA(cipheredChallenge, mKeyManager.getmPrivateKey());
             String challengeSolution = new String(decipheredChallenge);
-
+            // Make a challenge similar to the one he made, cipher it in his public key and send it as usual, with the
+            // solution to his challenge
             String myOwnChallenge = CryptoUtils.newUUIDString();
             String myBase64Challenge = byteArrayToBase64String(cipherWithRSA(myOwnChallenge, targetDevicePublicKey));
             mKeyManager.getExpectedChallenges().put(jsonResponse.getString("FROM"), myBase64Challenge);
@@ -156,11 +163,13 @@ public class ProposeSessionCallable implements Callable<String> {
             jsonSolvedChallenge.put(SOLUTION, challengeSolution);
             jsonSolvedChallenge.put(CHALLENGE, myBase64Challenge);
             wfDirectMgr.conformToTLS(jsonSolvedChallenge, rid, jsonResponse.getString("FROM"));
+            // Using the previous created sockets, write and read from the channel
             WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, jsonSolvedChallenge);
             String readLine = WifiDirectUtils.receiveResponse(PROPOSE_SESSION_MGR_TAG, clientSocket);
-
+            // Verify if the answer is a COMMIT type and includes the solution to my challenge
             // TODO CONTINUE FROM HERE VERIFY COMMIT
-
+            // If commit valid, reply with simple "OK", else send "ABORT"
+            // EOF ????
         } catch (JSONException e) {
             logError(PROPOSE_SESSION_MGR_TAG, "Couldn't retrieve base64 challenge from challenge response...");
         } catch (RSAException e) {
