@@ -7,7 +7,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
@@ -19,12 +18,7 @@ import static cmov1819.p2photo.helpers.termite.tasks.WifiDirectUtils.doSend;
 import static cmov1819.p2photo.helpers.termite.tasks.WifiDirectUtils.receiveResponse;
 
 public class SendDataTask extends AsyncTask<Object, String, Void> {
-    private static final String CONFIRM_RCV = "\n";
-    private static final String SEND = "\n";
-
     private static final int TERMITE_PORT = 10001;
-
-    private WifiDirectManager wiFiDirectManager = null;
 
     @Override
     protected void onPreExecute() {
@@ -33,11 +27,9 @@ public class SendDataTask extends AsyncTask<Object, String, Void> {
 
     @Override
     protected Void doInBackground(final Object... params) {
-        // get singleton instance of our WifiDirectManager
-        wiFiDirectManager = WifiDirectManager.getInstance();
         SimWifiP2pDevice targetDevice = (SimWifiP2pDevice) params[1];
         JSONObject jsonData = (JSONObject) params[2];
-        
+
         SimWifiP2pSocket clientSocket = null;
         try {
             logInfo(SEND_DATA_TASK_TAG, "Creating client socket...");
