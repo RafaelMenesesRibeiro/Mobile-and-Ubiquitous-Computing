@@ -55,6 +55,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.REFUSED;
+import static cmov1819.p2photo.helpers.termite.Consts.REPLY_TO_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.RID;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
@@ -104,8 +105,11 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                             case SEND_SESSION:
                                 doRespond(socket, processSessionProposal(request));
                                 break;
+                            case REPLY_TO_CHALLENGE:
+                                doRespond(socket, processChangeReply(request));
+                                break;
                             default:
-                                doRespond(socket,NO_OPERATION);
+                                doRespond(socket, NO_OPERATION);
                                 break;
                         }
                     } else {
@@ -123,6 +127,9 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             Log.e(SERVER_TAG, "Socket error: " + ioe.getMessage());
         }
         return null;
+    }
+
+    private String processChangeReply(JSONObject request) {
     }
 
     @Override
