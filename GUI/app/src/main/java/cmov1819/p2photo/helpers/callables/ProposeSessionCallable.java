@@ -1,12 +1,8 @@
 package cmov1819.p2photo.helpers.callables;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.PublicKey;
 import java.security.SignatureException;
@@ -28,7 +24,6 @@ import static cmov1819.p2photo.helpers.ConvertUtils.secretKeyToByteArray;
 import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithRSA;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithRSA;
 import static cmov1819.p2photo.helpers.CryptoUtils.generateAesKey;
-import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading.savePhoto;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
 import static cmov1819.p2photo.helpers.managers.LogManager.PROPOSE_SESSION_MGR_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
@@ -37,12 +32,7 @@ import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.termite.Consts.ABORT_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_COMMIT;
-import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
-import static cmov1819.p2photo.helpers.termite.Consts.OKAY;
-import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
-import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.READY_TO_COMMIT;
-import static cmov1819.p2photo.helpers.termite.Consts.REFUSE;
 import static cmov1819.p2photo.helpers.termite.Consts.REPLY_TO_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
@@ -52,7 +42,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 import static cmov1819.p2photo.helpers.termite.Consts.isError;
 import static cmov1819.p2photo.helpers.termite.Consts.waitAndTerminate;
 
-public class ProposeSessionCallable implements Callable<String> {
+public class ProposeSessionCallable implements Callable<SimWifiP2pDevice> {
     private final WifiDirectManager wfDirectMgr;
     private final KeyManager mKeyManager;
     private final SimWifiP2pDevice targetDevice;
@@ -68,19 +58,29 @@ public class ProposeSessionCallable implements Callable<String> {
         this.rid = wfDirectMgr.getRequestId();
     }
 
-    @Override
-    public String call() {
-        logInfo(PROPOSE_SESSION_MGR_TAG, "Initiating a proposal protocol to device: " + targetDevice.deviceName);
-        return proposalProtocol();
+    public SimWifiP2pDevice getTargetDevice() {
+        return targetDevice;
     }
 
-    private String proposalProtocol() {
+    @Override
+    public SimWifiP2pDevice call() {
+        logInfo(PROPOSE_SESSION_MGR_TAG, "Initiating a proposal protocol to device: " + targetDevice.deviceName);
+        if (proposalProtocol()) {
+            // if protocol result ends well return null
+            return null;
+        } else {
+            // else return the device for reattempt
+            return targetDevice;
+        }
+    }
+
+    private boolean proposalProtocol() {
         unCommitSessionKey = generateAesKey();
 
         // Try to generate a session key and put it on un-commit map
         if (unCommitSessionKey == null) {
             logError(PROPOSE_SESSION_MGR_TAG,"Failed to generate a session key for user: " + targetDevice.deviceName + ". Aborting...");
-            return FAIL;
+            return false;
         } else {
             logInfo(PROPOSE_SESSION_MGR_TAG,"User: " + targetDevice.deviceName + " now has a un-commit session key...");
             mKeyManager.getUnCommitSessionKeys().put(targetDevice.deviceName, unCommitSessionKey);
@@ -90,7 +90,7 @@ public class ProposeSessionCallable implements Callable<String> {
         targetDevicePublicKey = tryGetKeyFromLocalMaps(targetDevice.deviceName);
         if (targetDevicePublicKey == null) {
             logError(PROPOSE_SESSION_MGR_TAG,"User: " + targetDevice.deviceName + " doesn't have a registered key...");
-            return REFUSE;
+            return false;
         }
 
         try {
@@ -104,17 +104,17 @@ public class ProposeSessionCallable implements Callable<String> {
             return doSend(requestData);
         } catch (RSAException e) {
             logError(PROPOSE_SESSION_MGR_TAG, "This device could not cipher un-commit session key with RSA...");
-            return FAIL;
+            return false;
         } catch (JSONException jsone) {
             logError(PROPOSE_SESSION_MGR_TAG, "This device could not build a proposal message due to JSON Exception!");
-            return FAIL;
+            return false;
         } catch (SignatureException jsone) {
             logError(PROPOSE_SESSION_MGR_TAG, "This device could not sign the proposal message! Aborting...");
-            return FAIL;
+            return false;
         }
     }
 
-    private String doSend(JSONObject jsonRequest) {
+    private boolean doSend(JSONObject jsonRequest) {
         SimWifiP2pSocket clientSocket = null;
         try {
             // Create the client socket to the neighbor and try not to lose it's reference
@@ -134,10 +134,10 @@ public class ProposeSessionCallable implements Callable<String> {
         } finally {
             waitAndTerminate(5000, clientSocket);
         }
-        return FAIL;
+        return false;
     }
 
-    private String answerChallenge(SimWifiP2pSocket clientSocket, JSONObject jsonResponse) {
+    private boolean answerChallenge(SimWifiP2pSocket clientSocket, JSONObject jsonResponse) {
         try {
             String username = jsonResponse.getString("FROM");
             // Decipher the challenge the neighbor sent to me and convert it back to a uuid
@@ -163,26 +163,26 @@ public class ProposeSessionCallable implements Callable<String> {
             if (isError(readLine)) {
                 WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, wfDirectMgr.newBaselineJson(ABORT_COMMIT));
                 logWarning(PROPOSE_SESSION_MGR_TAG, targetDevice + " sent an error response...");
-                return REFUSE;
+                return false;
             }
 
             JSONObject readyToCommitResponse = new JSONObject(readLine);
             if (!wfDirectMgr.isValidResponse(readyToCommitResponse, READY_TO_COMMIT, rid, targetDevicePublicKey)) {
                 WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, wfDirectMgr.newBaselineJson(ABORT_COMMIT));
                 logWarning(PROPOSE_SESSION_MGR_TAG, targetDevice + " sent an invalid message...");
-                return FAIL;
+                return false;
             }
 
             if (!readyToCommitResponse.getString(READY_TO_COMMIT).equals(READY_TO_COMMIT)) {
                 WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, wfDirectMgr.newBaselineJson(ABORT_COMMIT));
                 logWarning(PROPOSE_SESSION_MGR_TAG, targetDevice + " doesn't want to commit...");
-                return FAIL;
+                return false;
             }
             // Commit and tell the other guy to commit
             mKeyManager.getSessionKeys().put(username, unCommitSessionKey);
             WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, wfDirectMgr.newBaselineJson(CONFIRM_COMMIT));
             logInfo(PROPOSE_SESSION_MGR_TAG, targetDevice + " session key established!");
-            return OKAY;
+            return true;
 
         } catch (JSONException e) {
             logError(PROPOSE_SESSION_MGR_TAG, "Couldn't retrieve base64 challenge from challenge response...");
@@ -191,7 +191,7 @@ public class ProposeSessionCallable implements Callable<String> {
         } catch (SignatureException e) {
             logError(PROPOSE_SESSION_MGR_TAG, "Unable to sign answer to challenge challenge with this private key...");
         }
-        return FAIL;
+        return false;
     }
 
     private JSONObject isChallengeResponse(String response) {
@@ -208,25 +208,6 @@ public class ProposeSessionCallable implements Callable<String> {
             logError(PROPOSE_SESSION_MGR_TAG, "Failed to rebuild JSON of challenge response!");
         }
         return null;
-    }
-
-    private boolean trySaveIncomingPhoto(JSONObject jsonObject) throws JSONException {
-        logInfo(PROPOSE_SESSION_MGR_TAG, "Processing incoming photo...");
-        try {
-            String photoUuid = jsonObject.getString(PHOTO_UUID);
-            String base64photo = jsonObject.getString(PHOTO_FILE);
-            byte[] encodedPhoto = base64StringToByteArray(base64photo);
-            Bitmap decodedPhoto = BitmapFactory.decodeByteArray(encodedPhoto, 0, encodedPhoto.length);
-            savePhoto(wfDirectMgr.getMainMenuActivity(), photoUuid, decodedPhoto);
-            return true;
-        } catch (IOException ioe) {
-            if (ioe instanceof FileNotFoundException) {
-                logWarning(PROPOSE_SESSION_MGR_TAG, "Unable to save photo to this targetDevice's disk...");
-            } else {
-                logError(PROPOSE_SESSION_MGR_TAG, "Output stream errors occurred while saving photos to disk...");
-            }
-        }
-        return false;
     }
 
     /** Helpers */
