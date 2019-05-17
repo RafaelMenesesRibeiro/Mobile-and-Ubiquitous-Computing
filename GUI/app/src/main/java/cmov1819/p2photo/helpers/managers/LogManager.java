@@ -14,6 +14,7 @@ public class LogManager {
     public static final String SIGN_UP_TAG = "Sign Up";
     public static final String LOGIN_TAG = "Login";
     public static final String LOGOUT_TAG = "Logout";
+    public static final String MAIN_MENU_TAG = "Main Menu";
     public static final String ADD_PHOTO_TAG = "Add Photo";
     public static final String LIST_USERS_TAG = "List Users";
     public static final String NEW_CATALOG_TAG = "New Catalog";

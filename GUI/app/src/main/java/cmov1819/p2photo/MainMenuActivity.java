@@ -72,8 +72,6 @@ public class MainMenuActivity
         extends AppCompatActivity
         implements OnNavigationItemSelectedListener, PeerListListener, GroupInfoListener {
 
-    public static final String MAIN_MENU_TAG = "MAIN MENU ACTIVITY";
-    public static final String START_SCREEN = "initialScreen";
     public static final String HOME_SCREEN = SearchUserFragment.class.getName();
 
     private static Resources resources;
@@ -123,14 +121,14 @@ public class MainMenuActivity
         // callbacks for service binding,which are invoked if the service has been correctly connected, or otherwise.
         @Override
         public void onServiceConnected(ComponentName className, IBinder service) {
-            LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceConnected");
+            LogManager.logInfo(LogManager.MAIN_MENU_TAG, "ServiceConnection#onServiceConnected");
             mService = new Messenger(service);
             mManager = new SimWifiP2pManager(mService);
             mChannel = mManager.initialize(getApplication(), getMainLooper(), null);
         }
         @Override
         public void onServiceDisconnected(ComponentName arg0) {
-            LogManager.logInfo(MAIN_MENU_TAG, "ServiceConnection#onServiceDisconnected");
+            LogManager.logInfo(LogManager.MAIN_MENU_TAG, "ServiceConnection#onServiceDisconnected");
             mService = null;
             mManager = null;
             mChannel = null;
@@ -143,6 +141,7 @@ public class MainMenuActivity
     @Override
     public void onPause() {
         super.onPause();
+        // TODO //
         // unregisterReceiver(mReceiver);
     }
 
@@ -167,7 +166,7 @@ public class MainMenuActivity
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
 
         LogManager.logInfo(MAIN_MENU_TAG, "New peer information available...");
-        LogManager.toast(this, "New peer information available...");
+        LogManager.logInfo(LogManager.MAIN_MENU_TAG, "New peer information available...");
         // compile list of devices in range
         mPeers.clear();
         mPeers.addAll(peers.getDeviceList());
@@ -181,7 +180,7 @@ public class MainMenuActivity
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
         LogManager.logInfo(MAIN_MENU_TAG, "New membership information available...");
-        LogManager.toast(this, "New membership information available...");
+        LogManager.logInfo(LogManager.MAIN_MENU_TAG, "New membership information available...");
         mGroupPeers.clear();
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
             // Set my deviceName
@@ -196,7 +195,7 @@ public class MainMenuActivity
                 mWifiManager.pushCatalogFiles(device, myCatalogFiles);
             }
         } else {
-            LogManager.logInfo(MAIN_MENU_TAG,"Group has no devices...");
+            LogManager.logInfo(LogManager.MAIN_MENU_TAG,"Group has no devices...");
         }
     }
 
@@ -207,7 +206,7 @@ public class MainMenuActivity
             try {
                 myCatalogFiles.add(readCatalog(this, catalogId));
             } catch (IOException | JSONException exc) {
-                LogManager.logError(MAIN_MENU_TAG, exc.getMessage());
+                LogManager.logError(LogManager.MAIN_MENU_TAG, exc.getMessage());
             }
         }
         return myCatalogFiles;
@@ -244,7 +243,7 @@ public class MainMenuActivity
                 }
                 catch (FailedOperationException ex) {
                     String msg = "Failed to logout, proceeding.";
-                    LogManager.logError(MAIN_MENU_TAG, msg);
+                    LogManager.logError(LogManager.MAIN_MENU_TAG, msg);
                 }
                 Intent intent = new Intent(this, LoginActivity.class);
                 startActivity(intent);
@@ -307,7 +306,7 @@ public class MainMenuActivity
         }
         else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
             String msg = ((ErrorResponse)result.getPayload()).getReason();
-            LogManager.logWarning(MAIN_MENU_TAG, msg);
+            LogManager.logWarning(LogManager.MAIN_MENU_TAG, msg);
             LogManager.toast(activity, "Session timed out, please login again");
             activity.startActivity(new Intent(activity, LoginActivity.class));
         }
@@ -336,7 +335,7 @@ public class MainMenuActivity
             }
             else {
                 String msg = "The login operation was unsuccessful. Unknown error.";
-                LogManager.logError(MAIN_MENU_TAG, msg);
+                LogManager.logError(LogManager.MAIN_MENU_TAG, msg);
                 throw new FailedOperationException();
             }
         }

@@ -37,23 +37,22 @@
         <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/ic_logout_black_24dp"
-            android:title="Logout"
-            tools:ignore="HardcodedText" />
+            android:title="@string/logout_functionality" />
 
         <item
             android:id="@+id/nav_limit_storage"
-            android:icon="@drawable/ic_log_black_24dp"
-            android:title="App Log" />
+            android:icon="@drawable/ic_storage_black_24dp"
+            android:title="@string/limit_storage" />
 
         <item
             android:id="@+id/nav_show_app_log"
             android:icon="@drawable/ic_log_black_24dp"
-            android:title="App Log" />
+            android:title="@string/view_app_log" />
 
         <item
             android:id="@+id/nav_show_server_log"
             android:icon="@drawable/ic_log_black_24dp"
-            android:title="Server Log" />
+            android:title="@string/view_server_log" />
     </group>
 
 

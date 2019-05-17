@@ -16,8 +16,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 
@@ -123,9 +125,13 @@ public class ConvertUtils {
         }
     }
 
-    public static PublicKey base64StringToPublicKey(String base64PublicKey) throws Exception {
-        X509EncodedKeySpec keySpec = new X509EncodedKeySpec(base64StringToByteArray(base64PublicKey));
-        KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_ALGORITHM);
-        return keyFactory.generatePublic(keySpec);
+    public static PublicKey base64StringToPublicKey(String base64PublicKey) throws RSAException {
+        try {
+            X509EncodedKeySpec keySpec = new X509EncodedKeySpec(base64StringToByteArray(base64PublicKey));
+            KeyFactory keyFactory = KeyFactory.getInstance(ASYMMETRIC_ALGORITHM);
+            return keyFactory.generatePublic(keySpec);
+        } catch (InvalidKeySpecException | NoSuchAlgorithmException exc) {
+            throw new RSAException(exc.getMessage());
+        }
     }
 }
