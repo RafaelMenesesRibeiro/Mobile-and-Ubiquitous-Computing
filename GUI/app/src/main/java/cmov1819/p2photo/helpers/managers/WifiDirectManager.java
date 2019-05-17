@@ -42,6 +42,7 @@ import static cmov1819.p2photo.helpers.DateUtils.isFreshTimestamp;
 import static cmov1819.p2photo.helpers.managers.LogManager.WIFI_DIRECT_MGR_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
+import static cmov1819.p2photo.helpers.managers.LogManager.toast;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
@@ -102,23 +103,27 @@ public class WifiDirectManager {
 
     public void pushCatalogFiles(SimWifiP2pDevice device, List<JSONObject> myCatalogFiles) {
         logInfo(WIFI_DIRECT_MGR_TAG,"Broadcasting catalog to " + device.deviceName);
+        toast(this.mMainMenuActivity,"Broadcasting catalog to " + device.deviceName);
         for (JSONObject catalogFile : myCatalogFiles) {
             try {
                 sendCatalog(device, catalogFile);
             } catch (RuntimeException se) {
                 String msg = "One or more catalog postings have failed due to cipher fail.";
                 logError(WIFI_DIRECT_MGR_TAG, msg);
+                toast(this.mMainMenuActivity,msg);
             }
         }
     }
 
     public void sendCatalog(final SimWifiP2pDevice device, final JSONObject catalogFile) throws RuntimeException {
-        logInfo(WIFI_DIRECT_MGR_TAG,"Sending a catalog to...");
+        logInfo(WIFI_DIRECT_MGR_TAG,"Sending a catalog to..."  + device.deviceName);
+        toast(this.mMainMenuActivity,"Sending a catalog to..." + device.deviceName);
         try {
             JSONObject jsonObject = newBaselineJson(SEND_CATALOG);
             jsonObject.put(CATALOG_FILE, catalogFile);
             doSend(device, jsonObject);
         } catch (JSONException jsone) {
+            toast(this.mMainMenuActivity, jsone.getMessage());
             logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
         }
     }

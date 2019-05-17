@@ -162,11 +162,19 @@ public class MainMenuActivity
      * TERMITE PEER LISTENER (PeerListListener Impl)
      **********************************************************/
 
+    public void requestPeers() {
+        mManager.requestPeers(mChannel, MainMenuActivity.this);
+    }
+
+    public void requestGroupInfo() {
+        mManager.requestGroupInfo(mChannel, MainMenuActivity.this);
+    }
+
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
 
-        LogManager.logInfo(LogManager.MAIN_MENU_TAG, "New peer information available...");
-        LogManager.toast(this, "New peer information available...");
+        LogManager.logInfo(LogManager.MAIN_MENU_TAG, "Number of peers: " + peers.getDeviceList().size());
+        LogManager.toast(this, "Number of peers: " + peers.getDeviceList().size());
 
         // compile list of devices in range
         mPeers.clear();
@@ -181,26 +189,31 @@ public class MainMenuActivity
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
         // TODO Negotiate session keys with all peers of this group;
-        LogManager.logInfo(LogManager.MAIN_MENU_TAG, "New membership information available...");
-        LogManager.logInfo(LogManager.MAIN_MENU_TAG, "SimWifiP2pInfo size: " + simWifiP2pInfo.getDevicesInNetwork().size() +"\nSimWifiP2pDeviceList size: " + simWifiP2pDeviceList.getDeviceList().size());
-        LogManager.toast(this, "New membership information available...");
+        LogManager.logInfo(LogManager.MAIN_MENU_TAG, "SimWifiP2pInfo size: " + simWifiP2pInfo.getDevicesInNetwork().size());
+        LogManager.logInfo(LogManager.MAIN_MENU_TAG, "SimWifiP2pDeviceList size: " + simWifiP2pDeviceList.getDeviceList().size());
         LogManager.toast(this, "SimWifiP2pInfo size: " + simWifiP2pInfo.getDevicesInNetwork().size());
         LogManager.toast(this, "SimWifiP2pDeviceList size: " + simWifiP2pDeviceList.getDeviceList().size());
+
         mGroupPeers.clear();
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
             // Set my deviceName
             mDeviceName = simWifiP2pInfo.getDeviceName();
+            LogManager.toast(this, "My device name: " + mDeviceName);
+
             // Load catalog files
             List<JSONObject> myCatalogFiles = loadMyCatalogFiles();
+
             // Update peers list belonging to my group and broadcast my catalog files
             for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
-                LogManager.toast(this, deviceName);
+                LogManager.toast(this, "Device in network: " + deviceName);
                 SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
                 mGroupPeers.add(device);
                 mWifiManager.pushCatalogFiles(device, myCatalogFiles);
             }
         } else {
             LogManager.logInfo(LogManager.MAIN_MENU_TAG,"Group has no devices...");
+            LogManager.toast(this, "Group has no devices...");
+
         }
     }
 
