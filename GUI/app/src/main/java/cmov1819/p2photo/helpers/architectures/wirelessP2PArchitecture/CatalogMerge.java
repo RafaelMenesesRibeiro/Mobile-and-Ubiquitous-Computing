@@ -2,12 +2,7 @@ package cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture;
 
 import android.app.Activity;
 import android.content.Context;
-import android.widget.Toast;
 
-import com.google.common.reflect.TypeToken;
-import com.google.gson.Gson;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,9 +14,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import cmov1819.p2photo.helpers.ConvertUtils;
 import cmov1819.p2photo.helpers.managers.LogManager;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
+import static cmov1819.p2photo.helpers.managers.LogManager.logError;
+import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
+import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.managers.LogManager.toast;
+import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
+import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_TITLE;
+import static cmov1819.p2photo.helpers.termite.Consts.MEMBERS_PHOTOS;
 
 public class CatalogMerge {
     private static final String CATALOG_MERGER_TAG = "CATALOG MERGER";
@@ -31,51 +34,48 @@ public class CatalogMerge {
 
     public static void mergeCatalogFiles(final Activity activity,
                                          final String catalogId,
-                                         final JSONObject anotherCatalogFileContents) throws JSONException {
+                                         final JSONObject anotherCatalogFile) {
 
-        LogManager.logInfo(
-                CATALOG_MERGER_TAG, String.format("Trying to merge:\n%s\n", anotherCatalogFileContents.toString(4))
-        );
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
             // Load contents
-            LogManager.logInfo(CATALOG_MERGER_TAG, String.format("Loading this device catalog file with %s", catalogId));
+            logInfo(CATALOG_MERGER_TAG, "Trying to merge catalog with" + catalogId + "...");
             String fileName = String.format("catalog_%s.json", catalogId);
             InputStream inputStream = activity.openFileInput(fileName);
             String thisCatalogFileContentsString = inputStreamToString(inputStream);
             JSONObject thisCatalogFileContents = new JSONObject(thisCatalogFileContentsString);
-            JSONObject mergedContents =  mergeCatalogFileContents(thisCatalogFileContents, anotherCatalogFileContents);
+            JSONObject mergedContents =  mergeCatalogFileContents(thisCatalogFileContents, anotherCatalogFile);
             if (mergedContents == null) {
-                Toast.makeText(activity, "Couldn't update catalog file", Toast.LENGTH_SHORT).show();
-                LogManager.logWarning(LogManager.NEW_CATALOG_SLICE_TAG, "Catalog merging resulted in null JSONObject");
+                toast(activity, "Couldn't update catalog file");
+                logWarning(LogManager.NEW_CATALOG_SLICE_TAG, "Catalog merging resulted in null JSONObject");
             } else {
                 FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
-                outputStream.write(mergedContents.toString().getBytes("UTF-8"));
+                outputStream.write(mergedContents.toString().getBytes());
                 outputStream.close();
             }
         } catch (IOException | JSONException exc) {
-            LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
-            LogManager.toast(activity, "Couldn't read stored catalog slice");
+            logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
+            toast(activity, "Couldn't read stored catalog slice");
         }
     }
 
     private static JSONObject mergeCatalogFileContents(JSONObject thisFile, JSONObject otherFile) throws JSONException {
-        String thisId = thisFile.getString("catalogId");
-        String otherId = otherFile.getString("catalogId");
+        String thisId = thisFile.getString(CATALOG_ID);
+        String otherId = otherFile.getString(CATALOG_ID);
 
         if (!thisId.equals(otherId)) {
             return null;
         }
 
-        JSONObject thisMembersPhotosMap = thisFile.getJSONObject("membersPhotos");
-        JSONObject anotherMembersPhotosMap = otherFile.getJSONObject("membersPhotos");
+        JSONObject thisMembersPhotosMap = thisFile.getJSONObject(MEMBERS_PHOTOS);
+        JSONObject anotherMembersPhotosMap = otherFile.getJSONObject(MEMBERS_PHOTOS);
 
         JSONObject mergedMembersPhotoMap = mergeMaps(thisMembersPhotosMap, anotherMembersPhotosMap);
 
         JSONObject mergedCatalogFileContents = new JSONObject();
-        mergedCatalogFileContents.put("catalogId", thisId);
-        mergedCatalogFileContents.put("catalogTitle", thisFile.getString("catalogTitle"));
-        mergedCatalogFileContents.put("membersPhotos", mergedMembersPhotoMap);
+        mergedCatalogFileContents.put(CATALOG_ID, thisId);
+        mergedCatalogFileContents.put(CATALOG_TITLE, thisFile.getString(CATALOG_TITLE));
+        mergedCatalogFileContents.put(MEMBERS_PHOTOS, mergedMembersPhotoMap);
 
         return mergedCatalogFileContents;
     }
@@ -87,8 +87,8 @@ public class CatalogMerge {
             String currentMember = receivedMembers.next();
             try {
                 if (thisMap.has(currentMember)) {
-                    List<String> thisCurrentMemberPhotos = jsonArrayToArrayList(receivedMap.getJSONArray(currentMember));
-                    List<String> receivedCurrentMemberPhotos = jsonArrayToArrayList(thisMap.getJSONArray(currentMember));
+                    List<String> thisCurrentMemberPhotos = ConvertUtils.jsonArrayToArrayList(receivedMap.getJSONArray(currentMember));
+                    List<String> receivedCurrentMemberPhotos = ConvertUtils.jsonArrayToArrayList(thisMap.getJSONArray(currentMember));
                     thisCurrentMemberPhotos.addAll(receivedCurrentMemberPhotos);
                     List<String> mergedCurrentMemberPhotos = new ArrayList<>(new HashSet<>(thisCurrentMemberPhotos));
                     mergedMap.put(currentMember, mergedCurrentMemberPhotos);
@@ -97,14 +97,10 @@ public class CatalogMerge {
                     mergedMap.put(currentMember, receivedMap.getJSONArray(currentMember));
                 }
             } catch (JSONException jsone) {
-                continue;
+                // swallow
             }
         }
         return mergedMap;
     }
 
-    private static List<String> jsonArrayToArrayList(JSONArray jsonArray) {
-        //noinspection UnstableApiUsage
-        return new Gson().fromJson(jsonArray.toString(), new TypeToken<List<String>>(){}.getType());
-    }
 }
