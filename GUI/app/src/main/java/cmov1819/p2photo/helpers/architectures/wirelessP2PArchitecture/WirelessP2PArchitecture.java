@@ -21,16 +21,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.crypto.SecretKey;
+
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.ViewCatalogFragment;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.architectures.BaseArchitecture;
+import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 
+import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
+import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.createPhotoStackFile;
 
 public class WirelessP2PArchitecture extends BaseArchitecture {
@@ -88,13 +93,18 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             throw new FailedOperationException(ioe.getMessage());
         }
 
+        // TODO - Use ImageLoading's helper. //
         // Saves the temp image's bytes to internal storage in a permanent file.
         String username = SessionManager.getUsername(activity);
         String photoName = String.format("%s_%s_%s", catalogId, username, UUID.randomUUID().toString().replace("/", ""));
         FileOutputStream outputStream;
         try {
+            SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
+            byte[] cipheredBitmap = cipherWithAes(secretKey, fileContents);
+            // TODO - Add this photo to the photo stack
+            // TODO - Verify if space.Enough(); ConvertUtils.bitmapToByteArray might be useful
             outputStream = activity.openFileOutput(photoName, Context.MODE_PRIVATE);
-            outputStream.write(fileContents);
+            outputStream.write(cipheredBitmap);
             outputStream.close();
         }
         catch (IOException ex) {

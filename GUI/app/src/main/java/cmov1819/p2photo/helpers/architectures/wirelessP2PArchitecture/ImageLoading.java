@@ -103,9 +103,9 @@ public class ImageLoading {
         InputStream inputStream = activity.openFileInput(fileName);
         try {
             byte[] cipheredBitmap = IOUtils.toByteArray(inputStream);
-            //SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
-            //byte[] bitmapBytes = decipherWithAes(secretKey, cipheredBitmap);
-            return byteArrayToBitmap(cipheredBitmap);
+            SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
+            byte[] bitmapBytes = decipherWithAes(secretKey, cipheredBitmap);
+            return byteArrayToBitmap(bitmapBytes);
         } catch (IOException ieo) {
             throw new FileNotFoundException("IOException when converting inputStream to bitmap");
         }
