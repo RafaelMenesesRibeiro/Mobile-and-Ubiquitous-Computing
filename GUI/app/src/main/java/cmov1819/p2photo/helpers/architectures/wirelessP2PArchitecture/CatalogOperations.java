@@ -2,6 +2,7 @@ package cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Base64;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,14 +12,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 
-import android.util.Base64;
-
 import cmov1819.p2photo.helpers.ConvertUtils;
 import cmov1819.p2photo.helpers.CryptoUtils;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
 import static cmov1819.p2photo.helpers.DateUtils.generateTimestamp;
-import static cmov1819.p2photo.helpers.DateUtils.isOlderTimestamp;
+import static cmov1819.p2photo.helpers.DateUtils.isOneTimestampBeforeAnother;
 
 public class CatalogOperations {
     private static final String PHOTO_STACK_FILE_NAME = "photosStack.json";
@@ -99,7 +98,7 @@ public class CatalogOperations {
         String oldest = "";
         for (Iterator key = jsonObject.keys(); key.hasNext(); ) {
             String timestamp = jsonObject.getString((String) key.next());
-            isOlderTimestamp(oldest, timestamp);
+            isOneTimestampBeforeAnother(oldest, timestamp);
         }
         return oldest;
     }
