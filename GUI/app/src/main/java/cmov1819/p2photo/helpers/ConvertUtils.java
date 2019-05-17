@@ -5,7 +5,10 @@ import android.graphics.BitmapFactory;
 import android.util.Base64;
 
 import com.google.android.gms.common.util.IOUtils;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -22,6 +25,7 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.List;
 
 import cmov1819.p2photo.exceptions.RSAException;
 
@@ -52,6 +56,11 @@ public class ConvertUtils {
     public static Bitmap inputStreamToBitmap(InputStream inputStream) throws IOException {
         byte[] bitmapBytes = IOUtils.toByteArray(inputStream);
         return BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+    }
+
+    public static List<String> jsonArrayToArrayList(JSONArray jsonArray) {
+        //noinspection UnstableApiUsage
+        return new Gson().fromJson(jsonArray.toString(), new TypeToken<List<String>>(){}.getType());
     }
 
     public byte[] bitmapToByteArray(Bitmap bitmap, int quality) {
