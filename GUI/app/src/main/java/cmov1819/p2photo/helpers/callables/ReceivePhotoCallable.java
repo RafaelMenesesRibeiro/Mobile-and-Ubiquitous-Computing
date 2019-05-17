@@ -40,26 +40,21 @@ import static cmov1819.p2photo.helpers.termite.Consts.isError;
 
 public class ReceivePhotoCallable implements Callable<String> {
     private WifiDirectManager wifiDirectManager;
-    private SimWifiP2pDevice device;
-    private String username;
+    private SimWifiP2pDevice targetDevice;
     private String photoUuid;
     private String catalogId;
     private SecretKey sessionKey;
     private PublicKey publicKey;
     private int rid;
 
-    public ReceivePhotoCallable(SimWifiP2pDevice device,
-                                String username,
-                                String photoUuid,
-                                String catalogId) {
+    public ReceivePhotoCallable(SimWifiP2pDevice targetDevice, String photoUuid, String catalogId) {
 
         this.wifiDirectManager = WifiDirectManager.getInstance();
-        this.device = device;
-        this.username = username;
+        this.targetDevice = targetDevice;
         this.photoUuid = photoUuid;
         this.catalogId = catalogId;
-        this.sessionKey = KeyManager.getInstance().getSessionKeys().get(device.deviceName);
-        this.publicKey = KeyManager.getInstance().getPublicKeys().get(device.deviceName);
+        this.sessionKey = KeyManager.getInstance().getSessionKeys().get(targetDevice.deviceName);
+        this.publicKey = KeyManager.getInstance().getPublicKeys().get(targetDevice.deviceName);
         this.rid = wifiDirectManager.getRequestId();
     }
 
@@ -73,11 +68,11 @@ public class ReceivePhotoCallable implements Callable<String> {
 
     private boolean requestPhoto() {
         try {
-            logInfo(RCV_PHOTO_TAG, String.format("Request photo: %s to %s", photoUuid, device.deviceName));
+            logInfo(RCV_PHOTO_TAG, String.format("Request photo: %s to %s", photoUuid, targetDevice.deviceName));
             JSONObject jsonObject = wifiDirectManager.newBaselineJson(REQUEST_PHOTO);
             jsonObject.put(CATALOG_ID, catalogId);
             jsonObject.put(PHOTO_UUID, photoUuid);
-            wifiDirectManager.conformToTLS(jsonObject, wifiDirectManager.getRequestId(), device.deviceName);
+            wifiDirectManager.conformToTLS(jsonObject, wifiDirectManager.getRequestId(), targetDevice.deviceName);
             return doSend(jsonObject);
         } catch (JSONException jsone) {
             logError(RCV_PHOTO_TAG, "catalogFileContents.toString() failed resulting in exception");
@@ -91,8 +86,8 @@ public class ReceivePhotoCallable implements Callable<String> {
         SimWifiP2pSocket clientSocket = null;
         try {
             // Construct a new clientSocket and send request
-            logInfo(RCV_PHOTO_TAG, "Creating client socket to " + device.deviceName + "...");
-            clientSocket = new SimWifiP2pSocket(device.getVirtIp(), TERMITE_PORT);
+            logInfo(RCV_PHOTO_TAG, "Creating client socket to " + targetDevice.deviceName + "...");
+            clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
             clientSocket.getOutputStream().write((jsonData.toString() + SEND).getBytes());
             InputStream inputStream = clientSocket.getInputStream();
             // Read response
@@ -125,7 +120,7 @@ public class ReceivePhotoCallable implements Callable<String> {
     }
 
     public boolean isValidResponse(JSONObject response) {
-        if (!wifiDirectManager.isValidMessage(username, rid, response)) {
+        if (!wifiDirectManager.isValidMessage(targetDevice.deviceName, rid, response)) {
             return false;
         }
         if (!wifiDirectManager.isValidMessage(SEND_PHOTO, response, publicKey)) {
@@ -145,7 +140,7 @@ public class ReceivePhotoCallable implements Callable<String> {
             return true;
         } catch (IOException ioe) {
             if (ioe instanceof FileNotFoundException) {
-                logWarning(RCV_PHOTO_TAG, "Unable to save photo to this device's disk...");
+                logWarning(RCV_PHOTO_TAG, "Unable to save photo to this targetDevice's disk...");
             } else {
                 logError(RCV_PHOTO_TAG, "Output stream errors occurred while saving photos to disk...");
             }
