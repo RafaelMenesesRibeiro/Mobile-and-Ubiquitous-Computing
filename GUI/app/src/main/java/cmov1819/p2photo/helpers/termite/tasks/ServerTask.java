@@ -12,8 +12,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
@@ -45,11 +43,9 @@ import static cmov1819.p2photo.helpers.managers.LogManager.SERVER_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
-import static cmov1819.p2photo.helpers.managers.LogManager.toast;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
 import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
-import static cmov1819.p2photo.helpers.termite.Consts.READY_TO_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
 import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
@@ -62,6 +58,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.OKAY;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
+import static cmov1819.p2photo.helpers.termite.Consts.READY_TO_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.REFUSE;
 import static cmov1819.p2photo.helpers.termite.Consts.REPLY_TO_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
@@ -216,7 +213,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                     return FAIL;
                 }
                 mKeyManager.getReadyToCommitSessionKeys().put(username, keyToCommit);
-                // I create a commit response and wait for an OK or ABORT message
+                // I create a commit response and wait for an OK or ABORT_COMMIT message
                 JSONObject commitResponse = wfDirectMgr.newBaselineJson(READY_TO_COMMIT);
                 commitResponse.put(SOLUTION, solution);
                 wfDirectMgr.conformToTLS(commitResponse, challengeReply.getInt(RID), username);

@@ -34,10 +34,14 @@ import static cmov1819.p2photo.helpers.managers.LogManager.PROPOSE_SESSION_MGR_T
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.termite.Consts.ABORT_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
+import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
+import static cmov1819.p2photo.helpers.termite.Consts.OKAY;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
+import static cmov1819.p2photo.helpers.termite.Consts.READY_TO_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.REFUSE;
 import static cmov1819.p2photo.helpers.termite.Consts.REPLY_TO_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CHALLENGE;
@@ -46,6 +50,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
 import static cmov1819.p2photo.helpers.termite.Consts.SOLUTION;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 import static cmov1819.p2photo.helpers.termite.Consts.isError;
+import static cmov1819.p2photo.helpers.termite.Consts.waitAndTerminate;
 
 public class ProposeSessionCallable implements Callable<String> {
     private final WifiDirectManager wfDirectMgr;
@@ -70,15 +75,6 @@ public class ProposeSessionCallable implements Callable<String> {
     }
 
     private String proposalProtocol() {
-        String readLine = propose();
-        if (!isError(readLine)) {
-            // TODO Something here
-        }
-        logWarning(PROPOSE_SESSION_MGR_TAG, "Refusing proposal, challenge response is not well signed or doesn't contain necessary fields!");
-        return REFUSE;
-    }
-
-    private String propose() {
         unCommitSessionKey = generateAesKey();
 
         // Try to generate a session key and put it on un-commit map
@@ -133,6 +129,7 @@ public class ProposeSessionCallable implements Callable<String> {
                 return FAIL;
             } else {
                 // If everything looks OK answerChallenge and on the process, make my own challenge to the neighbor
+                waitAndTerminate(5000, clientSocket);
                 return answerChallenge(clientSocket, jsonResponse);
             }
         } catch (IOException ioe) {
@@ -144,32 +141,61 @@ public class ProposeSessionCallable implements Callable<String> {
                 logError(PROPOSE_SESSION_MGR_TAG, ioe.getMessage());
             }
         }
+
+        if (clientSocket != null) {
+            waitAndTerminate(5000, clientSocket);
+        }
+
         return FAIL;
     }
 
     private String answerChallenge(SimWifiP2pSocket clientSocket, JSONObject jsonResponse) {
         try {
+            String username = jsonResponse.getString("FROM");
             // Decipher the challenge the neighbor sent to me and convert it back to a uuid
             String base64Challenge = jsonResponse.getString(CHALLENGE);
             byte[] cipheredChallenge = base64StringToByteArray(base64Challenge);
             byte[] decipheredChallenge = decipherWithRSA(cipheredChallenge, mKeyManager.getmPrivateKey());
             String challengeSolution = new String(decipheredChallenge);
             // Make a challenge similar to the one he made, cipher it in his public key and send it as usual, with the
+
             // solution to his challenge
             String myOwnChallenge = CryptoUtils.newUUIDString();
             String myBase64Challenge = byteArrayToBase64String(cipherWithRSA(myOwnChallenge, targetDevicePublicKey));
-            mKeyManager.getExpectedChallenges().put(jsonResponse.getString("FROM"), myBase64Challenge);
+            mKeyManager.getExpectedChallenges().put(username, myBase64Challenge);
             JSONObject jsonSolvedChallenge = wfDirectMgr.newBaselineJson(REPLY_TO_CHALLENGE);
             jsonSolvedChallenge.put(SOLUTION, challengeSolution);
             jsonSolvedChallenge.put(CHALLENGE, myBase64Challenge);
-            wfDirectMgr.conformToTLS(jsonSolvedChallenge, rid, jsonResponse.getString("FROM"));
+            wfDirectMgr.conformToTLS(jsonSolvedChallenge, rid, username);
+
             // Using the previous created sockets, write and read from the channel
             WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, jsonSolvedChallenge);
             String readLine = WifiDirectUtils.receiveResponse(PROPOSE_SESSION_MGR_TAG, clientSocket);
             // Verify if the answer is a READY_TO_COMMIT type and includes the solution to my challenge
-            
-            // If commit valid, reply with simple "OK", else send "ABORT"
-            // EOF ????
+            if (isError(readLine)) {
+                WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, ABORT_COMMIT);
+                logWarning(PROPOSE_SESSION_MGR_TAG, targetDevice + " sent an error response...");
+                return REFUSE;
+            }
+
+            JSONObject readyToCommitResponse = new JSONObject(readLine);
+            if (!wfDirectMgr.isValidResponse(readyToCommitResponse, READY_TO_COMMIT, rid, targetDevicePublicKey)) {
+                WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, ABORT_COMMIT);
+                logWarning(PROPOSE_SESSION_MGR_TAG, targetDevice + " sent an invalid message...");
+                return FAIL;
+            }
+
+            if (!readyToCommitResponse.getString(READY_TO_COMMIT).equals(READY_TO_COMMIT)) {
+                WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, ABORT_COMMIT);
+                logWarning(PROPOSE_SESSION_MGR_TAG, targetDevice + " doesn't want to commit...");
+                return FAIL;
+            }
+            // Commit and tell the other guy to commit
+            mKeyManager.getSessionKeys().put(username, unCommitSessionKey);
+            WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, CONFIRM_COMMIT);
+            logInfo(PROPOSE_SESSION_MGR_TAG, targetDevice + " session key established!");
+            return OKAY;
+
         } catch (JSONException e) {
             logError(PROPOSE_SESSION_MGR_TAG, "Couldn't retrieve base64 challenge from challenge response...");
         } catch (RSAException e) {
