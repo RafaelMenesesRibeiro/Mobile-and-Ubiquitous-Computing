@@ -32,8 +32,13 @@ public class Consts {
     public static final String SESSION_KEY = "sessionKey";
     public static final String CHALLENGE = "challenge";
 
+    public static final String NEED_OPERATION = "malformed";
+    public static final String NO_OPERATION = "unsupported";
+    public static final String NO_HAVE = "none";
     public static final String FAIL = "fail";
     public static final String REFUSED = "refused";
+    public static final String OKAY = "ok";
+
 
     public static final int TERMITE_PORT = 10001;
 }
