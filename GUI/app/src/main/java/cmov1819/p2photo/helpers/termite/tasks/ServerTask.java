@@ -12,14 +12,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.security.KeyException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
 
 import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
-import cmov1819.p2photo.helpers.DateUtils;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -30,10 +29,9 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes;
-import static cmov1819.p2photo.helpers.CryptoUtils.signData;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge.mergeCatalogFiles;
-import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.assertMembership;
+import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
@@ -47,10 +45,8 @@ import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.RID;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
-import static cmov1819.p2photo.helpers.termite.Consts.SIGNATURE;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
-import static cmov1819.p2photo.helpers.termite.Consts.TIMESTAMP;
-import static cmov1819.p2photo.helpers.termite.Consts.TO;
 import static cmov1819.p2photo.helpers.termite.Consts.USERNAME;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
@@ -86,10 +82,13 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                     if (request.has(OPERATION)) {
                         switch (request.getString(OPERATION)) {
                             case SEND_CATALOG:
-                                doRespond(socket, processIncomingCatalog(mWifiDirectManager, request));
+                                doRespond(socket, processReceivedCatalog(request));
                                 break;
                             case REQUEST_PHOTO:
-                                doRespond(socket, replyWithRequestedPhoto(mWifiDirectManager, request));
+                                doRespond(socket, processPhotoRequest(request));
+                                break;
+                            case SEND_SESSION:
+                                doRespond(socket, processSessionProposal(request));
                                 break;
                             default:
                                 doRespond(socket,"warning: '" + OPERATION + "' is unsupported...");
@@ -113,13 +112,35 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         return null;
     }
 
-    private String processIncomingCatalog(WifiDirectManager wiFiDirectManager, JSONObject message) throws JSONException {
+    @Override
+    protected void onPostExecute(Void result) {
+        logInfo(SERVER_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
+    }
+
+    private String processSessionProposal(JSONObject message) throws JSONException {
         logInfo(SERVER_TAG, "Processing incoming catalog...");
         String username = message.getString(USERNAME);
-        PublicKey publicKey = tryGetKeyFromLocalMaps(username);
-        if (publicKey != null) {
+        PrivateKey mPrivateKey = mKeyManager.getmPrivateKey();
+        PublicKey sendersPublicKey = getMemberPublicKey(mWifiDirectManager.getMainMenuActivity(), username);
+
+        if (sendersPublicKey != null) {
+            logInfo(SERVER_TAG,"Verifying proposer's signature...");
+            if (mWifiDirectManager.isValidMessage(SEND_SESSION, message, sendersPublicKey)) {
+                // JSONObject jsonChallenge = message.getJSONObject();
+                // TODO IM HERE
+                return "";
+            }
+        }
+        return "";
+    }
+
+    private String processReceivedCatalog(JSONObject message) throws JSONException {
+        logInfo(SERVER_TAG, "Processing incoming catalog...");
+        String username = message.getString(USERNAME);
+        PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
+        if (sendersPublicKey != null) {
             logInfo(SERVER_TAG,"Verifying sender's signature...");
-            if (mWifiDirectManager.isValidMessage(SEND_CATALOG, message, publicKey)) {
+            if (mWifiDirectManager.isValidMessage(SEND_CATALOG, message, sendersPublicKey)) {
                 JSONObject catalogFile = message.getJSONObject(CATALOG_FILE);
                 String catalogId = catalogFile.getString(CATALOG_ID);
                 mergeCatalogFiles(mWifiDirectManager.getMainMenuActivity(), catalogId, catalogFile);
@@ -130,24 +151,17 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         return "";
     }
 
-    @Override
-    protected void onPostExecute(Void result) {
-        logInfo(SERVER_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
-    }
-
-    private String replyWithRequestedPhoto(final WifiDirectManager wiFiDirectManager, JSONObject message) throws JSONException {
+    private String processPhotoRequest(JSONObject message) throws JSONException {
 
         String username = message.getString(USERNAME);
-        PublicKey publicKey = tryGetKeyFromLocalMaps(username);
-        if (publicKey != null) {
+        PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
+        if (sendersPublicKey != null) {
             logInfo(SERVER_TAG,"Verifying sender's signature...");
-            if (mWifiDirectManager.isValidMessage(SEND_CATALOG, message, publicKey)) {
+            if (mWifiDirectManager.isValidMessage(SEND_CATALOG, message, sendersPublicKey)) {
                 String device = message.getString(FROM);
                 mWifiDirectManager.getDeviceUsernameMap().put(device, username);
                 String catalogId = message.getString(CATALOG_ID);
-
                 MainMenuActivity mMainMenuActivity = mWifiDirectManager.getMainMenuActivity();
-
                 if (assertMembership(mMainMenuActivity, username, catalogId)) {
                     String clearText = processSendPhotoRequest(mMainMenuActivity, message);
                     if (!clearText.equals("")) {
@@ -165,15 +179,13 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     private String processSendPhotoRequest(MainMenuActivity activity, JSONObject message) throws JSONException {
         try {
             Bitmap photo = ImageLoading.loadPhoto(activity, message.getString(PHOTO_UUID));
-            JSONObject data = mWifiDirectManager.newBaselineJson(SEND_PHOTO);
-            data.put(PHOTO_UUID, message.getString(PHOTO_UUID));
-            data.put(PHOTO_FILE, byteArrayToBase64String(bitmapToByteArray(photo)));
-            data.put(RID, message.getString(RID));
-            data.put(FROM, activity.getDeviceName());
-            data.put(TO, message.getString(FROM));
-            data.put(TIMESTAMP, DateUtils.generateTimestamp());
-            data.put(SIGNATURE, signData(mKeyManager.getmPrivateKey(), data));
-            return data.toString();
+            JSONObject jsonObject = mWifiDirectManager.newBaselineJson(SEND_PHOTO);
+            jsonObject.put(PHOTO_UUID, message.getString(PHOTO_UUID));
+            jsonObject.put(PHOTO_FILE, byteArrayToBase64String(bitmapToByteArray(photo)));
+            mWifiDirectManager.conformToTLS(
+                    jsonObject, message.getInt(RID), activity.getDeviceName(), message.getString(FROM)
+            );
+            return jsonObject.toString();
         } catch (FileNotFoundException fnfe) {
             logWarning(SERVER_TAG, "Photo not found locally");
             return "";
@@ -188,20 +200,12 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     private PublicKey tryGetKeyFromLocalMaps(String username) {
         PublicKey key = mKeyManager.getPublicKeys().get(username);
         if (key == null) {
-            try {
-                key = getMemberPublicKey(mWifiDirectManager.getMainMenuActivity(), username);
-            } catch (KeyException ke) {
-                logWarning(SERVER_TAG, ke.getMessage());
-            }
+            key = getMemberPublicKey(mWifiDirectManager.getMainMenuActivity(), username);
             if (key != null) {
                 mKeyManager.getPublicKeys().put(username, key);
             }
         }
         return key;
-    }
-
-    private void doRespond(SimWifiP2pSocket socket, JSONObject jsonObject) throws IOException {
-        doRespond(socket, jsonObject.toString());
     }
 
     private void doRespond(SimWifiP2pSocket socket, String string) throws IOException {
