@@ -49,9 +49,7 @@ public class LimitStorageFragment extends Fragment {
                     setMaxCacheImageSize(activity, seekBarValue);
                     CatalogOperations.setReplicationLimitInPhotos(activity, seekBarValue);
                 }
-                catch (IOException | JSONException ex) {
-                    // TODO. //
-                }
+                catch (IOException | JSONException ex) { /* Do nothing. */ }
             }
         });
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {

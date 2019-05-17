@@ -22,6 +22,7 @@ import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.exceptions.RSAException;
+import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading;
 import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
@@ -40,6 +41,7 @@ import static cmov1819.p2photo.helpers.CryptoUtils.newUUIDString;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogMerge.mergeCatalogFiles;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.assertMembership;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
+import static cmov1819.p2photo.helpers.managers.LogManager.SERVER_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.managers.LogManager.toast;
@@ -49,6 +51,8 @@ import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
 import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
+import static cmov1819.p2photo.helpers.termite.Consts.GO_LEAVE_GROUP;
+import static cmov1819.p2photo.helpers.termite.Consts.LEAVE_GROUP;
 import static cmov1819.p2photo.helpers.termite.Consts.NEED_OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.NO_HAVE;
 import static cmov1819.p2photo.helpers.termite.Consts.NO_OPERATION;
@@ -57,6 +61,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.REFUSED;
+import static cmov1819.p2photo.helpers.termite.Consts.REPLY_TO_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.RID;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
@@ -64,10 +69,10 @@ import static cmov1819.p2photo.helpers.termite.Consts.SEND_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
 import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
+import static cmov1819.p2photo.helpers.termite.Consts.SOLUTION;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
-    private static final String SERVER_TAG = "SERVER SOCKET";
 
     private WifiDirectManager wfDirectMgr = null;
     private KeyManager mKeyManager = null;
@@ -107,8 +112,17 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                             case SEND_SESSION:
                                 doRespond(socket, processSessionProposal(request));
                                 break;
+                            case REPLY_TO_CHALLENGE:
+                                doRespond(socket, processChangeReply(request));
+                                break;
+                            case LEAVE_GROUP:
+                                doRespond(socket, processSubjectLeaving(request));
+                                break;
+                            case GO_LEAVE_GROUP:
+                                doRespond(socket, processLeaderLeaving(request));
+                                break;
                             default:
-                                doRespond(socket,NO_OPERATION);
+                                doRespond(socket, NO_OPERATION);
                                 break;
                         }
                     } else {
@@ -128,13 +142,30 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         return null;
     }
 
+    private String processChangeReply(JSONObject challengeReply) throws JSONException {
+
+        // Decipher the challenge the neighbor sent to me and convert it back to a uuid
+        String base64Challenge = challengeReply.getString(CHALLENGE);
+        byte[] cipheredChallenge = base64StringToByteArray(base64Challenge);
+        byte[] decipheredChallenge = decipherWithRSA(cipheredChallenge, mKeyManager.getmPrivateKey());
+        String challengeSolution = new String(decipheredChallenge);
+        // Make a challenge similar to the one he made, cipher it in his public key and send it as usual, with the
+        // solution to his challenge
+        String myOwnChallenge = CryptoUtils.newUUIDString();
+        String myBase64Challenge = byteArrayToBase64String(cipherWithRSA(myOwnChallenge, targetDevicePublicKey));
+        mKeyManager.getExpectedChallenges().put(jsonResponse.getString("FROM"), myBase64Challenge);
+        JSONObject jsonSolvedChallenge = wfDirectMgr.newBaselineJson(REPLY_TO_CHALLENGE);
+        jsonSolvedChallenge.put(SOLUTION, challengeSolution);
+        jsonSolvedChallenge.put(CHALLENGE, myBase64Challenge);
+
+    }
+
     @Override
     protected void onPostExecute(Void result) {
         logInfo(SERVER_TAG, "WiFi Direct server task shutdown (" + this.hashCode() + ").");
     }
 
     private String processSessionProposal(JSONObject message) throws JSONException {
-        // TODO REVIEW THIS PROTOCOL PHASE SPECIALLY CONCURRENCY WISE
         logInfo(SERVER_TAG, "Processing session proposal, purpose phase...");
 
         String username = message.getString(FROM);
@@ -237,6 +268,39 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             LogManager.logError(SERVER_TAG, "Unable to sign message, abort reply...");
             return FAIL;
         }
+    }
+
+    private String processSubjectLeaving(JSONObject message) throws JSONException {
+        String username = message.getString(FROM);
+        PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
+
+        if (sendersPublicKey == null) {
+            logWarning(SERVER_TAG,"Could not obtain senders public key...");
+            return REFUSED;
+        }
+        if (wfDirectMgr.isValidMessage(LEAVE_GROUP, message, sendersPublicKey)) {
+            mKeyManager.getSessionKeys().remove(username);
+            return OKAY;
+        }
+        return REFUSED;
+    }
+
+    private String processLeaderLeaving(JSONObject message) throws JSONException {
+        String username = message.getString(FROM);
+        PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
+
+        if (sendersPublicKey == null) {
+            logWarning(SERVER_TAG,"Could not obtain senders public key...");
+            return REFUSED;
+        }
+        if (wfDirectMgr.isValidMessage(GO_LEAVE_GROUP, message, sendersPublicKey)) {
+            mKeyManager.getSessionKeys().remove(username);
+
+            // TODO - Group needs a leader now. //
+
+            return OKAY;
+        }
+        return REFUSED;
     }
 
     /** Helpers */

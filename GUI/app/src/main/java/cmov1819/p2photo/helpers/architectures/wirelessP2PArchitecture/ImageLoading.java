@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -21,6 +22,8 @@ import java.util.List;
 import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.helpers.managers.KeyManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
+import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
@@ -28,6 +31,7 @@ import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBitmap;
 import static cmov1819.p2photo.helpers.ConvertUtils.jsonArrayToArrayList;
 import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
+import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.addPhotoToStack;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.readCatalog;
 import static cmov1819.p2photo.helpers.managers.LogManager.NEW_CATALOG_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
@@ -63,6 +67,7 @@ public class ImageLoading {
 
         Iterator<String> receivedMembers = memberPhotos.keys();
         while (receivedMembers.hasNext()) {
+
             String fileName;
             String currentMember = receivedMembers.next();
             try {
@@ -76,7 +81,8 @@ public class ImageLoading {
                         missingPhotos.add(photoName);
                     }
                 }
-            } catch (JSONException jsone) {
+            }
+            catch (JSONException jsone) {
                 // swallow
             }
         }
@@ -88,16 +94,19 @@ public class ImageLoading {
         return loadedPhotos;
     }
 
-    public static void savePhoto(Activity activity, String fileName, Bitmap bitmap) throws IOException {
+    public static void savePhoto(Activity activity, String fileName, Bitmap bitmap) throws IOException, JSONException {
         byte[] bitmapBytes = bitmapToByteArray(bitmap);
         savePhoto(activity, fileName, bitmapBytes);
     }
 
-    public static void savePhoto(Activity activity, String fileName, byte[] contents) throws IOException {
+    public static void savePhoto(Activity activity, String fileName, byte[] contents) throws IOException, JSONException {
         SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
         byte[] cipheredBitmap = cipherWithAes(secretKey, contents);
-        // TODO - Add this photo to the photo stack
-        // TODO - Verify if space.Enough(); ConvertUtils.bitmapToByteArray might be useful
+
+        String representsMyPhoto = "_" + SessionManager.getUsername(activity) + "_";
+        if (!fileName.contains(representsMyPhoto)) {
+            addPhotoToStack(activity, fileName);
+        }
         FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
         outputStream.write(cipheredBitmap);
         outputStream.close();
@@ -113,5 +122,17 @@ public class ImageLoading {
         } catch (IOException ieo) {
             throw new FileNotFoundException("IOException when converting inputStream to bitmap");
         }
+    }
+
+    public static void deletePhoto(final Activity activity, final String filename) {
+        File dir = activity.getFilesDir();
+        File file = new File(dir, filename);
+        try {
+            file.delete();
+        }
+        catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        LogManager.logError("IMAGE LOADING", "tried to delete file: " + filename);
     }
 }
