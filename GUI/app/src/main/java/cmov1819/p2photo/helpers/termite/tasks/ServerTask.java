@@ -107,7 +107,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                             case SEND_SESSION:
                                 doRespond(socket, processSessionProposal(request));
                                 break;
-<<                            case REPLY_TO_CHALLENGE:
+                            case REPLY_TO_CHALLENGE:
                                 doRespond(socket, processChangeReply(request));
                                 break;
                             case LEAVE_GROUP:
