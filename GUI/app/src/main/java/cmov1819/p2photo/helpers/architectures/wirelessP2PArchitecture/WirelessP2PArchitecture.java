@@ -159,8 +159,6 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
             CatalogOperations.writeCatalog(activity, catalogID, catalogFile);
         }
         catch (JSONException | IOException exc) {
-            // TODO - Remove. //
-            exc.printStackTrace();
             LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
             LogManager.toast(activity, "Failed to create catalog slice");
         }
