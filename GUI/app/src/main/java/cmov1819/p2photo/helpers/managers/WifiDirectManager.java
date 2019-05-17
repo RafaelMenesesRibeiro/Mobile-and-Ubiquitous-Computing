@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.crypto.SecretKey;
 
 import cmov1819.p2photo.MainMenuActivity;
+import cmov1819.p2photo.exceptions.RSAException;
 import cmov1819.p2photo.helpers.DateUtils;
 import cmov1819.p2photo.helpers.callables.CallableManager;
 import cmov1819.p2photo.helpers.callables.GetPhotoFromPeerCallable;
@@ -33,21 +34,12 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
+import static cmov1819.p2photo.helpers.ConvertUtils.secretKeyToBase64String;
+import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithRSA;
 import static cmov1819.p2photo.helpers.CryptoUtils.signData;
 import static cmov1819.p2photo.helpers.CryptoUtils.verifySignatureWithSHA1withRSA;
 import static cmov1819.p2photo.helpers.DateUtils.isFreshTimestamp;
-import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
-import static cmov1819.p2photo.helpers.termite.Consts.FROM;
-import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
-import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
-import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
-import static cmov1819.p2photo.helpers.termite.Consts.RID;
-import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
-import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
-import static cmov1819.p2photo.helpers.termite.Consts.SIGNATURE;
-import static cmov1819.p2photo.helpers.termite.Consts.TIMESTAMP;
-import static cmov1819.p2photo.helpers.termite.Consts.TO;
-import static cmov1819.p2photo.helpers.termite.Consts.USERNAME;
+import static cmov1819.p2photo.helpers.termite.Consts.*;
 
 public class WifiDirectManager {
     private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
@@ -166,15 +158,26 @@ public class WifiDirectManager {
         }.execute();
     }
 
-    public void sendPhoto(final SimWifiP2pDevice callerDevice, final String photoUuid, final Bitmap photo) {
+    public void sendPhoto(final SimWifiP2pDevice device, final String photoUuid, final Bitmap photo) {
         try {
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending photo to %s", callerDevice.deviceName));
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending photo to %s", device.deviceName));
             JSONObject jsonObject = newBaselineJson(SEND_PHOTO);
             jsonObject.put(PHOTO_UUID, photoUuid);
             jsonObject.put(PHOTO_FILE, byteArrayToBase64String(bitmapToByteArray(photo)));
-            doSend(callerDevice, jsonObject);
+            doSend(device, jsonObject);
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, "Unable to form JSONObject with bitmap data");
+        }
+    }
+
+    public void sendSession(final SimWifiP2pDevice device, PublicKey devicePublicKey, SecretKey newSessionKey) {
+        try {
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Proposing a session key to %s", device.deviceName));
+            JSONObject jsonObject = newBaselineJson(SEND_SESSION);
+            jsonObject.put(SESSION_KEY, cipherWithRSA(secretKeyToBase64String(newSessionKey), devicePublicKey));
+            doSend(device, jsonObject);
+        } catch (JSONException | RSAException exc) {
+            Log.e(WIFI_DIRECT_MGR_TAG, "Unable to build session key proposal message...");
         }
     }
 
@@ -195,7 +198,7 @@ public class WifiDirectManager {
             return false;
         }
     }
-    
+
     public boolean isValidMessage(String operation, JSONObject response, PublicKey publicKey) {
         try {
             if (!response.getString(OPERATION).equals(operation)) {
@@ -225,19 +228,17 @@ public class WifiDirectManager {
         new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, targetDevice, data);
     }
 
-    public JSONObject conformToTLSBeforeSend(SimWifiP2pDevice targetDevice, JSONObject data, int rid){
+    public void conformToTLSBeforeSend(SimWifiP2pDevice device, JSONObject data, int rid) {
         try {
-            LogManager.logInfo(WIFI_DIRECT_MGR_TAG, String.format("Trying to send data to %s", targetDevice.deviceName));
+            LogManager.logInfo(WIFI_DIRECT_MGR_TAG, String.format("Trying to send data to %s", device.deviceName));
             data.put(RID, rid);
             data.put(FROM, mMainMenuActivity.getDeviceName());
-            data.put(TO, targetDevice.deviceName);
+            data.put(TO, device.deviceName);
             data.put(TIMESTAMP, DateUtils.generateTimestamp());
             data.put(SIGNATURE, signData(mKeyManager.getmPrivateKey(), data));
-            return data;
         } catch (JSONException | SignatureException exc) {
             LogManager.logError(WIFI_DIRECT_MGR_TAG, "Unable to sign message, abort send...");
         }
-        return null;
     }
 
     /**********************************************************
@@ -267,7 +268,6 @@ public class WifiDirectManager {
     public Map<String, SimWifiP2pDevice> getUsernameDeviceMap() {
         return usernameDeviceMap;
     }
-
 
     public Map<String, String> getDeviceUsernameMap() {
         return deviceUsernameMap;
