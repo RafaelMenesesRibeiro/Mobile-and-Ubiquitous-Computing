@@ -440,6 +440,22 @@ public class MainMenuActivity
         this.mWifiManager = mWifiManager;
     }
 
+    public List<SimWifiP2pDevice> getmPeers() {
+        return mPeers;
+    }
+
+    public void setmPeers(List<SimWifiP2pDevice> mPeers) {
+        this.mPeers = mPeers;
+    }
+
+    public List<SimWifiP2pDevice> getmGroupPeers() {
+        return mGroupPeers;
+    }
+
+    public void setmGroupPeers(List<SimWifiP2pDevice> mGroupPeers) {
+        this.mGroupPeers = mGroupPeers;
+    }
+
     public String getDeviceName() {
         return mDeviceName;
     }
