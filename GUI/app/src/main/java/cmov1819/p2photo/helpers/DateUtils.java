@@ -38,7 +38,10 @@ public class DateUtils {
     }
 
     public static boolean isOneTimestampBeforeAnother(String oneTimestamp, String anotherTimestamp) {
-        if (oneTimestamp == null) {
+        if (oneTimestamp == null || oneTimestamp.equals("")) {
+            return false;
+        }
+        if (anotherTimestamp == null || anotherTimestamp.equals("")) {
             return true;
         }
         try {
