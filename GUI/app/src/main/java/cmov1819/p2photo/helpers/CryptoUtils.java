@@ -220,21 +220,15 @@ public class CryptoUtils {
     }
 
     public static byte[] cipherWithRSA(String data, String base64PublicKey) throws RSAException {
-        return cipherWithRSA(data.getBytes(), base64PublicKey);
+        return cipherWithRSA(data.getBytes(), base64StringToPublicKey(base64PublicKey));
+    }
+    
+    public static byte[] cipherWithRSA(byte[] data, String base64PublicKey) throws RSAException {
+        return cipherWithRSA(data, base64StringToPublicKey(base64PublicKey));
     }
 
     public static byte[] cipherWithRSA(String data, PublicKey key) throws RSAException {
         return cipherWithRSA(data.getBytes(), key);
-    }
-
-    public static byte[] cipherWithRSA(byte[] data, String base64PublicKey) throws RSAException {
-        try {
-            Cipher cipher = Cipher.getInstance(RSA_ALGORITHM);
-            cipher.init(Cipher.ENCRYPT_MODE, base64StringToPublicKey(base64PublicKey));
-            return cipher.doFinal(data);
-        } catch (Exception exc) {
-            throw new RSAException(exc.getMessage());
-        }
     }
 
     public static byte[] cipherWithRSA(byte[] data, PublicKey key) throws RSAException {
@@ -247,15 +241,23 @@ public class CryptoUtils {
         }
     }
 
-    public static String decipherWithRSA(String data, String base64PrivateKey) throws RSAException {
-        return decipherWithRSA(data.getBytes(), base64PrivateKey);
+    public static byte[] decipherWithRSA(String data, String base64PrivateKey) throws RSAException {
+        return decipherWithRSA(data.getBytes(), base64StringToPrivateKey(base64PrivateKey));
     }
 
-    public static String decipherWithRSA(byte[] data, String base64PrivateKey) throws RSAException {
+    public static byte[] decipherWithRSA(byte[] data, String base64PrivateKey) throws RSAException {
+        return decipherWithRSA(data, base64StringToPrivateKey(base64PrivateKey));
+    }
+
+    public static byte[] decipherWithRSA(String data, PrivateKey privateKey) throws RSAException {
+        return decipherWithRSA(data.getBytes(), privateKey);
+    }
+
+    public static byte[] decipherWithRSA(byte[] data, PrivateKey privateKey) throws RSAException {
         try {
             Cipher cipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
-            cipher.init(Cipher.DECRYPT_MODE, base64StringToPrivateKey(base64PrivateKey));
-            return new String(cipher.doFinal(data));
+            cipher.init(Cipher.DECRYPT_MODE, privateKey);
+            return cipher.doFinal(data);
         } catch (Exception exc) {
             throw new RSAException(exc.getMessage());
         }
