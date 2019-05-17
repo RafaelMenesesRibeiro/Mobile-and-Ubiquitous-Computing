@@ -43,9 +43,11 @@ import static cmov1819.p2photo.helpers.managers.LogManager.SERVER_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.termite.Consts.ABORT_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
 import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
+import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
 import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
@@ -114,6 +116,12 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                                 break;
                             case REPLY_TO_CHALLENGE:
                                 doRespond(socket, processChallengeReply(request));
+                                break;
+                            case ABORT_COMMIT:
+                                doRespond(socket, processAbortCommit(request));
+                                break;
+                            case CONFIRM_COMMIT:
+                                doRespond(socket, processDoCommit(request));
                                 break;
                             case LEAVE_GROUP:
                                 doRespond(socket, processSubjectLeaving(request));
@@ -235,6 +243,28 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         return FAIL;
     }
 
+    private String processAbortCommit(JSONObject request) throws JSONException {
+        if (request.getString(OPERATION).equals(ABORT_COMMIT)) {
+            String username = request.getString(FROM);
+            SecretKey sessionKey = mKeyManager.getReadyToCommitSessionKeys().remove(username);
+        }
+        return "";
+    }
+
+    private String processDoCommit(JSONObject request) throws JSONException {
+        if (request.getString(OPERATION).equals(CONFIRM_COMMIT)) {
+            String username = request.getString(FROM);
+            SecretKey sessionKey = mKeyManager.getReadyToCommitSessionKeys().remove(username);
+            if (sessionKey == null) {
+                logWarning(SERVER_TAG, "Expected to have a key to commit from user " + username);
+            } else {
+                mKeyManager.getSessionKeys().put(username, sessionKey);
+                logInfo(SERVER_TAG, "Successfully traded a session key " + username);
+            }
+        }
+        return "";
+    }
+    
     private String processReceivedCatalog(JSONObject message) throws JSONException {
         logInfo(SERVER_TAG, "Processing incoming catalog...");
 
