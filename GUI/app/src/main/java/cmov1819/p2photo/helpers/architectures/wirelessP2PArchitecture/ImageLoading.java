@@ -3,7 +3,6 @@ package cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,64 +16,75 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.helpers.managers.LogManager;
+import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToBitmap;
-import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToString;
+import static cmov1819.p2photo.helpers.ConvertUtils.jsonArrayToArrayList;
+import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.readCatalog;
+import static cmov1819.p2photo.helpers.managers.LogManager.NEW_CATALOG_TAG;
+import static cmov1819.p2photo.helpers.managers.LogManager.logError;
+import static cmov1819.p2photo.helpers.managers.LogManager.toast;
+import static cmov1819.p2photo.helpers.termite.Consts.MEMBERS_PHOTOS;
 
 public class ImageLoading {
     private ImageLoading() {
         // Does not allow this class to be instantiated. //
     }
 
-    public static List<Bitmap> getBitmapsFromFileStorage(final Activity activity,
-                                                         final String catalogId) {
+    public static List<Bitmap> getBitmapsFromFileStorage(final Activity activity, final String catalogId) {
         // Retrieve catalog file contents as a JSON Object and compare them to the received catalog file
         try {
-            JSONObject catalogFileContents = CatalogOperations.readCatalog(activity, catalogId);
+            JSONObject catalogFileContents = readCatalog(activity, catalogId);
             // Append photoId to the user photoId arrays under memberPhotos dictionary
-            JSONObject membersPhotosMap = catalogFileContents.getJSONObject("membersPhotos");
-            return loadMapPhotos(activity, membersPhotosMap);
+            JSONObject membersPhotosMap = catalogFileContents.getJSONObject(MEMBERS_PHOTOS);
+            return loadMapPhotos(activity, membersPhotosMap, catalogId);
         }
         catch (IOException | JSONException exc) {
-            LogManager.logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
-            LogManager.toast(activity, "Failed to add photo to catalog");
+            logError(NEW_CATALOG_TAG, exc.getMessage());
+            toast(activity, "Failed to add photo to catalog");
             return new ArrayList<>();
         }
     }
 
     private static List<Bitmap> loadMapPhotos(final Activity activity,
-                                              final JSONObject membersPhotosMap) {
+                                              final JSONObject memberPhotos,
+                                              final String catalogId) {
 
         List<Bitmap> loadedPhotos = new ArrayList<>();
-        List<String>  photoNotFoundList = new ArrayList<>();
+        List<String>  missingPhotos = new ArrayList<>();
 
-        Iterator<String> receivedMembers = membersPhotosMap.keys();
+        Iterator<String> receivedMembers = memberPhotos.keys();
         while (receivedMembers.hasNext()) {
             String fileName;
             String currentMember = receivedMembers.next();
             try {
-                JSONArray currentMemberPhotos = membersPhotosMap.getJSONArray(currentMember);
-                for (int photoIdx = 0; photoIdx < currentMemberPhotos.length(); photoIdx++) {
-                    fileName = currentMemberPhotos.getString(photoIdx);
+                JSONArray jsonArray = memberPhotos.getJSONArray(currentMember);
+                List<String> currentMemberPhotos = jsonArrayToArrayList(jsonArray);
+                for (String photoName : currentMemberPhotos) {
                     try {
-                        Bitmap loadedPhoto = loadPhoto(activity, fileName);
+                        Bitmap loadedPhoto = loadPhoto(activity, photoName);
                         loadedPhotos.add(loadedPhoto);
                     } catch (FileNotFoundException fnfe) {
-                        photoNotFoundList.add(fileName);
+                        missingPhotos.add(photoName);
                     }
                 }
             } catch (JSONException jsone) {
-                continue;
+                // swallow
             }
         }
-        loadedPhotos.addAll(requestMissingPhotosToPeers(photoNotFoundList));
+
+        if (!missingPhotos.isEmpty()) {
+            WifiDirectManager.pullPhotos(missingPhotos, catalogId);
+        }
+
         return loadedPhotos;
     }
 
     public static void savePhoto(Activity activity, String fileName, Bitmap bitmap) throws IOException {
+        // TODO - Cipher photo for local storage with my OWN secret key
+        // TODO - Add this photo to the photo stack
+        // TODO - Verify if space.Enough(); ConvertUtils.bitmapToByteArray might be useful
         FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
         outputStream.write(bitmapToByteArray(bitmap));
         outputStream.close();
@@ -88,11 +98,4 @@ public class ImageLoading {
             throw new FileNotFoundException("IOException when converting inputStream to bitmap");
         }
     }
-
-    private static List<Bitmap> requestMissingPhotosToPeers(List<String> photoNotFoundList) {
-        // TODO for each fileName in list, request photo, convert it to bit map, append to list and store it;
-        return new ArrayList<>();
-    }
-
-
 }
