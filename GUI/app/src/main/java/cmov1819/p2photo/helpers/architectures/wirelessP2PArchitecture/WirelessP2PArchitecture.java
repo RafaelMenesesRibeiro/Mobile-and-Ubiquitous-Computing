@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
+import cmov1819.p2photo.LimitStorageFragment;
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.ViewCatalogFragment;
@@ -37,6 +38,8 @@ import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.createPhotoStackFile;
+import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.setReplicationLimitInPhotos;
+import static cmov1819.p2photo.helpers.managers.SessionManager.setMaxCacheImageSize;
 
 public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
@@ -46,7 +49,10 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
     public void onSignUp(final LoginActivity loginActivity) throws FailedOperationException {
         try {
+            // TODO - Change to default values. //
             createPhotoStackFile(loginActivity);
+            setMaxCacheImageSize(loginActivity, 11);
+            setReplicationLimitInPhotos(loginActivity, 11);
         }
         catch (Exception ex) {
             throw new FailedOperationException(ex.getMessage());
@@ -104,7 +110,7 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         try {
             ImageLoading.savePhoto(activity, photoName, fileContents);
         }
-        catch (IOException ex) {
+        catch (JSONException | IOException ex) {
             throw new FailedOperationException(ex.getMessage());
         }
 
