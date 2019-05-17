@@ -138,7 +138,7 @@ public class WifiDirectManager {
 
 
                     for (String missingPhoto : missingPhotos) {
-                        Callable<String> job = new ReceivePhotoCallable(device, device.deviceName, missingPhoto, catalogId);
+                        Callable<String> job = new ReceivePhotoCallable(device, missingPhoto, catalogId);
                         completionService.submit(new CallableManager(job,20, TimeUnit.SECONDS));
                     }
 
