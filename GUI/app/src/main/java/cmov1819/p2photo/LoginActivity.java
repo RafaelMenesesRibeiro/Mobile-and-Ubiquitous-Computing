@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.util.concurrent.ExecutionException;
 
@@ -31,6 +32,7 @@ import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedLoginException;
 import cmov1819.p2photo.exceptions.FailedOperationException;
+import cmov1819.p2photo.helpers.CryptoUtils;
 import cmov1819.p2photo.helpers.architectures.cloudBackedArchitecture.CloudBackedArchitecture;
 import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.AuthStateManager;
@@ -241,8 +243,32 @@ public class LoginActivity extends AppCompatActivity {
         }
 
         enableUserTextInputs(usernameEditText, passwordEditText);
+
+        // TODO - Is all this just WifiDirectArch? //
+        KeyPair keyPair = null;
         try {
-            KeyPair keyPair = loadRSAKeys(this);
+            keyPair = loadRSAKeys(this);
+        }
+        catch (FailedOperationException ex) {
+            // Tries to generate another KeyPair and sends the public key to the server.
+            try {
+                keyPair = generateRSAKeys();
+                CryptoUtils.sendPublicKeyToServer(this, keyPair.getPublic());
+            }
+            catch (FailedOperationException | NoSuchAlgorithmException nsalex) {
+                // If it can't, the app exits, as it will not be able to communicate with others.
+                LogManager.logError(LogManager.LOGIN_TAG, ex.getMessage());
+                System.exit(-1);
+            }
+            // Tries to store the generate keys for next time.
+            try {
+                storeRSAKeys(this, keyPair);
+            }
+            catch (FailedOperationException faopex) { /* Do nothing. Next time it logs in, generates more keys. */ }
+        }
+        // If it can't load the AES key, with which it ciphers the photos in local storage,
+        // the app exits, as it won't be able to perform any photo related operation.
+        try {
             SecretKey secretKey = loadAESKeys(this);
             KeyManager.init(secretKey, keyPair.getPrivate(), keyPair.getPublic());
 
