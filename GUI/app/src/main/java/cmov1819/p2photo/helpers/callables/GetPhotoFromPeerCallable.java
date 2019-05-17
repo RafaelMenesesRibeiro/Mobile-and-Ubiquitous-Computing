@@ -25,13 +25,7 @@ import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading.savePhoto;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
-import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
-import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
-import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
-import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
-import static cmov1819.p2photo.helpers.termite.Consts.SEND;
-import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
-import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
+import static cmov1819.p2photo.helpers.termite.Consts.*;
 
 public class GetPhotoFromPeerCallable implements Callable<String> {
     private static final String GET_PHOTO_FROM_PEER_TAG = "GetPhotoFromPeer";
