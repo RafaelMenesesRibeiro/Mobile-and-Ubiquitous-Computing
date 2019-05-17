@@ -39,7 +39,9 @@ import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithRSA;
 import static cmov1819.p2photo.helpers.CryptoUtils.signData;
 import static cmov1819.p2photo.helpers.CryptoUtils.verifySignatureWithSHA1withRSA;
 import static cmov1819.p2photo.helpers.DateUtils.isFreshTimestamp;
+import static cmov1819.p2photo.helpers.managers.LogManager.WIFI_DIRECT_MGR_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
+import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
@@ -56,7 +58,6 @@ import static cmov1819.p2photo.helpers.termite.Consts.TO;
 import static cmov1819.p2photo.helpers.termite.Consts.USERNAME;
 
 public class WifiDirectManager {
-    private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
 
     private static WifiDirectManager instance;
 
@@ -100,7 +101,7 @@ public class WifiDirectManager {
      **********************************************************/
 
     public void pushCatalogFiles(SimWifiP2pDevice device, List<JSONObject> myCatalogFiles) {
-        LogManager.logInfo(WIFI_DIRECT_MGR_TAG,"Broadcasting catalog to " + device.deviceName);
+        logInfo(WIFI_DIRECT_MGR_TAG,"Broadcasting catalog to " + device.deviceName);
         for (JSONObject catalogFile : myCatalogFiles) {
             try {
                 sendCatalog(device, catalogFile);
@@ -112,7 +113,7 @@ public class WifiDirectManager {
     }
 
     public void sendCatalog(final SimWifiP2pDevice device, final JSONObject catalogFile) throws RuntimeException {
-        LogManager.logInfo(WIFI_DIRECT_MGR_TAG,"Sending a catalog to...");
+        logInfo(WIFI_DIRECT_MGR_TAG,"Sending a catalog to...");
         try {
             JSONObject jsonObject = newBaselineJson(SEND_CATALOG);
             jsonObject.put(CATALOG_FILE, catalogFile);
