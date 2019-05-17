@@ -26,6 +26,7 @@ import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.DateUtils;
 import cmov1819.p2photo.helpers.callables.CallableManager;
 import cmov1819.p2photo.helpers.callables.ProposeSessionCallable;
+import cmov1819.p2photo.helpers.callables.ProposeSessionCallableManager;
 import cmov1819.p2photo.helpers.callables.ReceivePhotoCallable;
 import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
 import cmov1819.p2photo.helpers.termite.tasks.ServerTask;
@@ -46,7 +47,6 @@ import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
 import static cmov1819.p2photo.helpers.termite.Consts.GO_LEAVE_GROUP;
 import static cmov1819.p2photo.helpers.termite.Consts.LEAVE_GROUP;
-import static cmov1819.p2photo.helpers.termite.Consts.OKAY;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
@@ -207,29 +207,26 @@ public class WifiDirectManager {
     }
 
     private static void proposeSession(final List<SimWifiP2pDevice> targetDevices) {
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void, Void, List<SimWifiP2pDevice>>() {
             @Override
-            protected Void doInBackground(Void... voids) {
-                WifiDirectManager mWifiDirectManager = WifiDirectManager.getInstance();
-
+            protected List<SimWifiP2pDevice> doInBackground(Void... voids) {
                 int devicesInNeedOfSessionEstablishment = targetDevices.size();
-
+                
                 ExecutorService executorService = Executors.newFixedThreadPool(devicesInNeedOfSessionEstablishment);
                 ExecutorCompletionService<SimWifiP2pDevice> completionService = new ExecutorCompletionService<>(executorService);
 
                 for (SimWifiP2pDevice device : targetDevices) {
-                    Callable<String> job = new ProposeSessionCallable(device);
-                    completionService.submit(new CallableManager(job,30, TimeUnit.SECONDS));
+                    Callable<SimWifiP2pDevice> job = new ProposeSessionCallable(device);
+                    completionService.submit(new ProposeSessionCallableManager(job,30, TimeUnit.SECONDS));
                 }
 
                 List<SimWifiP2pDevice> devicesNeedingSecondAttempt = new ArrayList<>();
-
                 for (int i = 0; i < devicesInNeedOfSessionEstablishment; i++) {
                     try {
                         Future<SimWifiP2pDevice> futureResult = completionService.take();
                         if (!futureResult.isCancelled()) {
                             SimWifiP2pDevice result = futureResult.get();
-                            if (result == null) {
+                            if (result != null) {
                                 devicesNeedingSecondAttempt.add(result);
                             }
                         }
@@ -238,8 +235,17 @@ public class WifiDirectManager {
                     }
                 }
 
-                return null;
+                return devicesNeedingSecondAttempt;
             }
+
+            @Override
+            protected void onPostExecute(List<SimWifiP2pDevice> simWifiP2pDevices) {
+                super.onPostExecute(simWifiP2pDevices);
+                if (!simWifiP2pDevices.isEmpty()) {
+                    proposeSession(simWifiP2pDevices);
+                }
+            }
+
         }.execute();
     }
 
