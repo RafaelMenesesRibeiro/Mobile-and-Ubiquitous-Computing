@@ -25,5 +25,6 @@ public class Consts {
     public static final String RID = "requestId";
     public static final String PHOTO_UUID = "photoUuid";
     public static final String PHOTO_FILE = "photoFile";
+    public static final String MEMBERS_PHOTOS = "membersPhotos";
     public static final int TERMITE_PORT = 10001;
 }
