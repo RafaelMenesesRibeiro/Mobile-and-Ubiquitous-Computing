@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 
+import com.google.android.gms.common.util.IOUtils;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,11 +18,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.crypto.SecretKey;
+
+import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
-import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToBitmap;
+import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBitmap;
 import static cmov1819.p2photo.helpers.ConvertUtils.jsonArrayToArrayList;
+import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes;
+import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.readCatalog;
 import static cmov1819.p2photo.helpers.managers.LogManager.NEW_CATALOG_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
@@ -82,18 +89,23 @@ public class ImageLoading {
     }
 
     public static void savePhoto(Activity activity, String fileName, Bitmap bitmap) throws IOException {
-        // TODO - Cipher photo for local storage with my OWN secret key
+        byte[] bitmapBytes = bitmapToByteArray(bitmap);
+        SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
+        byte[] cipheredBitmap = cipherWithAes(secretKey, bitmapBytes);
         // TODO - Add this photo to the photo stack
         // TODO - Verify if space.Enough(); ConvertUtils.bitmapToByteArray might be useful
         FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
-        outputStream.write(bitmapToByteArray(bitmap));
+        outputStream.write(cipheredBitmap);
         outputStream.close();
     }
 
     public static Bitmap loadPhoto(final Activity activity, final String fileName) throws FileNotFoundException {
         InputStream inputStream = activity.openFileInput(fileName);
         try {
-            return inputStreamToBitmap(inputStream);
+            byte[] cipheredBitmap = IOUtils.toByteArray(inputStream);
+            SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
+            byte[] bitmapBytes = decipherWithAes(secretKey, cipheredBitmap);
+            return byteArrayToBitmap(bitmapBytes);
         } catch (IOException ieo) {
             throw new FileNotFoundException("IOException when converting inputStream to bitmap");
         }
