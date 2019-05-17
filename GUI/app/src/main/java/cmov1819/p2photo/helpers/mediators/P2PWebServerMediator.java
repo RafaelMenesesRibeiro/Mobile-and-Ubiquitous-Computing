@@ -45,6 +45,7 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
             HttpURLConnection connection = newBaselineConnection(new URL(requestData.getUrl()));
             RequestData.RequestType type = requestData.getRequestType();
             switch (type) {
+                case ASSERT_MEMBERSHIP:
                 case SEARCH_USERS:
                 case GET_CATALOG:
                 case GET_CATALOG_TITLE:
