@@ -43,12 +43,15 @@ import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
+import static cmov1819.p2photo.helpers.termite.Consts.GO_LEAVE_GROUP;
+import static cmov1819.p2photo.helpers.termite.Consts.LEAVE_GROUP;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.RID;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
 import static cmov1819.p2photo.helpers.termite.Consts.SIGNATURE;
 import static cmov1819.p2photo.helpers.termite.Consts.TIMESTAMP;
 import static cmov1819.p2photo.helpers.termite.Consts.TO;
@@ -64,6 +67,8 @@ public class WifiDirectManager {
 
     private final Map<String, SimWifiP2pDevice> usernameDeviceMap;
 
+    private boolean isLeader;
+
     /**********************************************************
      * CONSTRUCTORS
      **********************************************************/
@@ -73,6 +78,7 @@ public class WifiDirectManager {
         this.mKeyManager = KeyManager.getInstance();
         this.requestId = new AtomicInteger(0);
         this.usernameDeviceMap = new ConcurrentHashMap<>();
+        this.isLeader = false;
     }
 
     public static WifiDirectManager init(MainMenuActivity activity) {
@@ -220,6 +226,27 @@ public class WifiDirectManager {
                 return null;
             }
         }.execute();
+    }
+
+    /**********************************************************
+     * GROUP CHANGING METHODS
+     **********************************************************/
+
+    public void leaveGroup(final SimWifiP2pDevice device) {
+        try {
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Notifying leaving group %s", device.deviceName));
+            if (isLeader) {
+                JSONObject jsonObject = newBaselineJson(GO_LEAVE_GROUP);
+                doSend(device, jsonObject);
+            }
+            else {
+                JSONObject jsonObject = newBaselineJson(LEAVE_GROUP);
+                doSend(device, jsonObject);
+            }
+        }
+        catch (JSONException ex) {
+            Log.e(WIFI_DIRECT_MGR_TAG, "Unable to build to form JSONObject");
+        }
     }
 
     /**********************************************************
