@@ -25,6 +25,7 @@ import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.ConvertUtils.secretKeyToByteArray;
 import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithRSA;
+import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithRSA;
 import static cmov1819.p2photo.helpers.CryptoUtils.generateAesKey;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading.savePhoto;
 import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
@@ -32,6 +33,7 @@ import static cmov1819.p2photo.helpers.managers.LogManager.PROPOSE_SESSION_MGR_T
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
@@ -67,16 +69,10 @@ public class ProposeSessionCallable implements Callable<String> {
     private String proposalProtocol() {
         String readLine = propose();
         if (!isError(readLine)) {
-            try {
-                JSONObject challengeResponse = new JSONObject(readLine);
-                wfDirectMgr.isValidResponse(challengeResponse, SEND_CHALLENGE, rid, targetDevicePublicKey);
-            } catch (JSONException jsone) {
-                logError(PROPOSE_SESSION_MGR_TAG, "Failed to rebuild JSON of challenge response!");
-                return FAIL;
-            }
 
         }
-        return readLine;
+        logWarning(PROPOSE_SESSION_MGR_TAG, "Refusing proposal, challenge response is not well signed or doesn't contain necessary fields!");
+        return REFUSED;
     }
 
     private String propose() {
@@ -123,13 +119,14 @@ public class ProposeSessionCallable implements Callable<String> {
             clientSocket = new SimWifiP2pSocket(targetDevice.getVirtIp(), TERMITE_PORT);
 
             WifiDirectUtils.doSend(PROPOSE_SESSION_MGR_TAG, clientSocket, jsonRequest);
-            String encodedResponse = WifiDirectUtils.receiveResponse(PROPOSE_SESSION_MGR_TAG, clientSocket);
+            String response = WifiDirectUtils.receiveResponse(PROPOSE_SESSION_MGR_TAG, clientSocket);
 
-            if (isError(encodedResponse)) {
-                logWarning(PROPOSE_SESSION_MGR_TAG, encodedResponse);
+            JSONObject jsonResponse = isChallengeResponse(response);
+            if (jsonResponse == null) {
                 return FAIL;
+            } else {
+                return answerChallenge(jsonResponse);
             }
-
         } catch (IOException ioe) {
             logError(PROPOSE_SESSION_MGR_TAG, "IO Exception occurred while managing client sockets...");
         } finally {
@@ -139,7 +136,37 @@ public class ProposeSessionCallable implements Callable<String> {
                 logError(PROPOSE_SESSION_MGR_TAG, ioe.getMessage());
             }
         }
-        return REFUSED;
+        return FAIL;
+    }
+
+    private String answerChallenge(JSONObject jsonResponse) {
+        try {
+            String base64Challenge = jsonResponse.getString(CHALLENGE);
+            byte[] cipheredChallenge = base64StringToByteArray(base64Challenge);
+            byte[] decipheredChallenge = decipherWithRSA(cipheredChallenge, mKeyManager.getmPrivateKey());
+            String challengeResponse = new String(decipheredChallenge);
+        } catch (JSONException e) {
+            logError(PROPOSE_SESSION_MGR_TAG, "Couldn't retrieve base64 challenge from challenge response...");
+        } catch (RSAException e) {
+            logError(PROPOSE_SESSION_MGR_TAG, "Unable to decipher challenge with this private key...");
+        }
+        return FAIL;
+    }
+
+    private JSONObject isChallengeResponse(String response) {
+        if (isError(response)) {
+            logWarning(PROPOSE_SESSION_MGR_TAG, response);
+            return null;
+        }
+        try {
+            JSONObject challengeResponse = new JSONObject(response);
+            if (wfDirectMgr.isValidResponse(challengeResponse, SEND_CHALLENGE, rid, targetDevicePublicKey)) {
+                return challengeResponse;
+            }
+        } catch (JSONException jsone) {
+            logError(PROPOSE_SESSION_MGR_TAG, "Failed to rebuild JSON of challenge response!");
+        }
+        return null;
     }
 
     private boolean trySaveIncomingPhoto(JSONObject jsonObject) throws JSONException {
