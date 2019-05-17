@@ -181,7 +181,10 @@ public class MainMenuActivity
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "New membership information available...");
+        LogManager.logInfo(LogManager.MAIN_MENU_TAG, "SimWifiP2pInfo size: " + simWifiP2pInfo.getDevicesInNetwork().size() +"\nSimWifiP2pDeviceList size: " + simWifiP2pDeviceList.getDeviceList().size());
         LogManager.toast(this, "New membership information available...");
+        LogManager.toast(this, "SimWifiP2pInfo size: " + simWifiP2pInfo.getDevicesInNetwork().size());
+        LogManager.toast(this, "SimWifiP2pDeviceList size: " + simWifiP2pDeviceList.getDeviceList().size());
         mGroupPeers.clear();
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
             // Set my deviceName
