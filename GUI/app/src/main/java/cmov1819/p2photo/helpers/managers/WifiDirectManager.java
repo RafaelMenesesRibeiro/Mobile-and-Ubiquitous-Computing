@@ -7,15 +7,26 @@ import android.util.Log;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.crypto.SecretKey;
+
 import cmov1819.p2photo.MainMenuActivity;
+import cmov1819.p2photo.exceptions.RSAException;
 import cmov1819.p2photo.helpers.DateUtils;
+import cmov1819.p2photo.helpers.callables.CallableManager;
+import cmov1819.p2photo.helpers.callables.ReceivePhotoCallable;
 import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
 import cmov1819.p2photo.helpers.termite.tasks.ServerTask;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
@@ -23,8 +34,26 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
+import static cmov1819.p2photo.helpers.ConvertUtils.secretKeyToBase64String;
+import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithRSA;
 import static cmov1819.p2photo.helpers.CryptoUtils.signData;
-import static cmov1819.p2photo.helpers.termite.Consts.*;
+import static cmov1819.p2photo.helpers.CryptoUtils.verifySignatureWithSHA1withRSA;
+import static cmov1819.p2photo.helpers.DateUtils.isFreshTimestamp;
+import static cmov1819.p2photo.helpers.managers.LogManager.logError;
+import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
+import static cmov1819.p2photo.helpers.termite.Consts.FROM;
+import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
+import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
+import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
+import static cmov1819.p2photo.helpers.termite.Consts.RID;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
+import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
+import static cmov1819.p2photo.helpers.termite.Consts.SIGNATURE;
+import static cmov1819.p2photo.helpers.termite.Consts.TIMESTAMP;
+import static cmov1819.p2photo.helpers.termite.Consts.TO;
+import static cmov1819.p2photo.helpers.termite.Consts.USERNAME;
 
 public class WifiDirectManager {
     private static final String WIFI_DIRECT_MGR_TAG = "WIFI DIRECT MANAGER";
@@ -36,7 +65,8 @@ public class WifiDirectManager {
 
     private final AtomicInteger requestId;
 
-    private final Map<String, SimWifiP2pDevice> usernameDevice;   // username, SimWifiP2pDevice data
+    private final Map<String, SimWifiP2pDevice> usernameDeviceMap;   // username, SimWifiP2pDevice
+    private final Map<String, String> deviceUsernameMap;             // SimWifiP2pDevice.deviceName, username
 
     /**********************************************************
      * CONSTRUCTORS
@@ -46,7 +76,8 @@ public class WifiDirectManager {
         this.mMainMenuActivity = activity;
         this.mKeyManager = KeyManager.getInstance();
         this.requestId = new AtomicInteger(0);
-        this.usernameDevice = new ConcurrentHashMap<>();
+        this.usernameDeviceMap = new ConcurrentHashMap<>();
+        this.deviceUsernameMap = new ConcurrentHashMap<>();
     }
 
     public static WifiDirectManager init(MainMenuActivity activity) {
@@ -75,7 +106,7 @@ public class WifiDirectManager {
                 sendCatalog(device, catalogFile);
             } catch (RuntimeException se) {
                 String msg = "One or more catalog postings have failed due to cipher fail.";
-                LogManager.logError(WIFI_DIRECT_MGR_TAG, msg);
+                logError(WIFI_DIRECT_MGR_TAG, msg);
             }
         }
     }
@@ -84,38 +115,88 @@ public class WifiDirectManager {
         LogManager.logInfo(WIFI_DIRECT_MGR_TAG,"Sending a catalog to...");
         try {
             JSONObject jsonObject = newBaselineJson(SEND_CATALOG);
-            jsonObject.put("catalogFile", catalogFile);
+            jsonObject.put(CATALOG_FILE, catalogFile);
             doSend(device, jsonObject);
         } catch (JSONException jsone) {
-            LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
+            logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
         }
     }
 
     /**********************************************************
-     * PHOTO REQUEST / RESPONSE METHODS
+     * PHOTO DISTRIBUTION METHODS
      **********************************************************/
 
-    public void requestPhoto(final SimWifiP2pDevice calleeDevice, final String catalogId, final String photoUuid) {
-        try {
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Request photo: %s to %s", photoUuid, calleeDevice.deviceName));
-            JSONObject jsonObject = newBaselineJson(REQUEST_PHOTO);
-            jsonObject.put("catalogId", catalogId);
-            jsonObject.put("photoUuid", photoUuid);
-            doSend(calleeDevice, jsonObject);
-        } catch (JSONException jsone) {
-            Log.e(WIFI_DIRECT_MGR_TAG, "catalogFileContents.toString() failed resulting in exception");
-        }
+    public static void pullPhotos(final List<String> missingPhotos, final String catalogId) {
+        new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                WifiDirectManager mWifiDirectManager = WifiDirectManager.getInstance();
+                List<SimWifiP2pDevice> mGroup = mWifiDirectManager.getMainMenuActivity().getmGroupPeers();
+
+                int missingPhotosCount = missingPhotos.size();
+
+                ExecutorService executorService = Executors.newFixedThreadPool(missingPhotosCount);
+                ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>(executorService);
+
+                for (SimWifiP2pDevice device : mGroup) {
+                    String user = mWifiDirectManager.getDeviceUsernameMap().get(device.deviceName);
+                    PublicKey ownerPublicKey = KeyManager.getInstance().getPublicKeys().get(user);
+                    SecretKey sessionKey = KeyManager.getInstance().getSessionKeys().get(user);
+
+                    for (String missingPhoto : missingPhotos) {
+                        Callable<String> job =
+                                new ReceivePhotoCallable(
+                                        device, user, missingPhoto, catalogId, sessionKey, ownerPublicKey
+                                );
+                        completionService.submit(new CallableManager(job,20, TimeUnit.SECONDS));
+                    }
+
+                    for (int i = 0; i < missingPhotosCount; i++) {
+                        try {
+                            Future<String> futureResult = completionService.take();
+                            if (!futureResult.isCancelled()) {
+                                String result = futureResult.get();
+                                if (result != null) {
+                                    missingPhotos.remove(result);
+                                }
+                            }
+                        } catch (Exception exc) {
+                            // swallow
+                        }
+                    }
+                    missingPhotosCount = missingPhotos.size();
+                }
+
+                return null;
+            }
+        }.execute();
     }
 
-    public void sendPhoto(final SimWifiP2pDevice callerDevice, final String photoUuid, final Bitmap photo) {
+    public void sendPhoto(final SimWifiP2pDevice device, final String photoUuid, final Bitmap photo) {
         try {
-            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending photo to %s", callerDevice.deviceName));
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Sending photo to %s", device.deviceName));
             JSONObject jsonObject = newBaselineJson(SEND_PHOTO);
             jsonObject.put(PHOTO_UUID, photoUuid);
             jsonObject.put(PHOTO_FILE, byteArrayToBase64String(bitmapToByteArray(photo)));
-            doSend(callerDevice, jsonObject);
+            doSend(device, jsonObject);
         } catch (JSONException jsone) {
             Log.e(WIFI_DIRECT_MGR_TAG, "Unable to form JSONObject with bitmap data");
+        }
+    }
+
+    /**********************************************************
+     * SESSION KEY DISTRIBUTION METHODS
+     **********************************************************/
+
+    public void sendSession(final SimWifiP2pDevice device, PublicKey devicePublicKey, SecretKey newSessionKey) {
+        try {
+            Log.i(WIFI_DIRECT_MGR_TAG, String.format("Proposing a session key to %s", device.deviceName));
+            JSONObject jsonObject = newBaselineJson(SEND_SESSION);
+            jsonObject.put(SESSION_KEY, cipherWithRSA(secretKeyToBase64String(newSessionKey), devicePublicKey));
+            doSend(device, jsonObject);
+        } catch (JSONException | RSAException exc) {
+            Log.e(WIFI_DIRECT_MGR_TAG, "Unable to build session key proposal message...");
         }
     }
 
@@ -123,25 +204,60 @@ public class WifiDirectManager {
      * HELPERS
      **********************************************************/
 
-     public JSONObject newBaselineJson(String operation) throws JSONException {
-         JSONObject jsonObject = new JSONObject();
-         jsonObject.put(OPERATION, operation);
-         jsonObject.put(USERNAME, SessionManager.getUsername(mMainMenuActivity));
-         return jsonObject;
-     }
+    public boolean isValidMessage(String sender, int rid, JSONObject response) {
+        try {
+            if (!response.getString(USERNAME).equals(sender)) {
+                return false;
+            }
+            if (response.getInt(RID) != rid) {
+                return  false;
+            }
+            return true;
+        } catch (JSONException jsone) {
+            return false;
+        }
+    }
+
+    public boolean isValidMessage(String operation, JSONObject response, PublicKey publicKey) {
+        try {
+            if (!response.getString(OPERATION).equals(operation)) {
+                return false;
+            }
+            if (!isFreshTimestamp(response.getString(TIMESTAMP))) {
+                return false;
+            }
+            if (!verifySignatureWithSHA1withRSA(publicKey, response)) {
+                return false;
+            }
+            return true;
+        } catch (JSONException jsone) {
+            return false;
+        }
+    }
+
+    public JSONObject newBaselineJson(String operation) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(OPERATION, operation);
+        jsonObject.put(USERNAME, SessionManager.getUsername(mMainMenuActivity));
+        return jsonObject;
+    }
 
     public void doSend(final SimWifiP2pDevice targetDevice, JSONObject data) {
         try {
-            LogManager.logInfo(WIFI_DIRECT_MGR_TAG, String.format("Trying to send data to %s", targetDevice.deviceName));
-            data.put(FROM, mMainMenuActivity.getDeviceName());
-            data.put(TO, targetDevice.deviceName);
-            data.put(RID, requestId.incrementAndGet());
-            data.put(TIMESTAMP, DateUtils.generateTimestamp());
-            data.put(SIGNATURE, signData(mKeyManager.getmPrivateKey(), data));
+            conformToTLS(data, requestId.incrementAndGet(), mMainMenuActivity.getDeviceName(), targetDevice.deviceName);
             new SendDataTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this, targetDevice, data);
         } catch (JSONException | SignatureException exc) {
-            LogManager.logError(WIFI_DIRECT_MGR_TAG, "Unable to sign message, abort send...");
+            logError(WIFI_DIRECT_MGR_TAG, "Unable to conform to TLS. Aborting send request...");
         }
+    }
+
+    public void conformToTLS(JSONObject data, int rid, String from, String to)
+            throws JSONException, SignatureException {
+        data.put(RID, rid);
+        data.put(FROM, from);
+        data.put(TO, to);
+        data.put(TIMESTAMP, DateUtils.generateTimestamp());
+        data.put(SIGNATURE, signData(mKeyManager.getmPrivateKey(), data));
     }
 
     /**********************************************************
@@ -156,6 +272,10 @@ public class WifiDirectManager {
         return mMainMenuActivity.getmSrvSocket();
     }
 
+    public int getRequestId() {
+        return requestId.incrementAndGet();
+    }
+
     public void setServerSocket() {
         new ServerTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
@@ -164,11 +284,15 @@ public class WifiDirectManager {
         mMainMenuActivity.setmSrvSocket(newSocket);
     }
 
-    public Map<String, SimWifiP2pDevice> getUsernameDevice() {
-        return usernameDevice;
+    public Map<String, SimWifiP2pDevice> getUsernameDeviceMap() {
+        return usernameDeviceMap;
     }
 
-    public Collection<? extends Bitmap> pullPhotos(List<String> missingPhotos) {
-        return null;
+    public Map<String, String> getDeviceUsernameMap() {
+        return deviceUsernameMap;
+    }
+
+    public String getDeviceName() {
+        return mMainMenuActivity.getDeviceName();
     }
 }

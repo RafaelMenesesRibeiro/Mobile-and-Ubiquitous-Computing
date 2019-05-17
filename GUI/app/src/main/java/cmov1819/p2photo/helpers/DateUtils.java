@@ -24,7 +24,7 @@ public class DateUtils {
         return date.toString();
     }
 
-    public boolean isFreshtimestamp(String rcvTimestamp) {
+    public static boolean isFreshTimestamp(String rcvTimestamp) {
         try {
             Calendar calendar = Calendar.getInstance();
             Date dateNow = new Date();
@@ -37,12 +37,12 @@ public class DateUtils {
         }
     }
 
-    public static boolean isOlderTimestamp(String timestamp, String anotherTimestamp) {
-        if (timestamp == null) {
+    public static boolean isOneTimestampBeforeAnother(String oneTimestamp, String anotherTimestamp) {
+        if (oneTimestamp == null) {
             return true;
         }
         try {
-            Date date = DATE_FORMAT.parse(timestamp);
+            Date date = DATE_FORMAT.parse(oneTimestamp);
             Date anotherDate = DATE_FORMAT.parse(anotherTimestamp);
             return date.before(anotherDate);
         }

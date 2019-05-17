@@ -180,6 +180,7 @@ public class MainMenuActivity
 
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
+        // TODO Negotiate session keys with all peers of this group;
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "New membership information available...");
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "SimWifiP2pInfo size: " + simWifiP2pInfo.getDevicesInNetwork().size() +"\nSimWifiP2pDeviceList size: " + simWifiP2pDeviceList.getDeviceList().size());
         LogManager.toast(this, "New membership information available...");
@@ -303,7 +304,6 @@ public class MainMenuActivity
         int code = result.getServerCode();
         if (code == HttpURLConnection.HTTP_OK) {
             String catalogTitle = (String)((SuccessResponse)result.getPayload()).getResult();
-            // TODO - If this is throwing exception, it may be because of the method CloudBackedArchitecture returns these. //
             GoogleDriveMediator googleDriveMediator = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getGoogleDriveMediator(activity);
             AuthStateManager authStateManager = ((CloudBackedArchitecture) ArchitectureManager.systemArchitecture).getAuthStateManager(activity);
             googleDriveMediator.newCatalogSlice(activity, catalogTitle, catalogId, authStateManager.getAuthState());

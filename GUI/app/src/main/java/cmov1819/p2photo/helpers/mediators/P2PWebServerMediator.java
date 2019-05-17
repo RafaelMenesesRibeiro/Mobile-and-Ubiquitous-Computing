@@ -27,6 +27,7 @@ import cmov1819.p2photo.msgtypes.BasicResponse;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
 
+import static cmov1819.p2photo.helpers.DateUtils.generateTimestamp;
 import static cmov1819.p2photo.helpers.managers.LogManager.logReceived;
 import static cmov1819.p2photo.helpers.managers.SessionManager.getSessionID;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateSessionID;
@@ -37,6 +38,11 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
     @Override
     protected ResponseData doInBackground(RequestData... requestDataArray) {
         RequestData requestData = requestDataArray[0];
+
+        if (requestData instanceof PostRequestData) {
+            ((PostRequestData) requestData).addTimestamp(generateTimestamp());
+        }
+
         LogManager.logSentMessage(requestData);
 
         Activity activity = requestData.getActivity();
@@ -45,6 +51,7 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
             HttpURLConnection connection = newBaselineConnection(new URL(requestData.getUrl()));
             RequestData.RequestType type = requestData.getRequestType();
             switch (type) {
+                case ASSERT_MEMBERSHIP:
                 case SEARCH_USERS:
                 case GET_CATALOG:
                 case GET_CATALOG_TITLE:
@@ -82,6 +89,7 @@ public class P2PWebServerMediator extends AsyncTask<RequestData, Void, ResponseD
                     break;
             }
             connection.disconnect();
+            LogManager.logInfo(LogManager   .WEB_SERVER_MEDIATOR_TAG,"Received response: " + result.toString());
             return result;
         }
         catch (IOException ex) {
