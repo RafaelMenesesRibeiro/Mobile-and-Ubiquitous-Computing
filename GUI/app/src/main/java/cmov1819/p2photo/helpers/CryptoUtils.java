@@ -2,12 +2,14 @@ package cmov1819.p2photo.helpers;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Base64;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
@@ -21,6 +23,7 @@ import java.security.SignatureException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -30,10 +33,20 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import cmov1819.p2photo.R;
+import cmov1819.p2photo.dataobjects.PostRequestData;
+import cmov1819.p2photo.dataobjects.RequestData;
+import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.exceptions.RSAException;
+import cmov1819.p2photo.helpers.managers.ArchitectureManager;
 import cmov1819.p2photo.helpers.managers.KeyManager;
+import cmov1819.p2photo.helpers.managers.LogManager;
+import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
+import cmov1819.p2photo.msgtypes.ErrorResponse;
+import cmov1819.p2photo.msgtypes.SuccessResponse;
 
+import static android.provider.Settings.System.getString;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPrivateKey;
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToPublicKey;
@@ -41,6 +54,7 @@ import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.ConvertUtils.inputStreamToByteArray;
 import static cmov1819.p2photo.helpers.managers.LogManager.CRYPTO_UTILS_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
+import static cmov1819.p2photo.helpers.managers.SessionManager.getUsername;
 
 public class CryptoUtils {
     private static final String PRIVATE_KEY_FILENAME = "P2Photo_PrivateKey.key";
@@ -171,6 +185,35 @@ public class CryptoUtils {
             return new KeyPair(publicKey, privateKey);
         }
         catch (Exception ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+    }
+
+    public static void sendPublicKeyToServer(final Activity activity, PublicKey publicKey) {
+        String url = activity.getString(R.string.p2photo_host) + activity.getString(R.string.new_member_key);
+
+        try {
+            String pKey = byteArrayToBase64String(publicKey.getEncoded());
+
+            JSONObject requestBody = new JSONObject();
+            requestBody.put("calleeUsername", getUsername(activity));
+            requestBody.put("publicKey", pKey);
+            RequestData requestData = new PostRequestData(activity, RequestData.RequestType.NEW_MEMBER_PUBLIC_KEY, url, requestBody);
+            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
+
+            int code = result.getServerCode();
+            if (code != HttpURLConnection.HTTP_OK) {
+                ErrorResponse errorResponse = (ErrorResponse) result.getPayload();
+                String msg = "The new member key  operation was unsuccessful. Server response code: " + code + ".\n" + result.getPayload().getMessage() + "\n" + errorResponse.getReason();
+                LogManager.logError(LogManager.NEW_MEMBER_KEY, msg);
+                throw new FailedOperationException();
+            }
+        }
+        catch (JSONException ex) {
+            throw new FailedOperationException(ex.getMessage());
+        }
+        catch (ExecutionException | InterruptedException ex) {
+            Thread.currentThread().interrupt();
             throw new FailedOperationException(ex.getMessage());
         }
     }
