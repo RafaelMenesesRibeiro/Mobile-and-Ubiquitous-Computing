@@ -9,3 +9,5 @@ export TERMITE_CLI_PATH=/home/lostarchie/Documents/Projects/CMU/Mobile-and-Ubiqu
 # Target platform; one of: mac, linux, or windows
 #
 export TERMITE_PLATFORM=linux
+
+./termite.sh
