@@ -81,8 +81,9 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         int fileLength = (int) file.length();
         byte[] fileContents = new byte[fileLength];
 
+        InputStream inputStream = null;
         try {
-            InputStream inputStream = new FileInputStream(file);
+            inputStream = new FileInputStream(file);
             int bytesRead = inputStream.read(fileContents);
             if (bytesRead != fileLength) {
                 throw new FailedOperationException("Couldn't read the image file.");
@@ -92,20 +93,16 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         catch(IOException ioe){
             throw new FailedOperationException(ioe.getMessage());
         }
+        finally {
+            try { inputStream.close(); }
+            catch (NullPointerException | IOException ex) { /* Nothing can be done. */ }
+        }
 
-        // TODO - Use ImageLoading's helper. //
         // Saves the temp image's bytes to internal storage in a permanent file.
         String username = SessionManager.getUsername(activity);
         String photoName = String.format("%s_%s_%s", catalogId, username, UUID.randomUUID().toString().replace("/", ""));
-        FileOutputStream outputStream;
         try {
-            SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
-            byte[] cipheredBitmap = cipherWithAes(secretKey, fileContents);
-            // TODO - Add this photo to the photo stack
-            // TODO - Verify if space.Enough(); ConvertUtils.bitmapToByteArray might be useful
-            outputStream = activity.openFileOutput(photoName, Context.MODE_PRIVATE);
-            outputStream.write(cipheredBitmap);
-            outputStream.close();
+            ImageLoading.savePhoto(activity, photoName, fileContents);
         }
         catch (IOException ex) {
             throw new FailedOperationException(ex.getMessage());
