@@ -70,6 +70,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
 import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
 import static cmov1819.p2photo.helpers.termite.Consts.SOLUTION;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
+import static cmov1819.p2photo.helpers.termite.Consts.waitAndTerminate;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
 
@@ -132,7 +133,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 } catch (JSONException jsone) {
                     Log.e(SERVER_TAG, "Error reading socket: malformed json request");
                 } finally {
-                    socket.close();
+                    waitAndTerminate(1, socket);
                 }
             }
         } catch (IOException ioe) {
