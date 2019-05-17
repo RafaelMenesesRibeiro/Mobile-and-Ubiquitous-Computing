@@ -33,8 +33,10 @@ public class LogManager {
     public static final String GET_SERVER_LOG = "Get Server Log";
     public static final String VIEW_APP_LOG = "View App Log";
     public static final String CRYPTO_UTILS_TAG = "Crypto Utils";
-
-    public static final String WEB_SERVER_MEDIATOR_TAG = "Quert Manager";
+    public static final String WEB_SERVER_MEDIATOR_TAG = "Web Server Mediator";
+    public static final String RCV_PHOTO_TAG = "Get Photo From Peer";
+    public static final String CALLABLE_MGR_TAG = "Callable Manager";
+    public static final String WIFI_DIRECT_MGR_TAG = "WiFi Direct Manager";
 
     private static String logText = "";
 

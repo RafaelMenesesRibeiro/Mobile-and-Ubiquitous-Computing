@@ -127,7 +127,6 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         } catch (IOException ioe) {
             Log.e(SERVER_TAG, "Socket error: " + ioe.getMessage());
         }
-
         return null;
     }
 
