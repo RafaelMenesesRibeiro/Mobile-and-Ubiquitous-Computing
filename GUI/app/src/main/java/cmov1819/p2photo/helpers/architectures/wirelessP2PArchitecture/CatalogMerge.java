@@ -55,7 +55,7 @@ public class CatalogMerge {
                 outputStream.close();
             }
         }
-        // TODO - Change this later. //
+
         catch (FileNotFoundException ex) {
             try {
                 String fileName = String.format("catalog_%s.json", catalogId);
