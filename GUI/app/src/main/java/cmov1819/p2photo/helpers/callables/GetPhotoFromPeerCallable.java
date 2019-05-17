@@ -68,7 +68,6 @@ public class GetPhotoFromPeerCallable implements Callable<String> {
             return photoUuid;
         }
         return null;
-        // return (JSONObject) getResponseMessage(connection, Expect.GOOD_STATE_RESPONSE);
     }
 
     private boolean requestPhoto() {
