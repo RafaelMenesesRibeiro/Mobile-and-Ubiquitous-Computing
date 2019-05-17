@@ -47,6 +47,8 @@ import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
 import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
+import static cmov1819.p2photo.helpers.termite.Consts.GO_LEAVE_GROUP;
+import static cmov1819.p2photo.helpers.termite.Consts.LEAVE_GROUP;
 import static cmov1819.p2photo.helpers.termite.Consts.NEED_OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.NO_HAVE;
 import static cmov1819.p2photo.helpers.termite.Consts.NO_OPERATION;
@@ -105,8 +107,14 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                             case SEND_SESSION:
                                 doRespond(socket, processSessionProposal(request));
                                 break;
-                            case REPLY_TO_CHALLENGE:
+<<                            case REPLY_TO_CHALLENGE:
                                 doRespond(socket, processChangeReply(request));
+                                break;
+                            case LEAVE_GROUP:
+                                doRespond(socket, processSubjectLeaving(request));
+                                break;
+                            case GO_LEAVE_GROUP:
+                                doRespond(socket, processLeaderLeaving(request));
                                 break;
                             default:
                                 doRespond(socket, NO_OPERATION);
@@ -240,6 +248,39 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             LogManager.logError(SERVER_TAG, "Unable to sign message, abort reply...");
             return FAIL;
         }
+    }
+
+    private String processSubjectLeaving(JSONObject message) throws JSONException {
+        String username = message.getString(FROM);
+        PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
+
+        if (sendersPublicKey == null) {
+            logWarning(SERVER_TAG,"Could not obtain senders public key...");
+            return REFUSED;
+        }
+        if (wfDirectMgr.isValidMessage(LEAVE_GROUP, message, sendersPublicKey)) {
+            mKeyManager.getSessionKeys().remove(username);
+            return OKAY;
+        }
+        return REFUSED;
+    }
+
+    private String processLeaderLeaving(JSONObject message) throws JSONException {
+        String username = message.getString(FROM);
+        PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
+
+        if (sendersPublicKey == null) {
+            logWarning(SERVER_TAG,"Could not obtain senders public key...");
+            return REFUSED;
+        }
+        if (wfDirectMgr.isValidMessage(GO_LEAVE_GROUP, message, sendersPublicKey)) {
+            mKeyManager.getSessionKeys().remove(username);
+
+            // TODO - Group needs a leader now. //
+
+            return OKAY;
+        }
+        return REFUSED;
     }
 
     /** Helpers */
