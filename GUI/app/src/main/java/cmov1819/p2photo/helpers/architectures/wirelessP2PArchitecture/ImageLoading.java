@@ -90,8 +90,12 @@ public class ImageLoading {
 
     public static void savePhoto(Activity activity, String fileName, Bitmap bitmap) throws IOException {
         byte[] bitmapBytes = bitmapToByteArray(bitmap);
+        savePhoto(activity, fileName, bitmapBytes);
+    }
+
+    public static void savePhoto(Activity activity, String fileName, byte[] contents) throws IOException {
         SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
-        byte[] cipheredBitmap = cipherWithAes(secretKey, bitmapBytes);
+        byte[] cipheredBitmap = cipherWithAes(secretKey, contents);
         // TODO - Add this photo to the photo stack
         // TODO - Verify if space.Enough(); ConvertUtils.bitmapToByteArray might be useful
         FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
@@ -103,9 +107,9 @@ public class ImageLoading {
         InputStream inputStream = activity.openFileInput(fileName);
         try {
             byte[] cipheredBitmap = IOUtils.toByteArray(inputStream);
-            //SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
-            //byte[] bitmapBytes = decipherWithAes(secretKey, cipheredBitmap);
-            return byteArrayToBitmap(cipheredBitmap);
+            SecretKey secretKey = KeyManager.getInstance().getmSecretKey();
+            byte[] bitmapBytes = decipherWithAes(secretKey, cipheredBitmap);
+            return byteArrayToBitmap(bitmapBytes);
         } catch (IOException ieo) {
             throw new FileNotFoundException("IOException when converting inputStream to bitmap");
         }

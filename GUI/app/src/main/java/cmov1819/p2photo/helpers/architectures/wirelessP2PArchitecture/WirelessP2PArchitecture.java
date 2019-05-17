@@ -21,16 +21,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.crypto.SecretKey;
+
 import cmov1819.p2photo.LoginActivity;
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.ViewCatalogFragment;
 import cmov1819.p2photo.exceptions.FailedOperationException;
 import cmov1819.p2photo.helpers.architectures.BaseArchitecture;
+import cmov1819.p2photo.helpers.managers.KeyManager;
 import cmov1819.p2photo.helpers.managers.LogManager;
 import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.managers.WifiDirectManager;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 
+import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
+import static cmov1819.p2photo.helpers.CryptoUtils.cipherWithAes;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations.createPhotoStackFile;
 
 public class WirelessP2PArchitecture extends BaseArchitecture {
@@ -76,8 +81,9 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         int fileLength = (int) file.length();
         byte[] fileContents = new byte[fileLength];
 
+        InputStream inputStream = null;
         try {
-            InputStream inputStream = new FileInputStream(file);
+            inputStream = new FileInputStream(file);
             int bytesRead = inputStream.read(fileContents);
             if (bytesRead != fileLength) {
                 throw new FailedOperationException("Couldn't read the image file.");
@@ -87,15 +93,16 @@ public class WirelessP2PArchitecture extends BaseArchitecture {
         catch(IOException ioe){
             throw new FailedOperationException(ioe.getMessage());
         }
+        finally {
+            try { inputStream.close(); }
+            catch (NullPointerException | IOException ex) { /* Nothing can be done. */ }
+        }
 
         // Saves the temp image's bytes to internal storage in a permanent file.
         String username = SessionManager.getUsername(activity);
         String photoName = String.format("%s_%s_%s", catalogId, username, UUID.randomUUID().toString().replace("/", ""));
-        FileOutputStream outputStream;
         try {
-            outputStream = activity.openFileOutput(photoName, Context.MODE_PRIVATE);
-            outputStream.write(fileContents);
-            outputStream.close();
+            ImageLoading.savePhoto(activity, photoName, fileContents);
         }
         catch (IOException ex) {
             throw new FailedOperationException(ex.getMessage());

@@ -24,62 +24,77 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 
 import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.CryptoUtils.decipherWithAes;
+import static cmov1819.p2photo.helpers.CryptoUtils.generateAesKey;
 import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.ImageLoading.savePhoto;
+import static cmov1819.p2photo.helpers.interfaceimpl.P2PWebServerInterfaceImpl.getMemberPublicKey;
+import static cmov1819.p2photo.helpers.managers.LogManager.PROPOSE_SESSION_MGR_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.RCV_PHOTO_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
-import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
+import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
-import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.REFUSED;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
+import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 import static cmov1819.p2photo.helpers.termite.Consts.isError;
+import static cmov1819.p2photo.helpers.termite.Consts.stopAndWait;
 
-public class ReceivePhotoCallable implements Callable<String> {
-    private WifiDirectManager wifiDirectManager;
-    private SimWifiP2pDevice targetDevice;
-    private String photoUuid;
-    private String catalogId;
+public class ProposeSessionCallable implements Callable<String> {
+    private final WifiDirectManager wfDirectMgr;
+    private final KeyManager mKeyManager;
+    private final SimWifiP2pDevice targetDevice;
+    private final int rid;
+    private PublicKey targetPublicKey;
     private SecretKey sessionKey;
-    private PublicKey publicKey;
-    private int rid;
 
-    public ReceivePhotoCallable(SimWifiP2pDevice targetDevice, String photoUuid, String catalogId) {
 
-        this.wifiDirectManager = WifiDirectManager.getInstance();
+    public ProposeSessionCallable(SimWifiP2pDevice targetDevice) {
+        this.wfDirectMgr = WifiDirectManager.getInstance();
+        this.mKeyManager = KeyManager.getInstance();
         this.targetDevice = targetDevice;
-        this.photoUuid = photoUuid;
-        this.catalogId = catalogId;
-        this.sessionKey = KeyManager.getInstance().getSessionKeys().get(targetDevice.deviceName);
-        this.publicKey = KeyManager.getInstance().getPublicKeys().get(targetDevice.deviceName);
-        this.rid = wifiDirectManager.getRequestId();
+        this.rid = wfDirectMgr.getRequestId();
     }
 
     @Override
     public String call() {
-        if (requestPhoto()) {
-            return photoUuid;
-        }
+        logInfo(PROPOSE_SESSION_MGR_TAG, "Initiating a proposal protocol to device: " + targetDevice.deviceName);
+        stopAndWait(3000);
+        initProposal();
         return null;
     }
 
-    private boolean requestPhoto() {
-        try {
-            logInfo(RCV_PHOTO_TAG, String.format("Request photo: %s to %s", photoUuid, targetDevice.deviceName));
-            JSONObject jsonObject = wifiDirectManager.newBaselineJson(REQUEST_PHOTO);
-            jsonObject.put(CATALOG_ID, catalogId);
-            jsonObject.put(PHOTO_UUID, photoUuid);
-            wifiDirectManager.conformToTLS(jsonObject, wifiDirectManager.getRequestId(), targetDevice.deviceName);
-            return doSend(jsonObject);
-        } catch (JSONException jsone) {
-            logError(RCV_PHOTO_TAG, "catalogFileContents.toString() failed resulting in exception");
-        } catch (SignatureException se) {
-            logError(RCV_PHOTO_TAG, "Request Photo unable to conform to TLS. Aborting request...");
+    private String initProposal() {
+        SecretKey unCommitSessionKey = generateAesKey();
+        if (unCommitSessionKey == null) {
+            logError(PROPOSE_SESSION_MGR_TAG,"Failed to generate a session key for user: " + targetDevice.deviceName + ". Aborting...");
+            return FAIL;
+        } else {
+            logInfo(PROPOSE_SESSION_MGR_TAG,"User: " + targetDevice.deviceName + " now has a un-commit session key...");
+            mKeyManager.getUncommitSessionKeys().put(targetDevice.deviceName, unCommitSessionKey);
         }
-        return false;
+        PublicKey proposalCode = mKeyManager.getPublicKeys().get(targetDevice.deviceName);
+        mKeyManager.getSessionKeys().put(targetDevice.deviceName, unCommitSessionKey);
+
+        return REFUSED;
+    }
+
+    private String propose() {
+        try {
+            logInfo(RCV_PHOTO_TAG, "Proposing session key to user: " + targetDevice.deviceName);
+            JSONObject jsonObject = wfDirectMgr.newBaselineJson(SEND_SESSION);
+            // TODO
+            wfDirectMgr.conformToTLS(jsonObject, wfDirectMgr.getRequestId(), targetDevice.deviceName);
+            // return doSend(jsonObject);
+        } catch (JSONException jsone) {
+            logError(RCV_PHOTO_TAG, "Propose has failed while building a json message");
+        } catch (SignatureException se) {
+            logError(RCV_PHOTO_TAG, "ProposeSessionKey was unable to conform to TLS. Aborting request...");
+        }
+        return REFUSED;
     }
 
     private boolean doSend(JSONObject jsonData) {
@@ -120,10 +135,10 @@ public class ReceivePhotoCallable implements Callable<String> {
     }
 
     public boolean isValidResponse(JSONObject response) {
-        if (!wifiDirectManager.isValidMessage(targetDevice.deviceName, rid, response)) {
+        if (!wfDirectMgr.isValidMessage(wfDirectMgr.getDeviceName(), rid, response)) {
             return false;
         }
-        if (!wifiDirectManager.isValidMessage(SEND_PHOTO, response, publicKey)) {
+        if (!wfDirectMgr.isValidMessage(SEND_PHOTO, response, targetPublicKey)) {
             return false;
         }
         return true;
@@ -136,7 +151,7 @@ public class ReceivePhotoCallable implements Callable<String> {
             String base64photo = jsonObject.getString(PHOTO_FILE);
             byte[] encodedPhoto = base64StringToByteArray(base64photo);
             Bitmap decodedPhoto = BitmapFactory.decodeByteArray(encodedPhoto, 0, encodedPhoto.length);
-            savePhoto(wifiDirectManager.getMainMenuActivity(), photoUuid, decodedPhoto);
+            savePhoto(wfDirectMgr.getMainMenuActivity(), photoUuid, decodedPhoto);
             return true;
         } catch (IOException ioe) {
             if (ioe instanceof FileNotFoundException) {
@@ -146,5 +161,18 @@ public class ReceivePhotoCallable implements Callable<String> {
             }
         }
         return false;
+    }
+
+    /** Helpers */
+
+    private PublicKey tryGetKeyFromLocalMaps(String targetDeviceName) {
+        PublicKey key = mKeyManager.getPublicKeys().get(targetDeviceName);
+        if (key == null) {
+            key = getMemberPublicKey(wfDirectMgr.getMainMenuActivity(), targetDeviceName);
+            if (key != null) {
+                mKeyManager.getPublicKeys().put(targetDeviceName, key);
+            }
+        }
+        return key;
     }
 }

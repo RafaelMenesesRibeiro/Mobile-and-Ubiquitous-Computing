@@ -64,7 +64,6 @@ import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
 import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
-import static cmov1819.p2photo.helpers.termite.Consts.USERNAME;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
     private static final String SERVER_TAG = "SERVER SOCKET";
@@ -138,9 +137,9 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     private String processSessionProposal(JSONObject message) throws JSONException {
         logInfo(SERVER_TAG, "Processing session proposal, purpose phase...");
 
-        String username = message.getString(USERNAME);
+        String username = message.getString(FROM);
         PrivateKey mPrivateKey = mKeyManager.getmPrivateKey();
-        PublicKey sendersPublicKey = getMemberPublicKey(wfDirectMgr.getMainMenuActivity(), username);
+        PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
 
         if (sendersPublicKey == null) {
             return REFUSED;
@@ -165,9 +164,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 expectedChallenges.put(username, challenge);
                 challenge = byteArrayToBase64String(cipherWithRSA(challenge, sendersPublicKey));
                 jsonChallenge.put(CHALLENGE, challenge);
-                wfDirectMgr.conformToTLS(
-                        jsonChallenge, message.getInt(RID), wfDirectMgr.getDeviceName(), message.getString(FROM)
-                );
+                wfDirectMgr.conformToTLS(jsonChallenge, message.getInt(RID), message.getString(FROM));
                 return jsonChallenge.toString();
             } catch (RSAException rsa) {
                 logWarning(SERVER_TAG, "This device failed to cipher challenge to send to session proposer...");
@@ -183,7 +180,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     private String processReceivedCatalog(JSONObject message) throws JSONException {
         logInfo(SERVER_TAG, "Processing incoming catalog...");
 
-        String username = message.getString(USERNAME);
+        String username = message.getString(FROM);
         PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
 
         if (sendersPublicKey == null) {
@@ -202,8 +199,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
     }
 
     private String processPhotoRequest(JSONObject message) throws JSONException {
-
-        String username = message.getString(USERNAME);
+        String username = message.getString(FROM);
         PublicKey sendersPublicKey = tryGetKeyFromLocalMaps(username);
 
         if (sendersPublicKey == null) {
@@ -212,8 +208,6 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
         }
 
         if (wfDirectMgr.isValidMessage(SEND_CATALOG, message, sendersPublicKey)) {
-            String device = message.getString(FROM);
-            wfDirectMgr.getDeviceUsernameMap().put(device, username);
             String catalogId = message.getString(CATALOG_ID);
             MainMenuActivity mMainMenuActivity = wfDirectMgr.getMainMenuActivity();
             if (assertMembership(mMainMenuActivity, username, catalogId)) {
@@ -234,9 +228,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
             JSONObject jsonObject = wfDirectMgr.newBaselineJson(SEND_PHOTO);
             jsonObject.put(PHOTO_UUID, message.getString(PHOTO_UUID));
             jsonObject.put(PHOTO_FILE, byteArrayToBase64String(bitmapToByteArray(photo)));
-            wfDirectMgr.conformToTLS(
-                    jsonObject, message.getInt(RID), activity.getDeviceName(), message.getString(FROM)
-            );
+            wfDirectMgr.conformToTLS(jsonObject, message.getInt(RID), message.getString(FROM));
             return jsonObject.toString();
         } catch (FileNotFoundException fnfe) {
             logWarning(SERVER_TAG, "Photo not found locally...");
@@ -249,12 +241,12 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
     /** Helpers */
 
-    private PublicKey tryGetKeyFromLocalMaps(String username) {
-        PublicKey key = mKeyManager.getPublicKeys().get(username);
+    private PublicKey tryGetKeyFromLocalMaps(String targetDeviceName) {
+        PublicKey key = mKeyManager.getPublicKeys().get(targetDeviceName);
         if (key == null) {
-            key = getMemberPublicKey(wfDirectMgr.getMainMenuActivity(), username);
+            key = getMemberPublicKey(wfDirectMgr.getMainMenuActivity(), targetDeviceName);
             if (key != null) {
-                mKeyManager.getPublicKeys().put(username, key);
+                mKeyManager.getPublicKeys().put(targetDeviceName, key);
             }
         }
         return key;
