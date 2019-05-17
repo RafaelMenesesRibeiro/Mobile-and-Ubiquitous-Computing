@@ -114,8 +114,7 @@ public class WifiDirectManager {
 
     public static void pullPhotos(final List<String> missingPhotos, final String catalogId) {
         new AsyncTask<Void, Void, Void>() {
-            // TODO Obtain negotiated session keys;
-
+            
             @Override
             protected Void doInBackground(Void... voids) {
                 WifiDirectManager mWifiDirectManager = WifiDirectManager.getInstance();
