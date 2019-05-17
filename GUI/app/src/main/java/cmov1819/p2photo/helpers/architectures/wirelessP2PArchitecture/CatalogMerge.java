@@ -6,6 +6,7 @@ import android.content.Context;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,7 +54,21 @@ public class CatalogMerge {
                 outputStream.write(mergedContents.toString().getBytes());
                 outputStream.close();
             }
-        } catch (IOException | JSONException exc) {
+        }
+        // TODO - Change this later. //
+        catch (FileNotFoundException ex) {
+            try {
+                String fileName = String.format("catalog_%s.json", catalogId);
+                FileOutputStream outputStream = activity.openFileOutput(fileName, Context.MODE_PRIVATE);
+                outputStream.write(anotherCatalogFile.toString().getBytes());
+                outputStream.close();
+            }
+            catch (IOException ex2) {
+                logError(LogManager.NEW_CATALOG_TAG, ex2.getMessage());
+                toast(activity, "Couldn't read stored catalog slice");
+            }
+        }
+        catch (IOException | JSONException exc) {
             logError(LogManager.NEW_CATALOG_TAG, exc.getMessage());
             toast(activity, "Couldn't read stored catalog slice");
         }
