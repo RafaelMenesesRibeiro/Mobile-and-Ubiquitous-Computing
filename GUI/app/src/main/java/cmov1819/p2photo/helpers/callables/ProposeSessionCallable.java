@@ -125,27 +125,15 @@ public class ProposeSessionCallable implements Callable<String> {
             String response = WifiDirectUtils.receiveResponse(PROPOSE_SESSION_MGR_TAG, clientSocket);
             // Process server response after verifying it's a well formed JSON ChallengeResponse
             JSONObject jsonResponse = isChallengeResponse(response);
-            if (jsonResponse == null) {
-                return FAIL;
-            } else {
+            if (jsonResponse != null) {
                 // If everything looks OK answerChallenge and on the process, make my own challenge to the neighbor
-                waitAndTerminate(5000, clientSocket);
                 return answerChallenge(clientSocket, jsonResponse);
             }
         } catch (IOException ioe) {
             logError(PROPOSE_SESSION_MGR_TAG, "IO Exception occurred while managing client sockets...");
         } finally {
-            try {
-                if (clientSocket != null) clientSocket.close();
-            } catch (IOException ioe) {
-                logError(PROPOSE_SESSION_MGR_TAG, ioe.getMessage());
-            }
-        }
-
-        if (clientSocket != null) {
             waitAndTerminate(5000, clientSocket);
         }
-
         return FAIL;
     }
 
