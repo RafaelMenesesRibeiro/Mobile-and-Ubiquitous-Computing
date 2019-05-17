@@ -68,8 +68,8 @@ public class ProposeSessionCallable implements Callable<String> {
         String readLine = propose();
         if (!isError(readLine)) {
             try {
-                JSONObject challengeReponse = new JSONObject(readLine);
-                wfDirectMgr.isValidResponse(challengeReponse, SEND_CHALLENGE, rid, targetDevicePublicKey);
+                JSONObject challengeResponse = new JSONObject(readLine);
+                wfDirectMgr.isValidResponse(challengeResponse, SEND_CHALLENGE, rid, targetDevicePublicKey);
             } catch (JSONException jsone) {
                 logError(PROPOSE_SESSION_MGR_TAG, "Failed to rebuild JSON of challenge response!");
                 return FAIL;
