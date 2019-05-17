@@ -12,8 +12,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
@@ -45,11 +43,11 @@ import static cmov1819.p2photo.helpers.managers.LogManager.SERVER_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
-import static cmov1819.p2photo.helpers.managers.LogManager.toast;
+import static cmov1819.p2photo.helpers.termite.Consts.ABORT_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_ID;
 import static cmov1819.p2photo.helpers.termite.Consts.CHALLENGE;
-import static cmov1819.p2photo.helpers.termite.Consts.READY_TO_COMMIT;
+import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.CONFIRM_RCV;
 import static cmov1819.p2photo.helpers.termite.Consts.FAIL;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
@@ -62,6 +60,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.OKAY;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
+import static cmov1819.p2photo.helpers.termite.Consts.READY_TO_COMMIT;
 import static cmov1819.p2photo.helpers.termite.Consts.REFUSE;
 import static cmov1819.p2photo.helpers.termite.Consts.REPLY_TO_CHALLENGE;
 import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
@@ -73,6 +72,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.SEND_SESSION;
 import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
 import static cmov1819.p2photo.helpers.termite.Consts.SOLUTION;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
+import static cmov1819.p2photo.helpers.termite.Consts.waitAndTerminate;
 
 public class ServerTask extends AsyncTask<Void, String, Void> {
 
@@ -117,6 +117,12 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                             case REPLY_TO_CHALLENGE:
                                 doRespond(socket, processChallengeReply(request));
                                 break;
+                            case ABORT_COMMIT:
+                                doRespond(socket, processAbortCommit(request));
+                                break;
+                            case CONFIRM_COMMIT:
+                                doRespond(socket, processDoCommit(request));
+                                break;
                             case LEAVE_GROUP:
                                 doRespond(socket, processSubjectLeaving(request));
                                 break;
@@ -135,7 +141,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                 } catch (JSONException jsone) {
                     Log.e(SERVER_TAG, "Error reading socket: malformed json request");
                 } finally {
-                    socket.close();
+                    waitAndTerminate(1, socket);
                 }
             }
         } catch (IOException ioe) {
@@ -216,7 +222,7 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
                     return FAIL;
                 }
                 mKeyManager.getReadyToCommitSessionKeys().put(username, keyToCommit);
-                // I create a commit response and wait for an OK or ABORT message
+                // I create a commit response and wait for an OK or ABORT_COMMIT message
                 JSONObject commitResponse = wfDirectMgr.newBaselineJson(READY_TO_COMMIT);
                 commitResponse.put(SOLUTION, solution);
                 wfDirectMgr.conformToTLS(commitResponse, challengeReply.getInt(RID), username);
@@ -235,6 +241,28 @@ public class ServerTask extends AsyncTask<Void, String, Void> {
 
         logWarning(SERVER_TAG,"processChallengeReply asserts that given solution is wrong...");
         return FAIL;
+    }
+
+    private String processAbortCommit(JSONObject request) throws JSONException {
+        if (request.getString(OPERATION).equals(ABORT_COMMIT)) {
+            String username = request.getString(FROM);
+            SecretKey sessionKey = mKeyManager.getReadyToCommitSessionKeys().remove(username);
+        }
+        return "";
+    }
+
+    private String processDoCommit(JSONObject request) throws JSONException {
+        if (request.getString(OPERATION).equals(CONFIRM_COMMIT)) {
+            String username = request.getString(FROM);
+            SecretKey sessionKey = mKeyManager.getReadyToCommitSessionKeys().remove(username);
+            if (sessionKey == null) {
+                logWarning(SERVER_TAG, "Expected to have a key to commit from user " + username);
+            } else {
+                mKeyManager.getSessionKeys().put(username, sessionKey);
+                logInfo(SERVER_TAG, "Successfully traded a session key " + username);
+            }
+        }
+        return "";
     }
 
     private String processReceivedCatalog(JSONObject message) throws JSONException {

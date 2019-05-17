@@ -2,7 +2,6 @@ package cmov1819.p2photo.helpers.interfaceimpl;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.se.omapi.Session;
 
 import java.net.HttpURLConnection;
 import java.security.PublicKey;
@@ -87,50 +86,4 @@ public class P2PWebServerInterfaceImpl {
         }
         return null;
     }
-
-    /* TODO Remove this code or use it if above version does not work.
-    public static PublicKey requestPublicKeyFromServer(final Activity activity, String username) throws NoResultsException, FailedOperationException {
-        String url = activity.getString(p2photo_host) + activity.getString(R.string.get_member_key)
-                + "&calleeUsername=" + SessionManager.getUsername(activity)
-                + "&toGetUsername=" + username;
-
-        try {
-            RequestData requestData = new RequestData(activity, RequestData.RequestType.GET_MEMBER_KEY, url);
-            ResponseData result = new P2PWebServerMediator().execute(requestData).get();
-            int code = result.getServerCode();
-            if (code == HttpURLConnection.HTTP_OK) {
-                SuccessResponse payload = (SuccessResponse) result.getPayload();
-                String publicKey = (String) payload.getResult();
-                String msg = "Public Key received: " + publicKey;
-                LogManager.logInfo(LogManager.GET_MEMBER_KEY, msg);
-                byte[] bytes = base64StringToByteArray(publicKey);
-
-                X509EncodedKeySpec publicKS = new X509EncodedKeySpec(bytes);
-                KeyFactory keyFactory = KeyFactory.getInstance(CryptoUtils.ASYMMETRIC_ALGORITHM);
-                return keyFactory.generatePublic(publicKS);
-            }
-            else {
-                String msg = activity.getString(R.string.find_user_unsuccessful) + "Server response code: " + code;
-                LogManager.logError(LogManager.SEARCH_USER_TAG, msg);
-                throw new FailedOperationException("URL: " + url);
-            }
-        }
-        catch (ClassCastException ccex) {
-            String msg = "Caught Class Cast Exception.";
-            LogManager.logError(LogManager.GET_MEMBER_KEY, msg);
-            throw new NoResultsException(ccex.getMessage());
-        }
-        catch (ExecutionException | InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            String msg = "Request Public Key of user " + username + "was unsuccessful";
-            LogManager.logError(LogManager.GET_MEMBER_KEY, msg);
-            throw new FailedOperationException(ex.getMessage());
-        }
-        catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
-            String msg = "Could not load the Public Key from server";
-            LogManager.logError(LogManager.GET_MEMBER_KEY, msg);
-            throw new NoResultsException(ex.getMessage());
-        }
-    }
-    */
 }

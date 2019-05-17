@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Base64;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -47,7 +46,6 @@ import static cmov1819.p2photo.helpers.CryptoUtils.generateAesKey;
 import static cmov1819.p2photo.helpers.CryptoUtils.generateRSAKeys;
 import static cmov1819.p2photo.helpers.CryptoUtils.loadAESKeys;
 import static cmov1819.p2photo.helpers.CryptoUtils.loadRSAKeys;
-import static cmov1819.p2photo.helpers.CryptoUtils.sendPublicKeyToServer;
 import static cmov1819.p2photo.helpers.CryptoUtils.storeAESKey;
 import static cmov1819.p2photo.helpers.CryptoUtils.storeRSAKeys;
 import static cmov1819.p2photo.helpers.managers.SessionManager.updateUsername;
@@ -246,7 +244,6 @@ public class LoginActivity extends AppCompatActivity {
 
         enableUserTextInputs(usernameEditText, passwordEditText);
 
-        // TODO - Is all this just WifiDirectArch? //
         KeyPair keyPair = null;
         try {
             keyPair = loadRSAKeys(this);

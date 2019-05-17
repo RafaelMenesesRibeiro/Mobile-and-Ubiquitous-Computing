@@ -34,6 +34,7 @@ import static cmov1819.p2photo.helpers.termite.Consts.REQUEST_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
 import static cmov1819.p2photo.helpers.termite.Consts.TERMITE_PORT;
 import static cmov1819.p2photo.helpers.termite.Consts.isError;
+import static cmov1819.p2photo.helpers.termite.Consts.waitAndTerminate;
 
 public class ReceivePhotoCallable implements Callable<String> {
     private WifiDirectManager wdDirectMgr;
@@ -103,13 +104,12 @@ public class ReceivePhotoCallable implements Callable<String> {
             logError(GET_PHOTO_FROM_PEER, "IO Exception occurred while managing client sockets...");
         } catch (JSONException jsone) {
             logError(GET_PHOTO_FROM_PEER, jsone.getMessage());
-        } finally {
-            try {
-                if (clientSocket != null) clientSocket.close();
-            } catch (IOException ioe) {
-                logError(GET_PHOTO_FROM_PEER, ioe.getMessage());
-            }
         }
+
+        if (clientSocket != null) {
+            waitAndTerminate(5000, clientSocket);
+        }
+
         return false;
     }
 

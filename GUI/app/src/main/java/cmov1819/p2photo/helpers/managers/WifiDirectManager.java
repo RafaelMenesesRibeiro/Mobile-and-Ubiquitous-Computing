@@ -1,6 +1,5 @@
 package cmov1819.p2photo.helpers.managers;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -25,7 +24,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import cmov1819.p2photo.MainMenuActivity;
 import cmov1819.p2photo.helpers.DateUtils;
-import cmov1819.p2photo.helpers.callables.CallableManager;
+import cmov1819.p2photo.helpers.callables.ReceivePhotoCallableManager;
+import cmov1819.p2photo.helpers.callables.ProposeSessionCallable;
+import cmov1819.p2photo.helpers.callables.ProposeSessionCallableManager;
 import cmov1819.p2photo.helpers.callables.ReceivePhotoCallable;
 import cmov1819.p2photo.helpers.termite.tasks.SendDataTask;
 import cmov1819.p2photo.helpers.termite.tasks.ServerTask;
@@ -40,8 +41,8 @@ import static cmov1819.p2photo.helpers.DateUtils.isFreshTimestamp;
 import static cmov1819.p2photo.helpers.managers.LogManager.WIFI_DIRECT_MGR_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
-import static cmov1819.p2photo.helpers.managers.LogManager.toast;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
+import static cmov1819.p2photo.helpers.managers.LogManager.toast;
 import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
 import static cmov1819.p2photo.helpers.termite.Consts.GO_LEAVE_GROUP;
@@ -52,7 +53,6 @@ import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_UUID;
 import static cmov1819.p2photo.helpers.termite.Consts.RID;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_CATALOG;
 import static cmov1819.p2photo.helpers.termite.Consts.SEND_PHOTO;
-import static cmov1819.p2photo.helpers.termite.Consts.SESSION_KEY;
 import static cmov1819.p2photo.helpers.termite.Consts.SIGNATURE;
 import static cmov1819.p2photo.helpers.termite.Consts.TIMESTAMP;
 import static cmov1819.p2photo.helpers.termite.Consts.TO;
@@ -148,7 +148,7 @@ public class WifiDirectManager {
 
                     for (String missingPhoto : missingPhotos) {
                         Callable<String> job = new ReceivePhotoCallable(device, missingPhoto, catalogId);
-                        completionService.submit(new CallableManager(job,20, TimeUnit.SECONDS));
+                        completionService.submit(new ReceivePhotoCallableManager(job,30, TimeUnit.SECONDS));
                     }
 
                     for (int i = 0; i < missingPhotosCount; i++) {
@@ -198,37 +198,54 @@ public class WifiDirectManager {
         }
         for (SimWifiP2pDevice targetDevice : newGroup) {
             if (!oldGroup.contains(targetDevice)) {
-                targetDevices.add(targetDevice); // TODO HERE
+                if (getDeviceName().compareTo(targetDevice.deviceName) > 0) {
+                    targetDevices.add(targetDevice);
+                }
             }
         }
-        // TODO THIS ALGORITHM
         proposeSession(targetDevices);
     }
 
-    @SuppressLint("StaticFieldLeak")
-    @SuppressWarnings("Duplicates")
-    private void proposeSession(final List<SimWifiP2pDevice> targetDevices) {
-        new AsyncTask<Void, Void, Void>() {
+    private static void proposeSession(final List<SimWifiP2pDevice> targetDevices) {
+        new AsyncTask<Void, Void, List<SimWifiP2pDevice>>() {
             @Override
-            protected Void doInBackground(Void... voids) {
-                WifiDirectManager mWifiDirectManager = WifiDirectManager.getInstance();
-                List<SimWifiP2pDevice> mGroup = mWifiDirectManager.getMainMenuActivity().getmGroupPeers();
+            protected List<SimWifiP2pDevice> doInBackground(Void... voids) {
+                int devicesInNeedOfSessionEstablishment = targetDevices.size();
 
-                ExecutorService executorService = Executors.newFixedThreadPool(targetDevices.size());
-                ExecutorCompletionService<String> completionService = new ExecutorCompletionService<>(executorService);
+                ExecutorService executorService = Executors.newFixedThreadPool(devicesInNeedOfSessionEstablishment);
+                ExecutorCompletionService<SimWifiP2pDevice> completionService = new ExecutorCompletionService<>(executorService);
 
-                /* TODO im here keep going - Im now deleting maps
-                try {
-                    Log.i(WIFI_DIRECT_MGR_TAG, String.format("Proposing a session key to %s", device.deviceName));
-                    JSONObject jsonObject = newBaselineJson(SEND_SESSION);
-                    jsonObject.put(SESSION_KEY, cipherWithRSA(secretKeyToBase64String(newSessionKey), devicePublicKey));
-                    doSend(device, jsonObject);
-                } catch (JSONException | RSAException exc) {
-                    Log.e(WIFI_DIRECT_MGR_TAG, "Unable to build session key proposal message...");
+                for (SimWifiP2pDevice device : targetDevices) {
+                    Callable<SimWifiP2pDevice> job = new ProposeSessionCallable(device);
+                    completionService.submit(new ProposeSessionCallableManager(job,30, TimeUnit.SECONDS));
                 }
-                */
-                return null;
+
+                List<SimWifiP2pDevice> devicesNeedingSecondAttempt = new ArrayList<>();
+                for (int i = 0; i < devicesInNeedOfSessionEstablishment; i++) {
+                    try {
+                        Future<SimWifiP2pDevice> futureResult = completionService.take();
+                        if (!futureResult.isCancelled()) {
+                            SimWifiP2pDevice result = futureResult.get();
+                            if (result != null) {
+                                devicesNeedingSecondAttempt.add(result);
+                            }
+                        }
+                    } catch (ExecutionException | InterruptedException exc) {
+                        logWarning(WIFI_DIRECT_MGR_TAG, "A photo download may have been interrupted or timed out!");
+                    }
+                }
+
+                return devicesNeedingSecondAttempt;
             }
+
+            @Override
+            protected void onPostExecute(List<SimWifiP2pDevice> simWifiP2pDevices) {
+                super.onPostExecute(simWifiP2pDevices);
+                if (!simWifiP2pDevices.isEmpty()) {
+                    proposeSession(simWifiP2pDevices);
+                }
+            }
+
         }.execute();
     }
 

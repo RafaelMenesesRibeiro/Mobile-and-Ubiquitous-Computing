@@ -186,9 +186,10 @@ public class MainMenuActivity
 
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
-        // TODO Negotiate session keys with all peers of this group;
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "SimWifiP2pInfo size: " + simWifiP2pInfo.getDevicesInNetwork().size());
         LogManager.logInfo(LogManager.MAIN_MENU_TAG, "SimWifiP2pDeviceList size: " + simWifiP2pDeviceList.getDeviceList().size());
+
+        List<SimWifiP2pDevice> oldGroup = mGroupPeers;
 
         mGroupPeers.clear();
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
@@ -206,6 +207,9 @@ public class MainMenuActivity
                 mGroupPeers.add(device);
                 mWifiManager.pushCatalogFiles(device, myCatalogFiles);
             }
+
+            // mWifiManager.negotiateSessions(oldGroup, mGroupPeers);
+
         } else {
             LogManager.logInfo(LogManager.MAIN_MENU_TAG,"Group has no devices...");
         }
@@ -324,7 +328,7 @@ public class MainMenuActivity
     }
 
     private static void completeJoinProcessWifiDirect(Activity activity, String catalogId) {
-        // TODO //
+        // none
     }
 
     /**********************************************************

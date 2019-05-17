@@ -7,26 +7,29 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
+
 import static cmov1819.p2photo.helpers.managers.LogManager.CALLABLE_MGR_TAG;
 import static cmov1819.p2photo.helpers.managers.LogManager.logError;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 
-public class CallableManager implements Callable<String> {
-    protected Callable<String> callable;
+public class ProposeSessionCallableManager implements Callable<SimWifiP2pDevice> {
+    protected Callable<SimWifiP2pDevice> callable;
     protected long timeout;
     protected TimeUnit timeUnit;
 
-    public CallableManager(Callable<String> callable, long timeout, TimeUnit timeUnit) {
+    public ProposeSessionCallableManager(Callable<SimWifiP2pDevice> callable, long timeout, TimeUnit timeUnit) {
         this.timeout = timeout;
         this.timeUnit = timeUnit;
         this.callable = callable;
     }
 
     @Override
-    public String call() {
-        String result = null;
+    public SimWifiP2pDevice call() {
+        SimWifiP2pDevice result = ((ProposeSessionCallable) callable).getTargetDevice();
         ExecutorService exec = Executors.newSingleThreadExecutor();
         try {
+            // Returns null when inner task finishes successfully else ends with device for reattempt
             result = exec.submit(callable).get(timeout, timeUnit);
         } catch (InterruptedException | ExecutionException | TimeoutException exc) {
             if (exc instanceof TimeoutException) {
@@ -34,6 +37,7 @@ public class CallableManager implements Callable<String> {
             } else {
                 logError(CALLABLE_MGR_TAG, exc.getMessage());
             }
+            return result;
         }
         exec.shutdown();
         return result;
