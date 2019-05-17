@@ -36,7 +36,6 @@ import static cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.Cat
 public class WirelessP2PArchitecture extends BaseArchitecture {
     @Override
     public void handlePendingMemberships(final Activity activity) {
-        MainMenuActivity.handlePendingMembershipsWifiDirect(activity);
     }
 
     @Override

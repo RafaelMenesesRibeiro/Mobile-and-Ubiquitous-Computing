@@ -165,10 +165,13 @@ public class MainMenuActivity
 
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList peers) {
+
         LogManager.logInfo(MAIN_MENU_TAG, "New peer information available...");
+        LogManager.toast(this, "New peer information available...");
         // compile list of devices in range
         mPeers.clear();
         mPeers.addAll(peers.getDeviceList());
+
     }
 
     /**********************************************************
@@ -178,6 +181,7 @@ public class MainMenuActivity
     @Override
     public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
         LogManager.logInfo(MAIN_MENU_TAG, "New membership information available...");
+        LogManager.toast(this, "New membership information available...");
         mGroupPeers.clear();
         if (!simWifiP2pInfo.getDevicesInNetwork().isEmpty()) {
             // Set my deviceName
@@ -186,6 +190,7 @@ public class MainMenuActivity
             List<JSONObject> myCatalogFiles = loadMyCatalogFiles();
             // Update peers list belonging to my group and broadcast my catalog files
             for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
+                LogManager.toast(this, deviceName);
                 SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
                 mGroupPeers.add(device);
                 mWifiManager.pushCatalogFiles(device, myCatalogFiles);
@@ -306,10 +311,6 @@ public class MainMenuActivity
             LogManager.toast(activity, "Session timed out, please login again");
             activity.startActivity(new Intent(activity, LoginActivity.class));
         }
-    }
-
-    public static void handlePendingMembershipsWifiDirect(Activity activity) {
-        // TODO //
     }
 
     private static void completeJoinProcessWifiDirect(Activity activity, String catalogId) {
