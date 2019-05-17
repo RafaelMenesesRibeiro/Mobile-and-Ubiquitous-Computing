@@ -34,6 +34,9 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import static cmov1819.p2photo.helpers.ConvertUtils.bitmapToByteArray;
 import static cmov1819.p2photo.helpers.ConvertUtils.byteArrayToBase64String;
 import static cmov1819.p2photo.helpers.CryptoUtils.signData;
+import static cmov1819.p2photo.helpers.CryptoUtils.verifySignatureWithSHA1withRSA;
+import static cmov1819.p2photo.helpers.DateUtils.isFreshTimestamp;
+import static cmov1819.p2photo.helpers.termite.Consts.CATALOG_FILE;
 import static cmov1819.p2photo.helpers.termite.Consts.FROM;
 import static cmov1819.p2photo.helpers.termite.Consts.OPERATION;
 import static cmov1819.p2photo.helpers.termite.Consts.PHOTO_FILE;
@@ -106,7 +109,7 @@ public class WifiDirectManager {
         LogManager.logInfo(WIFI_DIRECT_MGR_TAG,"Sending a catalog to...");
         try {
             JSONObject jsonObject = newBaselineJson(SEND_CATALOG);
-            jsonObject.put("catalogFile", catalogFile);
+            jsonObject.put(CATALOG_FILE, catalogFile);
             doSend(device, jsonObject);
         } catch (JSONException jsone) {
             LogManager.logError(WIFI_DIRECT_MGR_TAG, jsone.getMessage());
@@ -126,7 +129,6 @@ public class WifiDirectManager {
                 WifiDirectManager mWifiDirectManager = WifiDirectManager.getInstance();
                 List<SimWifiP2pDevice> mGroup = mWifiDirectManager.getMainMenuActivity().getmGroupPeers();
 
-                int groupSize = mGroup.size();
                 int missingPhotosCount = missingPhotos.size();
 
                 ExecutorService executorService = Executors.newFixedThreadPool(missingPhotosCount);
@@ -179,6 +181,36 @@ public class WifiDirectManager {
     /**********************************************************
      * HELPERS
      **********************************************************/
+
+    public boolean isValidMessage(String sender, int rid, JSONObject response) {
+        try {
+            if (!response.getString(USERNAME).equals(sender)) {
+                return false;
+            }
+            if (response.getInt(RID) != rid) {
+                return  false;
+            }
+            return true;
+        } catch (JSONException jsone) {
+            return false;
+        }
+    }
+    public boolean isValidMessage(String operation, JSONObject response, PublicKey publicKey) {
+        try {
+            if (!response.getString(OPERATION).equals(operation)) {
+                return false;
+            }
+            if (!isFreshTimestamp(response.getString(TIMESTAMP))) {
+                return false;
+            }
+            if (!verifySignatureWithSHA1withRSA(publicKey, response)) {
+                return false;
+            }
+            return true;
+        } catch (JSONException jsone) {
+            return false;
+        }
+    }
 
     public JSONObject newBaselineJson(String operation) throws JSONException {
         JSONObject jsonObject = new JSONObject();
