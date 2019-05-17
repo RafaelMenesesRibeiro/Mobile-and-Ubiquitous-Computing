@@ -5,11 +5,7 @@ import android.content.Intent;
 
 import java.net.HttpURLConnection;
 import java.security.KeyException;
-import java.security.KeyFactory;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.concurrent.ExecutionException;
 
 import cmov1819.p2photo.LoginActivity;
@@ -17,12 +13,8 @@ import cmov1819.p2photo.R;
 import cmov1819.p2photo.dataobjects.RequestData;
 import cmov1819.p2photo.dataobjects.ResponseData;
 import cmov1819.p2photo.exceptions.FailedOperationException;
-import cmov1819.p2photo.exceptions.NoResultsException;
 import cmov1819.p2photo.exceptions.RSAException;
 import cmov1819.p2photo.helpers.ConvertUtils;
-import cmov1819.p2photo.helpers.CryptoUtils;
-import cmov1819.p2photo.helpers.managers.LogManager;
-import cmov1819.p2photo.helpers.managers.SessionManager;
 import cmov1819.p2photo.helpers.mediators.P2PWebServerMediator;
 import cmov1819.p2photo.msgtypes.ErrorResponse;
 import cmov1819.p2photo.msgtypes.SuccessResponse;
@@ -31,7 +23,6 @@ import static cmov1819.p2photo.LoginActivity.WIFI_DIRECT_SV_RUNNING;
 import static cmov1819.p2photo.R.string.assert_membership;
 import static cmov1819.p2photo.R.string.p2photo_host;
 import static cmov1819.p2photo.dataobjects.RequestData.RequestType.GET_MEMBER_PUBLIC_KEY;
-import static cmov1819.p2photo.helpers.ConvertUtils.base64StringToByteArray;
 import static cmov1819.p2photo.helpers.managers.LogManager.logInfo;
 import static cmov1819.p2photo.helpers.managers.LogManager.logWarning;
 import static cmov1819.p2photo.helpers.managers.LogManager.toast;
@@ -82,7 +73,7 @@ public class P2PWebServerInterfaceImpl {
                 String base64PublicKey = (String) payload.getResult();
                 return ConvertUtils.base64StringToPublicKey(base64PublicKey);
             } else if (code == HttpURLConnection.HTTP_NO_CONTENT) {
-                logWarning(P2P_WEB_SV_INTERFACE_TAG,"Member: " + username + "has registered public key!");
+                logWarning(P2P_WEB_SV_INTERFACE_TAG,"Member: " + username + "has no registered public key!");
                 throw new KeyException("Member: " + username + "has registered public key!");
             } else if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
                 logWarning(P2P_WEB_SV_INTERFACE_TAG, ((ErrorResponse)result.getPayload()).getReason());
@@ -97,6 +88,7 @@ public class P2PWebServerInterfaceImpl {
         return null;
     }
 
+    /* TODO Remove this code or use it if above version does not work.
     public static PublicKey requestPublicKeyFromServer(final Activity activity, String username) throws NoResultsException, FailedOperationException {
         String url = activity.getString(p2photo_host) + activity.getString(R.string.get_member_key)
                 + "&calleeUsername=" + SessionManager.getUsername(activity)
@@ -140,4 +132,5 @@ public class P2PWebServerInterfaceImpl {
             throw new NoResultsException(ex.getMessage());
         }
     }
+    */
 }
