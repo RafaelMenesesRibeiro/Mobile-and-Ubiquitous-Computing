@@ -17,7 +17,12 @@ import java.io.IOException;
 
 import cmov1819.p2photo.helpers.architectures.wirelessP2PArchitecture.CatalogOperations;
 
+import static cmov1819.p2photo.helpers.managers.SessionManager.getMaxCacheImageSize;
+import static cmov1819.p2photo.helpers.managers.SessionManager.setMaxCacheImageSize;
+
 public class LimitStorageFragment extends Fragment {
+    public static final int DEFAULT_CACHE_VALUE = 256;
+
     private View view;
     private Activity activity;
 
@@ -32,12 +37,14 @@ public class LimitStorageFragment extends Fragment {
     private void populate(final View view) {
         final SeekBar seekBar = view.findViewById(R.id.seekBar);
         seekBar.setMax(256);
+        seekBar.setProgress(getMaxCacheImageSize(activity));
         Button done = view.findViewById(R.id.done);
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 int seekBarValue = seekBar.getProgress();
                 try {
+                    setMaxCacheImageSize(activity, seekBarValue);
                     CatalogOperations.setReplicationLimitInPhotos(activity, seekBarValue);
                 }
                 catch (IOException | JSONException ex) {
